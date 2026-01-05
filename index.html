@@ -4942,34 +4942,187 @@
 	        
 	        // 第1659行：保存套餐
 // 修改后的调用代码
+// 第1659行：保存套餐
 async function saveMeal() {
-  try {
-    // 收集表单数据
-    const mealData = {
-      name: document.getElementById('meal-name').value,
-      description: document.getElementById('meal-description').value,
-      price: parseFloat(document.getElementById('meal-price').value),
-      // 其他字段...
-      // 注意：不要手动设置 updatedAt 和 createdAt
-    };
+    // 第1660行：异步函数定义开始
+    const mealId = document.getElementById('currentMealId').value.trim();  // 第1661行：获取当前套餐ID
+    const mealName = document.getElementById('mealName').value.trim();  // 第1662行：获取套餐名称
+    const mealPrice = parseFloat(document.getElementById('mealPrice').value);  // 第1663行：获取套餐价格
+    const mealTags = document.getElementById('mealTags').value.trim().split(',').map(tag => tag.trim()).filter(tag => tag);  // 第1664行：获取套餐标签并分割为数组
+    const mealDescription = document.getElementById('mealDescription').value.trim();  // 第1665行：获取套餐描述
+    const mealActive = document.getElementById('mealActive').checked;  // 第1666行：获取套餐状态
     
-    // 如果有 objectId 表示是更新
-    if (currentMealId) {
-      mealData.objectId = currentMealId;
+    if (!mealName) {
+        // 第1667行：如果套餐名称为空
+        showNotification('请输入套餐名称', 'error');  // 第1668行：显示错误通知
+        document.getElementById('mealName').focus();  // 第1669行：聚焦到套餐名称输入框
+        return;  // 第1670行：返回
     }
     
-    // 保存到云端
-    const savedMeal = await saveMealToCloud(mealData);
+    if (!mealPrice || isNaN(mealPrice) || mealPrice <= 0) {
+        // 第1671行：如果套餐价格无效
+        showNotification('请输入有效的套餐价格', 'error');  // 第1672行：显示错误通知
+        document.getElementById('mealPrice').focus();  // 第1673行：聚焦到套餐价格输入框
+        return;  // 第1674行：返回
+    }
     
-    // 处理保存成功后的逻辑
-    console.log('保存成功:', savedMeal);
-    alert('套餐保存成功！');
+    if (mealTags.length === 0) {
+        // 第1675行：如果没有套餐标签
+        showNotification('请输入至少一个套餐标签（用逗号分隔）', 'error');  // 第1676行：显示错误通知
+        document.getElementById('mealTags').focus();  // 第1677行：聚焦到套餐标签输入框
+        return;  // 第1678行：返回
+    }
     
-  } catch (error) {
-    console.error('保存失败:', error);
-    alert('保存失败：' + error.message);
-  }
-} // 第1760行：异步函数定义结束
+    if (!mealDescription) {
+        // 第1679行：如果套餐描述为空
+        showNotification('请输入套餐描述', 'error');  // 第1680行：显示错误通知
+        document.getElementById('mealDescription').focus();  // 第1681行：聚焦到套餐描述输入框
+        return;  // 第1682行：返回
+    }
+    
+    // 第1683行：收集选项组数据
+    const optionGroups = [];  // 第1684行：初始化选项组数组
+    
+    document.querySelectorAll('.option-group-item').forEach(groupElement => {
+        // 第1685行：遍历所有选项组元素
+        const titleInput = groupElement.querySelector('.option-group-title-input');  // 第1686行：获取组标题输入框
+        const rulesInput = groupElement.querySelector('.option-group-rules-input');  // 第1687行：获取规则描述输入框
+        const minInput = groupElement.querySelector('.option-group-min-input');  // 第1688行：获取最小选择数量输入框
+        const maxInput = groupElement.querySelector('.option-group-max-input');  // 第1689行：获取最大选择数量输入框
+        const repeatInput = groupElement.querySelector('.option-group-repeat-input');  // 第1690行：获取重复选择复选框
+        const maxPerItemInput = groupElement.querySelector('.option-group-max-per-item-input');  // 第1691行：获取每个选项最大选择数量输入框
+        
+        if (titleInput && rulesInput && minInput && maxInput) {
+            // 第1692行：如果所有必需元素都存在
+            const minSelect = parseInt(minInput.value) || 1;  // 第1693行：获取最小选择数量
+            const maxSelect = parseInt(maxInput.value) || 1;  // 第1694行：获取最大选择数量
+            
+            if (minSelect > maxSelect) {
+                // 第1695行：如果最小选择数量大于最大选择数量
+                showNotification('选项组的最小选择数量不能大于最大选择数量', 'error');  // 第1696行：显示错误通知
+                minInput.focus();  // 第1697行：聚焦到最小选择数量输入框
+                throw new Error('Invalid option group');  // 第1698行：抛出错误
+            }
+            
+            // 第1699行：收集选项项数据
+            const items = [];  // 第1700行：初始化选项项数组
+            groupElement.querySelectorAll('.option-item-list-item').forEach(itemElement => {
+                // 第1701行：遍历所有选项项元素
+                const nameInput = itemElement.querySelector('.option-item-name-input');  // 第1702行：获取选项名称输入框
+                const priceInput = itemElement.querySelector('.option-item-price-input');  // 第1703行：获取附加价格输入框
+                
+                if (nameInput && priceInput) {
+                    // 第1704行：如果选项项元素存在
+                    const itemName = nameInput.value.trim();  // 第1705行：获取选项名称
+                    const addPrice = parseFloat(priceInput.value) || 0;  // 第1706行：获取附加价格
+                    
+                    if (itemName) {
+                        // 第1707行：如果选项名称不为空
+                        items.push({
+                            name: itemName,
+                            addPrice: addPrice
+                        });  // 第1708行：添加到选项项数组
+                    }
+                }
+            });
+            
+            if (items.length === 0) {
+                // 第1709行：如果没有选项项
+                showNotification('选项组必须至少有一个选项项', 'error');  // 第1710行：显示错误通知
+                throw new Error('No option items');  // 第1711行：抛出错误
+            }
+            
+            // 第1712行：创建选项组对象
+            optionGroups.push({
+                title: titleInput.value.trim(),
+                rules: rulesInput.value.trim(),
+                minSelect: minSelect,
+                maxSelect: maxSelect,
+                repeat: repeatInput ? repeatInput.checked : false,
+                maxPerItem: maxPerItemInput ? parseInt(maxPerItemInput.value) || (repeatInput && repeatInput.checked ? 999 : 1) : 1,
+                items: items
+            });  // 第1713行：添加到选项组数组
+        }
+    });
+    
+    // 第1714行：收集固定搭配数据
+    const fixedItems = [];  // 第1715行：初始化固定搭配数组
+    
+    document.querySelectorAll('.fixed-item-list-item').forEach(itemElement => {
+        // 第1716行：遍历所有固定搭配项元素
+        const nameInput = itemElement.querySelector('.fixed-item-name-input');  // 第1717行：获取固定搭配项名称输入框
+        const quantityInput = itemElement.querySelector('.fixed-item-quantity-input');  // 第1718行：获取固定搭配项数量输入框
+        
+        if (nameInput && quantityInput) {
+            // 第1719行：如果固定搭配项元素存在
+            const itemName = nameInput.value.trim();  // 第1720行：获取固定搭配项名称
+            const quantity = parseInt(quantityInput.value) || 1;  // 第1721行：获取固定搭配项数量
+            
+            if (itemName) {
+                // 第1722行：如果固定搭配项名称不为空
+                fixedItems.push({
+                    name: itemName,
+                    quantity: quantity
+                });  // 第1723行：添加到固定搭配数组
+            }
+        }
+    });
+    
+    // 第1724行：创建套餐数据对象
+    const mealData = {
+        name: mealName,
+        price: mealPrice,
+        tags: mealTags,
+        description: mealDescription,
+        active: mealActive,
+        optionGroups: optionGroups,
+        fixedItems: fixedItems,
+        createdAt: new Date(),
+        updatedAt: new Date()
+    };  // 第1725行：套餐数据对象
+    
+    // 第1726行：如果是编辑套餐，添加objectId
+    if (mealId) {
+        // 第1727行：如果套餐ID存在
+        mealData.objectId = mealId;  // 第1728行：添加objectId
+    }
+    
+    try {
+        // 第1729行：尝试保存套餐
+        const savedMeal = await saveMealToCloud(mealData);  // 第1730行：保存套餐到云端
+        
+        // 第1731行：更新本地套餐数组
+        const existingIndex = meals.findIndex(m => (m.objectId === savedMeal.objectId) || (m.id === savedMeal.objectId));  // 第1732行：查找现有套餐索引
+        
+        if (existingIndex >= 0) {
+            // 第1733行：如果已存在，更新它
+            meals[existingIndex] = savedMeal;  // 第1734行：更新套餐数据
+        } else {
+            // 第1735行：如果不存在，添加它
+            meals.unshift(savedMeal);  // 第1736行：添加到套餐数组开头
+        }
+        
+        // 第1737行：保存到本地存储
+        localStorage.setItem('kfcMeals', JSON.stringify(meals));  // 第1738行：保存套餐数据
+        
+        // 第1739行：刷新显示
+        updateHomePage();  // 第1740行：更新首页
+        updateMealList('all');  // 第1741行：更新套餐列表
+        
+        // 第1742行：重置表单
+        resetMealForm();  // 第1743行：重置套餐表单
+        
+        // 第1744行：显示成功通知
+        showNotification(`套餐"${mealName}"保存成功`, 'success');  // 第1745行：显示成功通知
+        
+        // 第1746行：切换到套餐管理标签页
+        document.querySelector('.admin-tab[data-tab="meals"]').click();  // 第1747行：点击套餐管理标签页
+    } catch (error) {
+        // 第1748行：捕获保存错误
+        console.error("保存套餐失败:", error);  // 第1749行：错误日志
+        showNotification("保存套餐失败，请重试", "error");  // 第1750行：显示错误通知
+    }
+}  // 第1751行：异步函数定义结束
 	        
 	        // 第1761行：取消编辑
 	        function cancelEdit() {
