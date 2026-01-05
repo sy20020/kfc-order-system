@@ -1390,6 +1390,12 @@
             50% { transform: scale(1.1); }
             100% { transform: scale(1); }
         }
+		/* 添加高亮订单动画 */
+		@keyframes highlightOrder {
+		    0% { background-color: #fff5f5; }
+		    50% { background-color: #ffebee; }
+		    100% { background-color: white; }
+		}
         
         /* 第179行：图片模态框 */
         .image-modal {
@@ -2524,6 +2530,23 @@
     </div>
     <!-- 第504行：图片模态框结束 -->
 	    <script>
+			// 第505行：JavaScript代码开始
+			// 添加全局错误处理
+			window.addEventListener('error', function(e) {
+			    // 忽略翻译扩展的错误
+			    if (e.filename && (e.filename.includes('translate') || e.filename.includes('background'))) {
+			        console.log('忽略翻译扩展错误:', e.message);
+			        return;
+			    }
+			    console.error('全局错误:', e.message, e.filename, e.lineno);
+			});
+			
+			// 处理未捕获的Promise异常
+			window.addEventListener('unhandledrejection', function(event) {
+			    // 忽略特定类型的Promise错误
+			    console.warn('未处理的Promise拒绝:', event.reason);
+			    event.preventDefault(); // 防止默认的未处理错误行为
+			});
 	        // 第505行：JavaScript代码开始
 	        // 第506行：LeanCloud配置 - 请替换为您的实际配置
 	        const LEANCLOUD_CONFIG = {
@@ -2533,62 +2556,102 @@
 	        };
 	        
 	        // 第510行：全局变量定义
-	        let meals = [];           // 第511行：套餐数据数组
-	        let cart = [];            // 第512行：购物车数组
-	        let orders = [];          // 第513行：订单数据数组
-	        let newOrdersCount = 0;   // 第514行：新订单数量
-	        const ADMIN_PASSWORD = "200104";  // 第515行：管理员密码
+	       // 第510行：全局变量定义
+	       let meals = [];           // 第511行：套餐数据数组
+	       let cart = [];            // 第512行：购物车数组
+	       let orders = [];          // 第513行：订单数据数组
+	       let newOrdersCount = 0;   // 第514行：新订单数量
+	       const ADMIN_PASSWORD = "200104";  // 第515行：管理员密码
+	       
+	       // 添加安全函数包装器
+	       const safeCall = (fn, fallback = null) => {
+	           return (...args) => {
+	               try {
+	                   return fn(...args);
+	               } catch (error) {
+	                   console.warn('函数执行失败:', fn.name || '匿名函数', error.message);
+	                   return fallback;
+	               }
+	           };
+	       };
+	       
+	       // 添加安全异步函数包装器
+	       const safeAsync = (fn, fallback = null) => {
+	           return async (...args) => {
+	               try {
+	                   return await fn(...args);
+	               } catch (error) {
+	                   console.warn('异步函数执行失败:', fn.name || '匿名函数', error.message);
+	                   return fallback;
+	               }
+	           };
+	       };
 	        
 	        // 第516行：用户标识符
 	        let currentUserId = localStorage.getItem('kfcUserId');
 	        
 	        // 第517行：页面加载完成后执行
-	        document.addEventListener('DOMContentLoaded', function() {
-	            // 第518行：DOM内容加载完成事件监听器开始
-	            console.log("页面加载完成，开始初始化...");  // 第519行：日志输出
-	            
-	            // 第520行：初始化LeanCloud
-	            try {
-	                // 第521行：尝试初始化LeanCloud
-	                AV.init(LEANCLOUD_CONFIG);  // 第522行：初始化AV对象
-	                console.log("LeanCloud初始化成功");  // 第523行：成功日志
-	            } catch (error) {
-	                // 第524行：捕获初始化错误
-	                console.error("LeanCloud初始化失败:", error);  // 第525行：错误日志
-	                showNotification("云端服务初始化失败，使用本地模式", "error");  // 第526行：显示通知
-	            }
-	            
-	            // 第527行：生成或获取用户ID
-	            if (!currentUserId) {
-	                // 第528行：如果没有用户ID，生成一个新的
-	                currentUserId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-	                localStorage.setItem('kfcUserId', currentUserId);  // 第529行：保存到本地存储
-	                console.log("新用户ID已生成:", currentUserId);  // 第530行：日志输出
-	            }
-	            
-	            // 第531行：显示用户ID
-	            document.getElementById('currentUserIdDisplay').textContent = currentUserId.substring(0, 12) + '...';
-	            
-	            // 第532行：初始化所有组件
-	            initHomePage();  // 第533行：初始化首页
-	            initAdminPanel();  // 第534行：初始化管理员面板
-	            initMealManagement();  // 第535行：初始化套餐管理
-	            initCart();  // 第536行：初始化购物车
-	            updateOrderBadge();  // 第537行：更新订单徽章
-	            initImagePreview();  // 第538行：初始化图片预览
-	            initPasswordVerification();  // 第539行：初始化密码验证
-	            initStatusToggle();  // 第540行：初始化状态切换
-	            initMyOrdersPage();  // 第541行：初始化我的订单页面
-	            initHeaderButtons();  // 第542行：初始化头部按钮
-	            
-	            // 第543行：从LeanCloud加载数据
-	            loadAllDataFromCloud();  // 第544行：加载所有云端数据
-	            
-	            // 第545行：检查URL参数
-	            checkUrlParams();  // 第546行：检查URL参数
-	            
-	            console.log("初始化完成");  // 第547行：完成日志
-	        });  // 第548行：DOM内容加载完成事件监听器结束
+// 第517行：页面加载完成后执行
+document.addEventListener('DOMContentLoaded', function() {
+    // 第518行：DOM内容加载完成事件监听器开始
+    console.log("页面加载完成，开始初始化...");  // 第519行：日志输出
+    
+    // 安全执行初始化
+    const init = safeAsync(async () => {
+        // 第520行：初始化LeanCloud
+        try {
+            AV.init(LEANCLOUD_CONFIG);
+            console.log("LeanCloud初始化成功");
+        } catch (error) {
+            console.warn("LeanCloud初始化失败:", error.message);
+            // 静默失败，使用本地模式
+        }
+        
+        // 第527行：生成或获取用户ID
+        if (!currentUserId) {
+            currentUserId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('kfcUserId', currentUserId);
+        }
+        
+        // 第531行：显示用户ID
+        document.getElementById('currentUserIdDisplay').textContent = currentUserId.substring(0, 12) + '...';
+        
+        // 第532行：初始化所有组件
+        initHomePage();
+        initAdminPanel();
+        initMealManagement();
+        initCart();
+        updateOrderBadge();
+        initImagePreview();
+        initPasswordVerification();
+        initStatusToggle();
+        initMyOrdersPage();
+        initHeaderButtons();
+        
+        // 尝试从LeanCloud加载数据，失败则使用本地
+        try {
+            await loadAllDataFromCloud();
+        } catch (error) {
+            console.warn('云端数据加载失败，使用本地缓存:', error.message);
+            // 从本地存储加载数据
+            const localMeals = JSON.parse(localStorage.getItem('kfcMeals') || '[]');
+            const localOrders = JSON.parse(localStorage.getItem('kfcOrders') || '[]');
+            meals = localMeals;
+            orders = localOrders;
+            updateHomePage();
+        }
+        
+        // 第545行：检查URL参数
+        checkUrlParams();
+        
+        console.log("初始化完成");
+    });
+    
+    // 执行初始化
+    init().catch(error => {
+        console.warn('初始化过程中发生错误:', error.message);
+    });
+});  // 第548行：DOM内容加载完成事件监听器结束
 	        
 	        // 第549行：从LeanCloud加载所有数据
 	        async function loadAllDataFromCloud() {
@@ -5558,6 +5621,28 @@ async function saveMeal() {
 	        
 	        // 第1993行：JavaScript代码结束
 	        console.log("LeanCloud集成代码加载完成");  // 第1994行：完成日志
+			// 检查URL参数
+			function checkUrlParams() {
+			    const urlParams = new URLSearchParams(window.location.search);
+			    const orderId = urlParams.get('order');
+			    const page = urlParams.get('page');
+			    
+			    if (orderId) {
+			        // 如果有订单ID参数，跳转到订单页面
+			        setTimeout(() => {
+			            showMyOrdersPage();
+			            document.getElementById('orderSearchInput').value = orderId;
+			            searchUserOrder(orderId);
+			        }, 500);
+			    }
+			    
+			    if (page === 'admin') {
+			        // 如果页面参数是admin，显示管理员登录
+			        setTimeout(() => {
+			            document.getElementById('adminBtn').click();
+			        }, 1000);
+			    }
+			}
 	    </script>
 		</body>
 		<!-- 第1995行：页面主体结束 -->
