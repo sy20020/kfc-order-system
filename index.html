@@ -1752,6 +1752,31 @@
     </div>
 
     <script>
+		// 处理扩展程序冲突的错误
+		window.addEventListener('error', function(event) {
+		    // 检查是否是扩展程序导致的错误
+		    if (event.message && event.message.includes('background-select-words-setContextMenus')) {
+		        console.log('忽略扩展程序错误，不影响系统运行');
+		        event.preventDefault();
+		        event.stopImmediatePropagation();
+		        return false;
+		    }
+		});
+		
+		window.addEventListener('unhandledrejection', function(event) {
+		    if (event.reason && event.reason.message && 
+		        event.reason.message.includes('The message port closed before a response was received')) {
+		        console.log('忽略扩展程序Promise错误，不影响系统运行');
+		        event.preventDefault();
+		        event.stopImmediatePropagation();
+		        return false;
+		    }
+		});
+		
+		// 肯德基自助点餐系统 - 完整云端同步版本
+		const KFCSystem = {
+		    // ... 其余代码保持不变
+		};
         // 肯德基自助点餐系统 - 完整云端同步版本
         const KFCSystem = {
             // 配置
