@@ -1159,119 +1159,6 @@
             color: #c62828;
         }
         
-        /* 新增：快速添加按钮容器 */
-        .quick-add-buttons {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-        }
-        
-        .quick-add-btn {
-            background-color: #ffcc00;
-            color: #333;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-            flex: 1;
-            min-width: 200px;
-            justify-content: center;
-        }
-        
-        .quick-add-btn:hover {
-            background-color: #e6b800;
-            transform: translateY(-2px);
-        }
-        
-        .quick-add-btn i {
-            font-size: 1.2rem;
-        }
-        
-        /* 新增：截图模态框 */
-        .screenshot-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
-            z-index: 4000;
-            display: none;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .screenshot-modal.active {
-            display: flex;
-        }
-        
-        .screenshot-modal-content {
-            max-width: 90%;
-            max-height: 90%;
-            position: relative;
-        }
-        
-        .screenshot-modal-content img {
-            max-width: 100%;
-            max-height: 80vh;
-            border-radius: 10px;
-        }
-        
-        .close-screenshot {
-            position: absolute;
-            top: -15px;
-            right: -15px;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #e31837;
-            color: white;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        /* 新增：选项组管理 */
-        .option-group-management {
-            margin-top: 30px;
-            padding: 20px;
-            background-color: #f9f9f9;
-            border-radius: 10px;
-            border: 2px dashed #ddd;
-        }
-        
-        .option-group-list {
-            margin-bottom: 20px;
-        }
-        
-        .option-group-item {
-            background-color: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border-left: 4px solid #4CAF50;
-        }
-        
-        .add-option-group-btn, .add-fixed-item-btn {
-            background-color: #2196F3;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-right: 10px;
-            margin-bottom: 10px;
-        }
-        
         /* 响应式设计 */
         @media (max-width: 768px) {
             .main-content {
@@ -1327,14 +1214,6 @@
             .header-btn {
                 width: 200px;
                 justify-content: center;
-            }
-            
-            .quick-add-buttons {
-                flex-direction: column;
-            }
-            
-            .quick-add-btn {
-                min-width: 100%;
             }
         }
         
@@ -1429,20 +1308,6 @@
         .meal-filter-btn.active {
             background-color: #e31837;
             color: white;
-        }
-        
-        /* 新增：查看截图按钮 */
-        .view-screenshot-btn {
-            background-color: #2196F3;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
         }
     </style>
 </head>
@@ -1588,16 +1453,6 @@
         </div>
     </div>
 
-    <!-- 截图查看模态框 -->
-    <div class="screenshot-modal" id="screenshotModal">
-        <div class="screenshot-modal-content">
-            <img id="screenshotModalImage" src="" alt="门店截图">
-            <button class="close-screenshot" id="closeScreenshotModal">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-    </div>
-
     <!-- 面板遮罩层 -->
     <div class="panel-overlay" id="panelOverlay"></div>
 
@@ -1661,19 +1516,6 @@
                     <i class="fas fa-plus-circle"></i>
                     添加新套餐
                 </h3>
-                
-                <!-- 快速添加按钮 -->
-                <div class="quick-add-buttons">
-                    <button class="quick-add-btn" id="addExampleMeal1Btn">
-                        <i class="fas fa-bolt"></i>
-                        快速添加：【10-8】自提/宅急送十件套76.9元
-                    </button>
-                    <button class="quick-add-btn" id="addExampleMeal2Btn">
-                        <i class="fas fa-bolt"></i>
-                        快速添加：【10-6】自提/宅急送十件套79.9元
-                    </button>
-                </div>
-                
                 <div class="meal-form">
                     <input type="hidden" id="currentMealId" value="">
                     <div class="form-row">
@@ -1708,34 +1550,6 @@
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- 选项组管理区域 -->
-                    <div class="option-group-management">
-                        <h4 style="margin-bottom: 15px; color: #e31837;">
-                            <i class="fas fa-list"></i> 选项组管理
-                            <button type="button" class="add-option-group-btn" id="addOptionGroupBtn">
-                                <i class="fas fa-plus"></i> 添加选项组
-                            </button>
-                        </h4>
-                        
-                        <div id="optionGroupsContainer">
-                            <!-- 选项组将通过JS动态添加 -->
-                            <p class="no-option-groups">暂无选项组，点击"添加选项组"按钮添加</p>
-                        </div>
-                        
-                        <h4 style="margin-top: 25px; margin-bottom: 15px; color: #e31837;">
-                            <i class="fas fa-th-list"></i> 固定搭配管理
-                            <button type="button" class="add-fixed-item-btn" id="addFixedItemBtn">
-                                <i class="fas fa-plus"></i> 添加固定搭配
-                            </button>
-                        </h4>
-                        
-                        <div id="fixedItemsContainer">
-                            <!-- 固定搭配将通过JS动态添加 -->
-                            <p class="no-fixed-items">暂无固定搭配，点击"添加固定搭配"按钮添加</p>
-                        </div>
-                    </div>
-                    
                     <div style="margin-top: 30px; display: flex; gap: 15px;">
                         <button class="add-btn action-btn" id="saveMealBtn" style="padding: 12px 30px;">
                             <i class="fas fa-save"></i>
@@ -1752,31 +1566,6 @@
     </div>
 
     <script>
-		// 处理扩展程序冲突的错误
-		window.addEventListener('error', function(event) {
-		    // 检查是否是扩展程序导致的错误
-		    if (event.message && event.message.includes('background-select-words-setContextMenus')) {
-		        console.log('忽略扩展程序错误，不影响系统运行');
-		        event.preventDefault();
-		        event.stopImmediatePropagation();
-		        return false;
-		    }
-		});
-		
-		window.addEventListener('unhandledrejection', function(event) {
-		    if (event.reason && event.reason.message && 
-		        event.reason.message.includes('The message port closed before a response was received')) {
-		        console.log('忽略扩展程序Promise错误，不影响系统运行');
-		        event.preventDefault();
-		        event.stopImmediatePropagation();
-		        return false;
-		    }
-		});
-		
-		// 肯德基自助点餐系统 - 完整云端同步版本
-		const KFCSystem = {
-		    // ... 其余代码保持不变
-		};
         // 肯德基自助点餐系统 - 完整云端同步版本
         const KFCSystem = {
             // 配置
@@ -1799,105 +1588,7 @@
                 selectedOptions: {},
                 newOrdersCount: 0,
                 editingMeal: null,
-                isCloudAvailable: false,
-                tempMealOptions: null // 用于存储临时套餐选项数据
-            },
-            
-            // 示例套餐数据
-            exampleMeals: {
-                meal1: {
-                    name: "【10-8】自提/宅急送十件套76.9元",
-                    price: 76.9,
-                    tags: "自提/宅急送,十件套,3-4人餐",
-                    description: "3-4人餐，包含多种选择",
-                    active: true,
-                    optionGroups: [
-                        {
-                            title: "主食/小吃（任选7份，可以重复选）",
-                            rules: "请选择7份，可以重复选",
-                            minSelect: 7,
-                            maxSelect: 7,
-                            repeat: true,
-                            maxPerItem: 7,
-                            items: [
-                                { name: "滋滋烤鸡腿堡", addPrice: 0 },
-                                { name: "藤椒风味鸡排堡", addPrice: 0 },
-                                { name: "老北京鸡肉卷", addPrice: 0 },
-                                { name: "吮指原味鸡", addPrice: 0 },
-                                { name: "黄金脆皮鸡", addPrice: 0 },
-                                { name: "热辣香骨鸡", addPrice: 0 },
-                                { name: "香辣鸡翅", addPrice: 0 },
-                                { name: "小份鸡米花", addPrice: 0 },
-                                { name: "黄金鸡块", addPrice: 0 },
-                                { name: "中薯条", addPrice: 0 },
-                                { name: "香甜玉米杯", addPrice: 0 },
-                                { name: "黑糖珍珠圣代", addPrice: 0 },
-                                { name: "香辣鸡腿堡", addPrice: 5 },
-                                { name: "奥尔良烤鸡腿堡", addPrice: 5 },
-                                { name: "劲脆鸡腿堡", addPrice: 5 }
-                            ]
-                        },
-                        {
-                            title: "饮品/小吃（任选3份，可以重复选）",
-                            rules: "请选择3份，可以重复选",
-                            minSelect: 3,
-                            maxSelect: 3,
-                            repeat: true,
-                            maxPerItem: 3,
-                            items: [
-                                { name: "热柠檬红茶", addPrice: 0 },
-                                { name: "冰三柠茶", addPrice: 0 },
-                                { name: "九珍果汁", addPrice: 0 },
-                                { name: "蛋挞", addPrice: 0 },
-                                { name: "土豆泥", addPrice: 0 },
-                                { name: "红豆派", addPrice: 0 },
-                                { name: "冰美式", addPrice: 0 },
-                                { name: "无糖可乐", addPrice: 0 },
-                                { name: "可乐", addPrice: 0 },
-                                { name: "热玉米饮", addPrice: 1 },
-                                { name: "热拿铁", addPrice: 2 }
-                            ]
-                        }
-                    ],
-                    fixedItems: []
-                },
-                meal2: {
-                    name: "【10-6】自提/宅急送十件套79.9元",
-                    price: 79.9,
-                    tags: "自提/宅急送,十件套,3人餐",
-                    description: "3人餐，包含固定搭配和可选项目",
-                    active: true,
-                    optionGroups: [
-                        {
-                            title: "主食（任选2份）",
-                            rules: "请选择2份",
-                            minSelect: 2,
-                            maxSelect: 2,
-                            items: [
-                                { name: "香辣鸡腿堡", addPrice: 0 },
-                                { name: "劲脆鸡腿堡", addPrice: 0 }
-                            ]
-                        },
-                        {
-                            title: "小吃（任选1份）",
-                            rules: "请选择1份",
-                            minSelect: 1,
-                            maxSelect: 1,
-                            items: [
-                                { name: "烤翅", addPrice: 0 },
-                                { name: "热辣香骨鸡", addPrice: 0 },
-                                { name: "黄金鸡块", addPrice: 0 }
-                            ]
-                        }
-                    ],
-                    fixedItems: [
-                        { name: "新奥尔良烤鸡腿堡", quantity: 1 },
-                        { name: "香辣鸡翅", quantity: 1 },
-                        { name: "小份鸡米花", quantity: 1 },
-                        { name: "中薯条", quantity: 1 },
-                        { name: "可乐", quantity: 3 }
-                    ]
-                }
+                isCloudAvailable: false
             },
             
             // 初始化
@@ -2085,36 +1776,6 @@
                 // 取消编辑
                 document.getElementById('cancelEditBtn')?.addEventListener('click', () => {
                     this.cancelEditMeal();
-                });
-                
-                // 快速添加按钮
-                document.getElementById('addExampleMeal1Btn')?.addEventListener('click', () => {
-                    this.fillExampleMeal(1);
-                });
-                
-                document.getElementById('addExampleMeal2Btn')?.addEventListener('click', () => {
-                    this.fillExampleMeal(2);
-                });
-                
-                // 添加选项组按钮
-                document.getElementById('addOptionGroupBtn')?.addEventListener('click', () => {
-                    this.addOptionGroup();
-                });
-                
-                // 添加固定搭配按钮
-                document.getElementById('addFixedItemBtn')?.addEventListener('click', () => {
-                    this.addFixedItem();
-                });
-                
-                // 关闭截图模态框
-                document.getElementById('closeScreenshotModal')?.addEventListener('click', () => {
-                    this.closeScreenshotModal();
-                });
-                
-                document.getElementById('screenshotModal')?.addEventListener('click', (e) => {
-                    if (e.target.id === 'screenshotModal') {
-                        this.closeScreenshotModal();
-                    }
                 });
             },
             
@@ -2510,10 +2171,10 @@
                     
                     const orderObject = new (AV.Object.extend('Order'))();
                     
-                    orderObject.set('orderId', orderData.id);
+                    orderObject.set('id', orderData.id);
                     orderObject.set('timestamp', orderData.timestamp);
                     orderObject.set('status', orderData.status);
-                    orderObject.set('items', orderData.items);
+                    orderObject.set('cart', orderData.cart);
                     orderObject.set('deliveryInfo', orderData.deliveryInfo);
                     orderObject.set('orderNote', orderData.orderNote || '');
                     orderObject.set('deliveryType', orderData.deliveryType);
@@ -2521,7 +2182,6 @@
                     orderObject.set('hasScreenshot', orderData.hasScreenshot || false);
                     orderObject.set('screenshotData', orderData.screenshotData || '');
                     orderObject.set('userId', orderData.userId);
-                    orderObject.set('mealName', orderData.mealName);
                     
                     await orderObject.save();
                     orderData.objectId = orderObject.id;
@@ -3646,12 +3306,6 @@
                     }
                 }
                 
-                // 添加查看截图按钮（如果订单有截图）
-                const screenshotBtn = order.hasScreenshot ? 
-                    `<button class="view-screenshot-btn" onclick="KFCSystem.viewScreenshot('${order.screenshotData}')">
-                        <i class="fas fa-image"></i> 查看门店截图
-                    </button>` : '';
-                
                 orderElement.innerHTML = `
                     <div class="user-order-header">
                         <div>
@@ -3673,7 +3327,6 @@
                     <div class="user-order-info">
                         <p><strong>配送方式：</strong>${deliveryText}</p>
                         ${order.orderNote ? `<p><strong>备注：</strong>${order.orderNote}</p>` : ''}
-                        ${screenshotBtn}
                     </div>
                     
                     <div class="user-order-total">
@@ -3757,29 +3410,6 @@
                 // 加载管理员数据
                 this.renderAdminOrders('all');
                 this.updateMealList('all');
-                
-                // 从云端加载最新数据
-                this.loadLatestDataForAdmin();
-                
-                // 初始化选项组管理
-                this.initOptionGroupManagement();
-            },
-            
-            // 加载最新数据用于管理员面板
-            async loadLatestDataForAdmin() {
-                try {
-                    if (this.data.isCloudAvailable) {
-                        await this.loadOrdersFromCloud();
-                        await this.loadMealsFromCloud();
-                        
-                        // 重新渲染
-                        const currentFilter = document.querySelector('.filter-btn.active')?.dataset.filter || 'all';
-                        this.renderAdminOrders(currentFilter);
-                        this.updateMealList('all');
-                    }
-                } catch (error) {
-                    console.error("加载管理员数据失败:", error);
-                }
             },
             
             // 关闭管理员面板
@@ -3806,336 +3436,6 @@
                 // 如果是套餐管理标签，更新套餐列表
                 if (tabId === 'meals') {
                     this.updateMealList('all');
-                }
-                
-                // 如果是添加套餐标签，初始化选项组管理
-                if (tabId === 'addMeal') {
-                    this.initOptionGroupManagement();
-                }
-            },
-            
-            // 初始化选项组管理
-            initOptionGroupManagement() {
-                const optionGroupsContainer = document.getElementById('optionGroupsContainer');
-                const fixedItemsContainer = document.getElementById('fixedItemsContainer');
-                
-                if (!optionGroupsContainer || !fixedItemsContainer) return;
-                
-                // 清空容器
-                optionGroupsContainer.innerHTML = '';
-                fixedItemsContainer.innerHTML = '';
-                
-                // 如果没有选项组，显示提示信息
-                if (!this.data.tempMealOptions || !this.data.tempMealOptions.optionGroups || this.data.tempMealOptions.optionGroups.length === 0) {
-                    optionGroupsContainer.innerHTML = '<p class="no-option-groups">暂无选项组，点击"添加选项组"按钮添加</p>';
-                } else {
-                    // 显示现有的选项组
-                    this.data.tempMealOptions.optionGroups.forEach((group, groupIndex) => {
-                        const groupElement = this.createOptionGroupElement(group, groupIndex);
-                        optionGroupsContainer.appendChild(groupElement);
-                    });
-                }
-                
-                // 如果没有固定搭配，显示提示信息
-                if (!this.data.tempMealOptions || !this.data.tempMealOptions.fixedItems || this.data.tempMealOptions.fixedItems.length === 0) {
-                    fixedItemsContainer.innerHTML = '<p class="no-fixed-items">暂无固定搭配，点击"添加固定搭配"按钮添加</p>';
-                } else {
-                    // 显示现有的固定搭配
-                    this.data.tempMealOptions.fixedItems.forEach((item, itemIndex) => {
-                        const itemElement = this.createFixedItemElement(item, itemIndex);
-                        fixedItemsContainer.appendChild(itemElement);
-                    });
-                }
-            },
-            
-            // 创建选项组元素
-            createOptionGroupElement(group, index) {
-                const groupElement = document.createElement('div');
-                groupElement.className = 'option-group-item';
-                groupElement.dataset.index = index;
-                
-                groupElement.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <div style="flex: 1;">
-                            <h5 style="margin-bottom: 8px; color: #e31837;">${group.title || '未命名选项组'}</h5>
-                            <p style="margin-bottom: 5px; font-size: 0.9rem;"><strong>规则：</strong>${group.rules || '无规则'}</p>
-                            <p style="margin-bottom: 5px; font-size: 0.9rem;"><strong>选择要求：</strong>最少 ${group.minSelect || 0} 个，最多 ${group.maxSelect || 1} 个</p>
-                            <p style="margin-bottom: 5px; font-size: 0.9rem;"><strong>允许重复：</strong>${group.repeat ? '是' : '否'}</p>
-                            <p style="margin-bottom: 5px; font-size: 0.9rem;"><strong>每项最大数量：</strong>${group.maxPerItem || 1}</p>
-                            <div style="margin-top: 10px;">
-                                <p style="font-size: 0.9rem; font-weight: bold;">选项项：</p>
-                                <ul style="padding-left: 20px; font-size: 0.9rem;">
-                                    ${group.items ? group.items.map(item => `<li>${item.name}${item.addPrice > 0 ? ` (+¥${item.addPrice})` : ''}</li>`).join('') : '<li>无选项项</li>'}
-                                </ul>
-                            </div>
-                        </div>
-                        <div style="display: flex; gap: 5px;">
-                            <button class="action-btn edit-btn" onclick="KFCSystem.editOptionGroup(${index})" style="padding: 5px 10px;">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="action-btn delete-btn" onclick="KFCSystem.deleteOptionGroup(${index})" style="padding: 5px 10px;">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-                
-                return groupElement;
-            },
-            
-            // 创建固定搭配元素
-            createFixedItemElement(item, index) {
-                const itemElement = document.createElement('div');
-                itemElement.className = 'option-group-item';
-                itemElement.dataset.index = index;
-                
-                itemElement.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <h5 style="margin-bottom: 5px; color: #4CAF50;">${item.name || '未命名项目'}</h5>
-                            <p style="font-size: 0.9rem;"><strong>数量：</strong>${item.quantity || 1}</p>
-                        </div>
-                        <div style="display: flex; gap: 5px;">
-                            <button class="action-btn edit-btn" onclick="KFCSystem.editFixedItem(${index})" style="padding: 5px 10px;">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="action-btn delete-btn" onclick="KFCSystem.deleteFixedItem(${index})" style="padding: 5px 10px;">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-                
-                return itemElement;
-            },
-            
-            // 添加选项组
-            addOptionGroup() {
-                // 确保tempMealOptions存在
-                if (!this.data.tempMealOptions) {
-                    this.data.tempMealOptions = {
-                        optionGroups: [],
-                        fixedItems: []
-                    };
-                }
-                
-                // 创建新选项组
-                const newGroup = {
-                    title: '新选项组',
-                    rules: '请选择选项',
-                    minSelect: 1,
-                    maxSelect: 1,
-                    repeat: false,
-                    maxPerItem: 1,
-                    items: []
-                };
-                
-                this.data.tempMealOptions.optionGroups.push(newGroup);
-                
-                // 重新初始化选项组管理
-                this.initOptionGroupManagement();
-                
-                this.showNotification('已添加新选项组，请编辑选项组详情', 'info');
-            },
-            
-            // 编辑选项组
-            editOptionGroup(index) {
-                if (!this.data.tempMealOptions || !this.data.tempMealOptions.optionGroups || !this.data.tempMealOptions.optionGroups[index]) {
-                    this.showNotification('选项组不存在！', 'error');
-                    return;
-                }
-                
-                const group = this.data.tempMealOptions.optionGroups[index];
-                
-                // 使用prompt编辑选项组
-                const title = prompt('请输入选项组标题：', group.title);
-                if (title === null) return;
-                
-                const rules = prompt('请输入选项组规则：', group.rules);
-                if (rules === null) return;
-                
-                const minSelect = parseInt(prompt('请输入最少选择数量：', group.minSelect) || '1');
-                if (isNaN(minSelect)) return;
-                
-                const maxSelect = parseInt(prompt('请输入最多选择数量：', group.maxSelect) || '1');
-                if (isNaN(maxSelect)) return;
-                
-                const repeat = confirm('是否允许重复选择？');
-                const maxPerItem = repeat ? parseInt(prompt('请输入每项最大选择数量：', group.maxPerItem || '1') || '1') : 1;
-                
-                // 编辑选项项
-                let editItems = confirm('是否编辑选项项？');
-                let items = [...group.items];
-                
-                if (editItems) {
-                    items = [];
-                    let addMore = true;
-                    
-                    while (addMore) {
-                        const itemName = prompt('请输入选项项名称（取消结束添加）：', '');
-                        if (itemName === null) {
-                            addMore = false;
-                            break;
-                        }
-                        
-                        const addPrice = parseFloat(prompt('请输入附加价格（0表示不额外收费）：', '0') || '0');
-                        
-                        items.push({
-                            name: itemName,
-                            addPrice: addPrice
-                        });
-                        
-                        addMore = confirm('是否继续添加选项项？');
-                    }
-                }
-                
-                // 更新选项组
-                this.data.tempMealOptions.optionGroups[index] = {
-                    title,
-                    rules,
-                    minSelect,
-                    maxSelect,
-                    repeat,
-                    maxPerItem: repeat ? maxPerItem : 1,
-                    items
-                };
-                
-                // 重新初始化选项组管理
-                this.initOptionGroupManagement();
-                
-                this.showNotification('选项组已更新！', 'success');
-            },
-            
-            // 删除选项组
-            deleteOptionGroup(index) {
-                if (!this.data.tempMealOptions || !this.data.tempMealOptions.optionGroups || !this.data.tempMealOptions.optionGroups[index]) {
-                    this.showNotification('选项组不存在！', 'error');
-                    return;
-                }
-                
-                if (confirm('确定要删除这个选项组吗？')) {
-                    this.data.tempMealOptions.optionGroups.splice(index, 1);
-                    
-                    // 重新初始化选项组管理
-                    this.initOptionGroupManagement();
-                    
-                    this.showNotification('选项组已删除！', 'success');
-                }
-            },
-            
-            // 添加固定搭配
-            addFixedItem() {
-                // 确保tempMealOptions存在
-                if (!this.data.tempMealOptions) {
-                    this.data.tempMealOptions = {
-                        optionGroups: [],
-                        fixedItems: []
-                    };
-                }
-                
-                const itemName = prompt('请输入固定搭配项目名称：', '');
-                if (itemName === null) return;
-                
-                const quantity = parseInt(prompt('请输入数量：', '1') || '1');
-                if (isNaN(quantity)) return;
-                
-                const newItem = {
-                    name: itemName,
-                    quantity: quantity
-                };
-                
-                this.data.tempMealOptions.fixedItems.push(newItem);
-                
-                // 重新初始化选项组管理
-                this.initOptionGroupManagement();
-                
-                this.showNotification('固定搭配已添加！', 'success');
-            },
-            
-            // 编辑固定搭配
-            editFixedItem(index) {
-                if (!this.data.tempMealOptions || !this.data.tempMealOptions.fixedItems || !this.data.tempMealOptions.fixedItems[index]) {
-                    this.showNotification('固定搭配不存在！', 'error');
-                    return;
-                }
-                
-                const item = this.data.tempMealOptions.fixedItems[index];
-                
-                const itemName = prompt('请输入固定搭配项目名称：', item.name);
-                if (itemName === null) return;
-                
-                const quantity = parseInt(prompt('请输入数量：', item.quantity.toString()) || '1');
-                if (isNaN(quantity)) return;
-                
-                // 更新固定搭配
-                this.data.tempMealOptions.fixedItems[index] = {
-                    name: itemName,
-                    quantity: quantity
-                };
-                
-                // 重新初始化选项组管理
-                this.initOptionGroupManagement();
-                
-                this.showNotification('固定搭配已更新！', 'success');
-            },
-            
-            // 删除固定搭配
-            deleteFixedItem(index) {
-                if (!this.data.tempMealOptions || !this.data.tempMealOptions.fixedItems || !this.data.tempMealOptions.fixedItems[index]) {
-                    this.showNotification('固定搭配不存在！', 'error');
-                    return;
-                }
-                
-                if (confirm('确定要删除这个固定搭配吗？')) {
-                    this.data.tempMealOptions.fixedItems.splice(index, 1);
-                    
-                    // 重新初始化选项组管理
-                    this.initOptionGroupManagement();
-                    
-                    this.showNotification('固定搭配已删除！', 'success');
-                }
-            },
-            
-            // 填充示例套餐
-            fillExampleMeal(mealNumber) {
-                if (mealNumber === 1) {
-                    const example = this.exampleMeals.meal1;
-                    document.getElementById('mealName').value = example.name;
-                    document.getElementById('mealPrice').value = example.price;
-                    document.getElementById('mealTags').value = example.tags;
-                    document.getElementById('mealDescription').value = example.description;
-                    document.getElementById('mealActive').checked = example.active;
-                    document.getElementById('statusText').textContent = example.active ? '上架' : '下架';
-                    
-                    // 设置临时套餐选项数据
-                    this.data.tempMealOptions = {
-                        optionGroups: example.optionGroups,
-                        fixedItems: example.fixedItems
-                    };
-                    
-                    // 重新初始化选项组管理
-                    this.initOptionGroupManagement();
-                    
-                    this.showNotification('示例套餐1已填充！', 'success');
-                } else if (mealNumber === 2) {
-                    const example = this.exampleMeals.meal2;
-                    document.getElementById('mealName').value = example.name;
-                    document.getElementById('mealPrice').value = example.price;
-                    document.getElementById('mealTags').value = example.tags;
-                    document.getElementById('mealDescription').value = example.description;
-                    document.getElementById('mealActive').checked = example.active;
-                    document.getElementById('statusText').textContent = example.active ? '上架' : '下架';
-                    
-                    // 设置临时套餐选项数据
-                    this.data.tempMealOptions = {
-                        optionGroups: example.optionGroups,
-                        fixedItems: example.fixedItems
-                    };
-                    
-                    // 重新初始化选项组管理
-                    this.initOptionGroupManagement();
-                    
-                    this.showNotification('示例套餐2已填充！', 'success');
                 }
             },
             
@@ -4204,12 +3504,6 @@
                     }
                 }
                 
-                // 添加查看截图按钮（如果订单有截图）
-                const screenshotBtn = order.hasScreenshot ? 
-                    `<button class="view-screenshot-btn" onclick="KFCSystem.viewScreenshot('${order.screenshotData}')" style="margin-top: 10px;">
-                        <i class="fas fa-image"></i> 查看门店截图
-                    </button>` : '';
-                
                 orderElement.innerHTML = `
                     <div class="order-id">订单号：${order.id}</div>
                     <div class="order-time">${order.timestamp}</div>
@@ -4220,7 +3514,6 @@
                         <p><strong>配送方式：</strong>${deliveryText}</p>
                         ${order.orderNote ? `<p><strong>备注：</strong>${order.orderNote}</p>` : ''}
                         <p><strong>用户ID：</strong>${order.userId.substring(0, 12)}...</p>
-                        ${screenshotBtn}
                     </div>
                     
                     <div class="order-items">
@@ -4248,30 +3541,6 @@
                 return orderElement;
             },
             
-            // 查看截图
-            viewScreenshot(screenshotData) {
-                const modal = document.getElementById('screenshotModal');
-                const image = document.getElementById('screenshotModalImage');
-                
-                if (!modal || !image) return;
-                
-                image.src = screenshotData;
-                modal.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            },
-            
-            // 关闭截图模态框
-            closeScreenshotModal() {
-                const modal = document.getElementById('screenshotModal');
-                const image = document.getElementById('screenshotModalImage');
-                
-                if (!modal || !image) return;
-                
-                modal.classList.remove('active');
-                document.body.style.overflow = 'auto';
-                image.src = '';
-            },
-            
             // 更新订单状态
             async updateOrderStatus(orderId, newStatus) {
                 try {
@@ -4296,7 +3565,7 @@
                     }
                     
                     // 重新渲染订单
-                    const currentFilter = document.querySelector('.filter-btn.active')?.dataset.filter;
+                    const currentFilter = document.querySelector('.filter-btn.active').dataset.filter;
                     this.renderAdminOrders(currentFilter);
                     
                     this.showNotification('订单状态已更新！', 'success');
@@ -4331,7 +3600,7 @@
                     }
                     
                     // 重新渲染订单
-                    const currentFilter = document.querySelector('.filter-btn.active')?.dataset.filter;
+                    const currentFilter = document.querySelector('.filter-btn.active').dataset.filter;
                     this.renderAdminOrders(currentFilter);
                     
                     this.showNotification('订单已删除！', 'success');
@@ -4420,7 +3689,6 @@
                         <p><strong>价格:</strong> ¥${meal.price} | <strong>标签:</strong> ${Array.isArray(meal.tags) ? meal.tags.join(', ') : meal.tags}</p>
                         <p><strong>描述:</strong> ${meal.description}</p>
                         <p><strong>选项组:</strong> ${meal.optionGroups ? meal.optionGroups.length : 0} 个</p>
-                        <p><strong>固定搭配:</strong> ${meal.fixedItems ? meal.fixedItems.length : 0} 个</p>
                     </div>
                     <div class="meal-list-item-actions">
                         <button class="action-btn edit-btn" data-meal-id="${meal.objectId || meal.id}">
@@ -4472,15 +3740,6 @@
                 document.getElementById('mealActive').checked = meal.active !== false;
                 document.getElementById('statusText').textContent = meal.active !== false ? '上架' : '下架';
                 document.getElementById('statusText').className = meal.active !== false ? 'status-active' : 'status-inactive';
-                
-                // 设置临时套餐选项数据
-                this.data.tempMealOptions = {
-                    optionGroups: meal.optionGroups || [],
-                    fixedItems: meal.fixedItems || []
-                };
-                
-                // 重新初始化选项组管理
-                this.initOptionGroupManagement();
                 
                 // 显示取消编辑按钮
                 document.getElementById('cancelEditBtn').style.display = 'block';
@@ -4543,8 +3802,6 @@
                             tags: mealTags,
                             description: mealDescription,
                             active: mealActive,
-                            optionGroups: this.data.tempMealOptions ? this.data.tempMealOptions.optionGroups : [],
-                            fixedItems: this.data.tempMealOptions ? this.data.tempMealOptions.fixedItems : [],
                             updatedAt: new Date().toISOString()
                         };
                     } else {
@@ -4557,8 +3814,8 @@
                             tags: mealTags,
                             description: mealDescription,
                             active: mealActive,
-                            optionGroups: this.data.tempMealOptions ? this.data.tempMealOptions.optionGroups : [],
-                            fixedItems: this.data.tempMealOptions ? this.data.tempMealOptions.fixedItems : [],
+                            optionGroups: [],
+                            fixedItems: [],
                             createdAt: new Date().toISOString(),
                             updatedAt: new Date().toISOString()
                         };
@@ -4602,7 +3859,6 @@
             // 取消编辑套餐
             cancelEditMeal() {
                 this.data.editingMeal = null;
-                this.data.tempMealOptions = null;
                 this.resetMealForm();
                 
                 // 切换到套餐管理标签页
@@ -4624,12 +3880,6 @@
                     添加新套餐
                 `;
                 document.getElementById('cancelEditBtn').style.display = 'none';
-                
-                // 清空临时套餐选项数据
-                this.data.tempMealOptions = null;
-                
-                // 重新初始化选项组管理
-                this.initOptionGroupManagement();
             },
             
             // 更新新订单徽章
