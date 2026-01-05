@@ -2615,27 +2615,40 @@
 	        
 	        // 第563行：从LeanCloud加载套餐数据
 	        async function loadMealsFromCloud() {
-	            // 第564行：异步函数定义开始
 	            try {
-	                // 第565行：尝试加载套餐数据
-	                console.log("开始从LeanCloud加载套餐数据...");  // 第566行：日志输出
+	                console.log("开始从LeanCloud加载套餐数据...");
 	                
-	                // 第567行：创建套餐查询
-	                const Meal = AV.Object.extend('Meal');  // 第568行：创建Meal对象类
-	                const query = new AV.Query('Meal');  // 第569行：创建查询
-	                query.descending('createdAt');  // 第570行：按创建时间降序排列
+	                const Meal = AV.Object.extend('Meal');
+	                const query = new AV.Query('Meal');
+	                query.descending('createdAt'); // 按创建时间降序排列
 	                
-	                // 第571行：执行查询
-	                const results = await query.find();  // 第572行：等待查询结果
-	                console.log(`从LeanCloud加载到 ${results.length} 个套餐`);  // 第573行：日志输出
+	                const results = await query.find();
+	                console.log(`从LeanCloud加载到 ${results.length} 个套餐`);
 	                
-	                // 第574行：将查询结果转换为普通对象数组
+	                // 将查询结果转换为普通对象数组
 	                meals = results.map(mealObj => {
-	                    const meal = mealObj.toJSON();  // 第575行：转换为JSON对象
-	                    meal.objectId = mealObj.id;  // 第576行：保存LeanCloud的对象ID
-	                    return meal;  // 第577行：返回套餐对象
+	                    const meal = mealObj.toJSON();
+	                    // 从LeanCloud对象获取原始数据
+	                    meal.objectId = mealObj.id;
+	                    meal.createdAt = mealObj.createdAt;
+	                    meal.updatedAt = mealObj.updatedAt;
+	                    return meal;
 	                });
 	                
+	                // 保存到本地存储作为缓存
+	                localStorage.setItem('kfcMeals', JSON.stringify(meals));
+	                
+	                console.log("套餐数据加载完成");
+	                return meals;
+	            } catch (error) {
+	                console.error("从LeanCloud加载套餐数据失败:", error);
+	                // 如果网络失败，尝试从本地存储加载
+	                console.log("尝试从本地存储加载缓存数据...");
+	                const localMeals = JSON.parse(localStorage.getItem('kfcMeals')) || [];
+	                meals = localMeals;
+	                return meals;
+	            }
+	        }
 	                // 第578行：保存到本地存储作为缓存
 	                localStorage.setItem('kfcMeals', JSON.stringify(meals));  // 第579行：保存到本地存储
 	                
@@ -2698,68 +2711,78 @@
 	        }  // 第619行：异步函数定义结束
 	        
 	        // 第620行：保存套餐到LeanCloud
-	        async function saveMealToCloud(mealData) {
-	            // 第621行：异步函数定义开始
-	            try {
-	                // 第622行：尝试保存套餐
-	                let mealObject;  // 第623行：声明套餐对象变量
-	                
-	                if (mealData.objectId) {
-	                    // 第624行：如果是更新现有套餐
-	                    console.log("更新套餐到LeanCloud:", mealData.name);  // 第625行：日志输出
-	                    mealObject = AV.Object.createWithoutData('Meal', mealData.objectId);  // 第626行：根据ID创建对象
-	                    
-	                    // 第627行：设置更新字段
-	                    Object.keys(mealData).forEach(key => {
-	                        // 第628行：遍历套餐数据的所有键
-	                        if (key !== 'objectId' && key !== 'createdAt' && key !== 'updatedAt') {
-	                            // 第629行：排除不需要更新的字段
-	                            mealObject.set(key, mealData[key]);  // 第630行：设置字段值
-	                        }
-	                    });
-	                    
-	                    await mealObject.save();  // 第631行：保存对象
-	                    console.log("套餐更新成功:", mealData.name);  // 第632行：成功日志
-	                } else {
-	                    // 第633行：如果是创建新套餐
-	                    console.log("保存新套餐到LeanCloud:", mealData.name);  // 第634行：日志输出
-	                    mealObject = new (AV.Object.extend('Meal'))();  // 第635行：创建新的Meal对象
-	                    
-	                    // 第636行：设置所有字段
-	                    Object.keys(mealData).forEach(key => {
-	                        // 第637行：遍历套餐数据的所有键
-	                        if (key !== 'objectId') {
-	                            // 第638行：排除objectId字段
-	                            mealObject.set(key, mealData[key]);  // 第639行：设置字段值
-	                        }
-	                    });
-	                    
-	                    await mealObject.save();  // 第640行：保存对象
-	                    mealData.objectId = mealObject.id;  // 第641行：获取新创建的对象ID
-	                    console.log("套餐保存成功，ID:", mealObject.id);  // 第642行：成功日志
-	                }
-	                
-	                // 第643行：同时更新本地存储
-	                const localMeals = JSON.parse(localStorage.getItem('kfcMeals')) || [];  // 第644行：从本地存储加载套餐
-	                const existingIndex = localMeals.findIndex(m => m.objectId === mealData.objectId);  // 第645行：查找现有套餐索引
-	                
-	                if (existingIndex >= 0) {
-	                    // 第646行：如果已存在，更新它
-	                    localMeals[existingIndex] = mealData;  // 第647行：更新套餐数据
-	                } else {
-	                    // 第648行：如果不存在，添加它
-	                    localMeals.push(mealData);  // 第649行：添加新套餐
-	                }
-	                
-	                localStorage.setItem('kfcMeals', JSON.stringify(localMeals));  // 第650行：保存到本地存储
-	                
-	                return mealData;  // 第651行：返回套餐数据
-	            } catch (error) {
-	                // 第652行：捕获保存错误
-	                console.error("保存套餐到LeanCloud失败:", error);  // 第653行：错误日志
-	                throw error;  // 第654行：重新抛出错误
-	            }
-	        }  // 第655行：异步函数定义结束
+	       async function saveMealToCloud(mealData) {
+	           try {
+	               console.log("保存套餐到LeanCloud:", mealData.name);
+	               let mealObject;
+	               
+	               if (mealData.objectId) {
+	                   // 更新现有套餐
+	                   console.log("更新套餐:", mealData.objectId);
+	                   mealObject = AV.Object.createWithoutData('Meal', mealData.objectId);
+	                   
+	                   // 设置更新字段，排除保留字段
+	                   Object.keys(mealData).forEach(key => {
+	                       // 跳过保留字段
+	                       if (key !== 'objectId' && key !== 'createdAt' && key !== 'updatedAt') {
+	                           mealObject.set(key, mealData[key]);
+	                       }
+	                   });
+	                   
+	                   // 更新更新时间（如果需要，LeanCloud会自动更新）
+	                   await mealObject.save();
+	                   console.log("套餐更新成功");
+	               } else {
+	                   // 创建新套餐
+	                   console.log("创建新套餐");
+	                   mealObject = new (AV.Object.extend('Meal'))();
+	                   
+	                   // 设置所有字段
+	                   Object.keys(mealData).forEach(key => {
+	                       if (key !== 'objectId') { // 创建时跳过objectId
+	                           mealObject.set(key, mealData[key]);
+	                       }
+	                   });
+	                   
+	                   await mealObject.save();
+	                   // 获取系统生成的ID和时间
+	                   mealData.objectId = mealObject.id;
+	                   mealData.createdAt = mealObject.get('createdAt');
+	                   mealData.updatedAt = mealObject.get('updatedAt');
+	                   console.log("套餐创建成功，ID:", mealObject.id);
+	               }
+	               
+	               // 同时更新本地存储
+	               updateLocalMeal(mealData);
+	               
+	               return mealData;
+	           } catch (error) {
+	               console.error("保存套餐到LeanCloud失败:", error);
+	               throw error;
+	           }
+	       }
+	       
+	       // 添加这个辅助函数来更新本地存储
+	       function updateLocalMeal(mealData) {
+	           const localMeals = JSON.parse(localStorage.getItem('kfcMeals')) || [];
+	           const existingIndex = localMeals.findIndex(m => m.objectId === mealData.objectId);
+	           
+	           if (existingIndex >= 0) {
+	               // 保留原有的createdAt和updatedAt（如果是更新）
+	               if (localMeals[existingIndex].createdAt) {
+	                   mealData.createdAt = localMeals[existingIndex].createdAt;
+	               }
+	               if (localMeals[existingIndex].updatedAt) {
+	                   mealData.updatedAt = localMeals[existingIndex].updatedAt;
+	               }
+	               localMeals[existingIndex] = mealData;
+	           } else {
+	               localMeals.push(mealData);
+	           }
+	           
+	           localStorage.setItem('kfcMeals', JSON.stringify(localMeals));
+	           console.log("本地存储更新完成");
+	       }
 	        
 	        // 第656行：删除套餐从LeanCloud
 	        async function deleteMealFromCloud(mealId) {
@@ -2782,39 +2805,47 @@
 	        
 	        // 第668行：保存订单到LeanCloud
 	        async function saveOrderToCloud(orderData) {
-	            // 第669行：异步函数定义开始
 	            try {
-	                // 第670行：尝试保存订单
-	                console.log("保存订单到LeanCloud:", orderData.id);  // 第671行：日志输出
+	                console.log("保存订单到LeanCloud:", orderData.id);
 	                
-	                const orderObject = new (AV.Object.extend('Order'))();  // 第672行：创建新的Order对象
+	                const orderObject = new (AV.Object.extend('Order'))();
 	                
-	                // 第673行：设置所有字段
+	                // 设置所有字段，排除保留字段
 	                Object.keys(orderData).forEach(key => {
-	                    // 第674行：遍历订单数据的所有键
-	                    orderObject.set(key, orderData[key]);  // 第675行：设置字段值
+	                    if (key !== 'objectId' && key !== 'createdAt' && key !== 'updatedAt') {
+	                        orderObject.set(key, orderData[key]);
+	                    }
 	                });
 	                
-	                await orderObject.save();  // 第676行：保存对象
-	                orderData.objectId = orderObject.id;  // 第677行：获取新创建的对象ID
-	                console.log("订单保存成功，ID:", orderObject.id);  // 第678行：成功日志
+	                await orderObject.save();
 	                
-	                // 第679行：更新本地存储
-	                const localOrders = JSON.parse(localStorage.getItem('kfcOrders')) || [];  // 第680行：从本地存储加载订单
-	                localOrders.unshift(orderData);  // 第681行：将新订单添加到数组开头
-	                localStorage.setItem('kfcOrders', JSON.stringify(localOrders));  // 第682行：保存到本地存储
+	                // 获取系统生成的信息
+	                orderData.objectId = orderObject.id;
+	                orderData.createdAt = orderObject.createdAt;
+	                orderData.updatedAt = orderObject.updatedAt;
 	                
-	                // 第683行：更新新订单计数
-	                newOrdersCount = localOrders.filter(order => order.status === 'new').length;  // 第684行：计算新订单数量
-	                localStorage.setItem('newOrdersCount', newOrdersCount);  // 第685行：保存新订单数量
+	                console.log("订单保存成功，ID:", orderObject.id);
 	                
-	                return orderData;  // 第686行：返回订单数据
+	                // 更新本地存储
+	                updateLocalOrder(orderData);
+	                
+	                return orderData;
 	            } catch (error) {
-	                // 第687行：捕获保存错误
-	                console.error("保存订单到LeanCloud失败:", error);  // 第688行：错误日志
-	                throw error;  // 第689行：重新抛出错误
+	                console.error("保存订单到LeanCloud失败:", error);
+	                throw error;
 	            }
-	        }  // 第690行：异步函数定义结束
+	        }
+	        
+	        // 辅助函数：更新本地订单存储
+	        function updateLocalOrder(orderData) {
+	            const localOrders = JSON.parse(localStorage.getItem('kfcOrders')) || [];
+	            localOrders.unshift(orderData);
+	            localStorage.setItem('kfcOrders', JSON.stringify(localOrders));
+	            
+	            // 更新新订单计数
+	            newOrdersCount = localOrders.filter(order => order.status === 'new').length;
+	            localStorage.setItem('newOrdersCount', newOrdersCount);
+	        }
 	        
 	        // 第691行：更新订单状态到LeanCloud
 	        async function updateOrderStatusOnCloud(orderId, newStatus) {
@@ -4480,9 +4511,13 @@
 	                    });
 	                }
 	                
-	                // 第1470行：添加创建时间显示
-	                const createdAt = meal.createdAt ? new Date(meal.createdAt).toLocaleString('zh-CN') : '未知时间';  // 第1471行：格式化创建时间
 	                
+// 第1470行：添加创建时间显示
+const createdAt = meal.createdAt ? 
+    (meal.createdAt instanceof Date ? 
+        meal.createdAt.toLocaleString('zh-CN') : 
+        new Date(meal.createdAt).toLocaleString('zh-CN')) : 
+    '未知时间';  // 第1471行：格式化创建时间	                
 	                mealItem.innerHTML = `
 	                    <div class="meal-list-item-info">
 	                        <h4>${meal.name} ${meal.active === false ? '<span class="status-inactive">(已下架)</span>' : '<span class="status-active">(已上架)</span>'}</h4>
@@ -5077,8 +5112,7 @@ async function saveMeal() {
         active: mealActive,
         optionGroups: optionGroups,
         fixedItems: fixedItems,
-        createdAt: new Date(),
-        updatedAt: new Date()
+       
     };  // 第1725行：套餐数据对象
     
     // 第1726行：如果是编辑套餐，添加objectId
@@ -5595,6 +5629,7 @@ async function saveMeal() {
 	        
 	        // 第1993行：JavaScript代码结束
 	        console.log("LeanCloud集成代码加载完成");  // 第1994行：完成日志
+			
 	    </script>
 		</body>
 		<!-- 第1995行：页面主体结束 -->
