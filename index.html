@@ -1,68 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-	<!-- 添加在<head>的开头，其他元素之前 -->
-	<script>
-	// 早期错误处理 - 防止浏览器扩展干扰
-	(function() {
-	    // 重写全局错误处理
-	    var originalOnerror = window.onerror;
-	    var originalOnunhandledrejection = window.onunhandledrejection;
-	    
-	    window.onerror = function(msg, url, line, col, error) {
-	        // 过滤翻译扩展相关的错误
-	        if (typeof url === 'string' && 
-	            (url.indexOf('translate') !== -1 || 
-	             url.indexOf('background') !== -1 ||
-	             url.indexOf('content_script') !== -1 ||
-	             url.indexOf('novel_content') !== -1 ||
-	             url.indexOf('distiller') !== -1)) {
-	            console.log('[安全过滤] 忽略扩展错误:', msg.substring(0, 100));
-	            return true; // 阻止错误冒泡
-	        }
-	        
-	        // 处理LeanCloud相关错误
-	        if (typeof msg === 'string' && 
-	            (msg.indexOf('leancloud') !== -1 ||
-	             msg.indexOf('AV') !== -1)) {
-	            console.warn('[LeanCloud] 可能的问题:', msg.substring(0, 100));
-	            return true;
-	        }
-	        
-	        // 调用原始错误处理（如果有）
-	        if (typeof originalOnerror === 'function') {
-	            return originalOnerror(msg, url, line, col, error);
-	        }
-	        
-	        return false;
-	    };
-	    
-	    window.onunhandledrejection = function(event) {
-	        // 过滤翻译扩展的Promise错误
-	        if (event && event.reason) {
-	            var reason = event.reason.toString();
-	            if (reason.indexOf('translate') !== -1 || 
-	                reason.indexOf('beacon') !== -1 ||
-	                reason.indexOf('content') !== -1) {
-	                console.log('[安全过滤] 忽略Promise拒绝:', reason.substring(0, 100));
-	                event.preventDefault();
-	                return true;
-	            }
-	        }
-	        
-	        // 调用原始处理（如果有）
-	        if (typeof originalOnunhandledrejection === 'function') {
-	            return originalOnunhandledrejection(event);
-	        }
-	        
-	        return false;
-	    };
-	    
-	    // 防止外部脚本干扰
-	    Object.freeze(window.onerror);
-	    Object.freeze(window.onunhandledrejection);
-	})();
-	</script>
     <!-- 第1行：文档类型声明 -->
     <meta charset="UTF-8">
     <!-- 第2行：字符编码 -->
@@ -1452,12 +1390,6 @@
             50% { transform: scale(1.1); }
             100% { transform: scale(1); }
         }
-		/* 添加高亮订单动画 */
-		@keyframes highlightOrder {
-		    0% { background-color: #fff5f5; }
-		    50% { background-color: #ffebee; }
-		    100% { background-color: white; }
-		}
         
         /* 第179行：图片模态框 */
         .image-modal {
@@ -2022,17 +1954,6 @@
     </style>
 </head>
 <body>
-	 <!-- 添加页面加载状态 -->
-	    <div id="pageLoading" style="position:fixed;top:0;left:0;width:100%;height:100%;background:white;z-index:9999;display:flex;justify-content:center;align-items:center;flex-direction:column;">
-	        <div style="font-size:2rem;color:#e31837;margin-bottom:20px;">
-	            <i class="fas fa-hamburger fa-spin"></i>
-	        </div>
-	        <div style="font-size:1.2rem;color:#333;">正在加载肯德基点餐系统...</div>
-	        <div id="loadingError" style="color:#e31837;margin-top:20px;display:none;">
-	            加载遇到问题，请尝试刷新页面
-	        </div>
-	    </div>
-	    
     <!-- 第240行：页面主体开始 -->
     <header>
         <!-- 第241行：页面头部开始 -->
@@ -2603,200 +2524,71 @@
     </div>
     <!-- 第504行：图片模态框结束 -->
 	    <script>
-			// 在代码开头添加
-			window.addEventListener('error', function(e) {
-			    // 忽略翻译扩展的错误
-			    if (e.filename && (e.filename.includes('translate') || e.filename.includes('background'))) {
-			        return;
-			    }
-			});
-			
-			// 处理未捕获的Promise异常
-			window.addEventListener('unhandledrejection', function(event) {
-			    // 忽略特定类型的Promise错误
-			    if (event.reason && event.reason.message && 
-			        (event.reason.message.includes('translate') || event.reason.message.includes('beacon'))) {
-			        event.preventDefault(); // 防止默认的未处理错误行为
-			    }
-			});
-			// 第505行：JavaScript代码开始
-			// 添加全局错误处理
-			window.addEventListener('error', function(e) {
-			    // 忽略翻译扩展的错误
-			    if (e.filename && (e.filename.includes('translate') || e.filename.includes('background'))) {
-			        console.log('忽略翻译扩展错误:', e.message);
-			        return;
-			    }
-			    console.error('全局错误:', e.message, e.filename, e.lineno);
-			});
-			
-			// 处理未捕获的Promise异常
-			window.addEventListener('unhandledrejection', function(event) {
-			    // 忽略特定类型的Promise错误
-			    console.warn('未处理的Promise拒绝:', event.reason);
-			    event.preventDefault(); // 防止默认的未处理错误行为
-			});
 	        // 第505行：JavaScript代码开始
 	        // 第506行：LeanCloud配置 - 请替换为您的实际配置
-	        // 修改第506-509行的LeanCloud配置部分
 	        const LEANCLOUD_CONFIG = {
-	            appId: "O7ZlYWWPH4VR5qNRR5ca1cNr-gzGzoHsz",
-	            appKey: "1IWefE69Z5Ppxe6wSK5iBlLL",
-	            serverURLs: "https://o7zlywwp.lc-cn-n1-shared.com"
+	            appId: "O7ZlYWWPH4VR5qNRR5ca1cNr-gzGzoHsz",           // 第507行：替换为您的App ID
+	            appKey: "1IWefE69Z5Ppxe6wSK5iBlLL",         // 第508行：替换为您的App Key
+	            serverURLs: "https://o7zlywwp.lc-cn-n1-shared.com"   // 第509行：替换为您的服务器地址
 	        };
 	        
-	        // 添加LeanCloud初始化保护
-	        function initLeanCloud() {
-	            try {
-	                if (typeof AV === 'undefined') {
-	                    console.warn('LeanCloud SDK未加载，使用本地模式');
-	                    return false;
-	                }
-	                
-	                // 检查是否已初始化
-	                if (AV.applicationId === LEANCLOUD_CONFIG.appId) {
-	                    console.log('LeanCloud已初始化');
-	                    return true;
-	                }
-	                
-	                // 尝试初始化
-	                AV.init(LEANCLOUD_CONFIG);
-	                console.log('LeanCloud初始化成功');
-	                return true;
-	            } catch (error) {
-	                console.warn('LeanCloud初始化失败，使用本地模式:', error.message);
-	                return false;
-	            }
-	        }
-	        
 	        // 第510行：全局变量定义
-	       // 第510行：全局变量定义
-	       let meals = [];           // 第511行：套餐数据数组
-	       let cart = [];            // 第512行：购物车数组
-	       let orders = [];          // 第513行：订单数据数组
-	       let newOrdersCount = 0;   // 第514行：新订单数量
-	       const ADMIN_PASSWORD = "200104";  // 第515行：管理员密码
-	       
-	       // 添加安全函数包装器
-	       const safeCall = (fn, fallback = null) => {
-	           return (...args) => {
-	               try {
-	                   return fn(...args);
-	               } catch (error) {
-	                   console.warn('函数执行失败:', fn.name || '匿名函数', error.message);
-	                   return fallback;
-	               }
-	           };
-	       };
-	       
-	       // 添加安全异步函数包装器
-	       const safeAsync = (fn, fallback = null) => {
-	           return async (...args) => {
-	               try {
-	                   return await fn(...args);
-	               } catch (error) {
-	                   console.warn('异步函数执行失败:', fn.name || '匿名函数', error.message);
-	                   return fallback;
-	               }
-	           };
-	       };
+	        let meals = [];           // 第511行：套餐数据数组
+	        let cart = [];            // 第512行：购物车数组
+	        let orders = [];          // 第513行：订单数据数组
+	        let newOrdersCount = 0;   // 第514行：新订单数量
+	        const ADMIN_PASSWORD = "200104";  // 第515行：管理员密码
 	        
 	        // 第516行：用户标识符
 	        let currentUserId = localStorage.getItem('kfcUserId');
 	        
-// 修改第517行开始的DOMContentLoaded事件处理
-// 修改第517行开始的DOMContentLoaded事件处理
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("页面加载完成，开始初始化...");
-    
-    // 添加安全包装
-    const safeInit = async () => {
-        try {
-            // 初始化LeanCloud（可选）
-            const cloudEnabled = initLeanCloud();
-            
-            // 生成或获取用户ID
-            if (!currentUserId) {
-                currentUserId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                localStorage.setItem('kfcUserId', currentUserId);
-            }
-            
-            // 显示用户ID
-            const userIdDisplay = document.getElementById('currentUserIdDisplay');
-            if (userIdDisplay) {
-                userIdDisplay.textContent = currentUserId.substring(0, 12) + '...';
-            }
-            
-            // 初始化所有组件
-            initHomePage();
-            initAdminPanel();
-            initMealManagement();
-            initCart();
-            updateOrderBadge();
-            initImagePreview();
-            initPasswordVerification();
-            initStatusToggle();
-            initMyOrdersPage();
-            initHeaderButtons();
-            
-            // 尝试加载数据
-            if (cloudEnabled) {
-                try {
-                    await loadAllDataFromCloud();
-                } catch (cloudError) {
-                    console.warn('云端数据加载失败，使用本地缓存:', cloudError.message);
-                    loadLocalData();
-                }
-            } else {
-                loadLocalData();
-            }
-            
-            // 检查URL参数
-            checkUrlParams();
-            
-            console.log("初始化完成");
-        } catch (error) {
-            console.error('初始化过程中发生严重错误:', error);
-            // 显示用户友好的错误信息
-            showNotification('系统初始化失败，请刷新页面重试', 'error');
-        }
-    };
-    
-    // 执行初始化
-    safeInit()
-        .catch(finalError => {
-            console.error('初始化最终错误:', finalError);
-        })
-        .finally(() => {
-            // 无论成功失败，都隐藏加载状态
-            setTimeout(() => {
-                const pageLoading = document.getElementById('pageLoading');
-                if (pageLoading) pageLoading.style.display = 'none';
-            }, 500); // 延迟500毫秒，确保内容已渲染
-        });
-});
-    
-    // 执行初始化
-    safeInit().catch(finalError => {
-        console.error('初始化最终错误:', finalError);
-    });
-});
-
-// 添加本地数据加载函数
-function loadLocalData() {
-    try {
-        const localMeals = JSON.parse(localStorage.getItem('kfcMeals') || '[]');
-        const localOrders = JSON.parse(localStorage.getItem('kfcOrders') || '[]');
-        meals = localMeals;
-        orders = localOrders;
-        updateHomePage();
-    } catch (error) {
-        console.error('加载本地数据失败:', error);
-        // 使用空数据
-        meals = [];
-        orders = [];
-    }
-}// 第548行：DOM内容加载完成事件监听器结束
+	        // 第517行：页面加载完成后执行
+	        document.addEventListener('DOMContentLoaded', function() {
+	            // 第518行：DOM内容加载完成事件监听器开始
+	            console.log("页面加载完成，开始初始化...");  // 第519行：日志输出
+	            
+	            // 第520行：初始化LeanCloud
+	            try {
+	                // 第521行：尝试初始化LeanCloud
+	                AV.init(LEANCLOUD_CONFIG);  // 第522行：初始化AV对象
+	                console.log("LeanCloud初始化成功");  // 第523行：成功日志
+	            } catch (error) {
+	                // 第524行：捕获初始化错误
+	                console.error("LeanCloud初始化失败:", error);  // 第525行：错误日志
+	                showNotification("云端服务初始化失败，使用本地模式", "error");  // 第526行：显示通知
+	            }
+	            
+	            // 第527行：生成或获取用户ID
+	            if (!currentUserId) {
+	                // 第528行：如果没有用户ID，生成一个新的
+	                currentUserId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+	                localStorage.setItem('kfcUserId', currentUserId);  // 第529行：保存到本地存储
+	                console.log("新用户ID已生成:", currentUserId);  // 第530行：日志输出
+	            }
+	            
+	            // 第531行：显示用户ID
+	            document.getElementById('currentUserIdDisplay').textContent = currentUserId.substring(0, 12) + '...';
+	            
+	            // 第532行：初始化所有组件
+	            initHomePage();  // 第533行：初始化首页
+	            initAdminPanel();  // 第534行：初始化管理员面板
+	            initMealManagement();  // 第535行：初始化套餐管理
+	            initCart();  // 第536行：初始化购物车
+	            updateOrderBadge();  // 第537行：更新订单徽章
+	            initImagePreview();  // 第538行：初始化图片预览
+	            initPasswordVerification();  // 第539行：初始化密码验证
+	            initStatusToggle();  // 第540行：初始化状态切换
+	            initMyOrdersPage();  // 第541行：初始化我的订单页面
+	            initHeaderButtons();  // 第542行：初始化头部按钮
+	            
+	            // 第543行：从LeanCloud加载数据
+	            loadAllDataFromCloud();  // 第544行：加载所有云端数据
+	            
+	            // 第545行：检查URL参数
+	            checkUrlParams();  // 第546行：检查URL参数
+	            
+	            console.log("初始化完成");  // 第547行：完成日志
+	        });  // 第548行：DOM内容加载完成事件监听器结束
 	        
 	        // 第549行：从LeanCloud加载所有数据
 	        async function loadAllDataFromCloud() {
@@ -2906,7 +2698,6 @@ function loadLocalData() {
 	        }  // 第619行：异步函数定义结束
 	        
 	        // 第620行：保存套餐到LeanCloud
-	        // 第620行：保存套餐到LeanCloud
 	        async function saveMealToCloud(mealData) {
 	            // 第621行：异步函数定义开始
 	            try {
@@ -2918,12 +2709,10 @@ function loadLocalData() {
 	                    console.log("更新套餐到LeanCloud:", mealData.name);  // 第625行：日志输出
 	                    mealObject = AV.Object.createWithoutData('Meal', mealData.objectId);  // 第626行：根据ID创建对象
 	                    
-	                    // 第627行：设置更新字段（排除LeanCloud保留字段）
+	                    // 第627行：设置更新字段
 	                    Object.keys(mealData).forEach(key => {
 	                        // 第628行：遍历套餐数据的所有键
-	                        // 排除LeanCloud的保留字段
-	                        if (key !== 'objectId' && key !== 'createdAt' && key !== 'updatedAt' && 
-	                            key !== 'createdAt' && key !== 'updatedAt' && key !== 'ACL') {
+	                        if (key !== 'objectId' && key !== 'createdAt' && key !== 'updatedAt') {
 	                            // 第629行：排除不需要更新的字段
 	                            mealObject.set(key, mealData[key]);  // 第630行：设置字段值
 	                        }
@@ -2936,13 +2725,11 @@ function loadLocalData() {
 	                    console.log("保存新套餐到LeanCloud:", mealData.name);  // 第634行：日志输出
 	                    mealObject = new (AV.Object.extend('Meal'))();  // 第635行：创建新的Meal对象
 	                    
-	                    // 第636行：设置所有字段（排除LeanCloud保留字段）
+	                    // 第636行：设置所有字段
 	                    Object.keys(mealData).forEach(key => {
 	                        // 第637行：遍历套餐数据的所有键
-	                        // 排除LeanCloud的保留字段
-	                        if (key !== 'objectId' && key !== 'createdAt' && key !== 'updatedAt' && 
-	                            key !== 'createdAt' && key !== 'updatedAt' && key !== 'ACL') {
-	                            // 第638行：排除objectId等保留字段
+	                        if (key !== 'objectId') {
+	                            // 第638行：排除objectId字段
 	                            mealObject.set(key, mealData[key]);  // 第639行：设置字段值
 	                        }
 	                    });
@@ -2994,7 +2781,6 @@ function loadLocalData() {
 	        }  // 第667行：异步函数定义结束
 	        
 	        // 第668行：保存订单到LeanCloud
-	        // 第668行：保存订单到LeanCloud
 	        async function saveOrderToCloud(orderData) {
 	            // 第669行：异步函数定义开始
 	            try {
@@ -3003,14 +2789,10 @@ function loadLocalData() {
 	                
 	                const orderObject = new (AV.Object.extend('Order'))();  // 第672行：创建新的Order对象
 	                
-	                // 第673行：设置所有字段（排除LeanCloud保留字段）
+	                // 第673行：设置所有字段
 	                Object.keys(orderData).forEach(key => {
 	                    // 第674行：遍历订单数据的所有键
-	                    // 排除LeanCloud的保留字段
-	                    if (key !== 'objectId' && key !== 'createdAt' && key !== 'updatedAt' && 
-	                        key !== 'createdAt' && key !== 'updatedAt' && key !== 'ACL') {
-	                        orderObject.set(key, orderData[key]);  // 第675行：设置字段值
-	                    }
+	                    orderObject.set(key, orderData[key]);  // 第675行：设置字段值
 	                });
 	                
 	                await orderObject.save();  // 第676行：保存对象
@@ -5160,151 +4942,35 @@ function loadLocalData() {
 	        
 	        // 第1659行：保存套餐
 // 修改后的调用代码
-// 第1659行：保存套餐
 async function saveMeal() {
-    // 第1660行：异步函数定义开始
-    // 第1661行：获取表单数据
-    const currentMealId = document.getElementById('currentMealId').value; // 第1662行：获取当前套餐ID
-    const mealName = document.getElementById('mealName').value.trim(); // 第1663行：获取套餐名称
-    const mealPrice = document.getElementById('mealPrice').value.trim(); // 第1664行：获取套餐价格
-    const mealTags = document.getElementById('mealTags').value.trim(); // 第1665行：获取套餐标签
-    const mealDescription = document.getElementById('mealDescription').value.trim(); // 第1666行：获取套餐描述
-    const mealActive = document.getElementById('mealActive').checked; // 第1667行：获取套餐状态
-    
-    // 第1668行：验证表单
-    if (!mealName || !mealPrice || !mealTags || !mealDescription) {
-        showNotification('请填写所有必填字段', 'error'); // 第1669行：显示错误通知
-        return; // 第1670行：返回
-    }
-    
-    // 第1671行：解析套餐标签
-    const tags = mealTags.split(',').map(tag => tag.trim()).filter(tag => tag); // 第1672行：处理标签
-    
-    // 第1673行：收集选项组数据
-    const optionGroups = []; // 第1674行：初始化选项组数组
-    document.querySelectorAll('.option-group-item').forEach((groupElement, groupIndex) => {
-        // 第1675行：遍历选项组元素
-        const groupId = groupElement.querySelector('[data-group-id]')?.dataset?.groupId; // 第1676行：获取组ID
-        const title = groupElement.querySelector('.option-group-title-input')?.value?.trim(); // 第1677行：获取组标题
-        const rules = groupElement.querySelector('.option-group-rules-input')?.value?.trim(); // 第1678行：获取规则描述
-        const minSelect = parseInt(groupElement.querySelector('.option-group-min-input')?.value) || 1; // 第1679行：获取最少选择数量
-        const maxSelect = parseInt(groupElement.querySelector('.option-group-max-input')?.value) || 1; // 第1680行：获取最多选择数量
-        const repeat = groupElement.querySelector('.option-group-repeat-input')?.checked || false; // 第1681行：获取是否可重复选择
-        const maxPerItem = parseInt(groupElement.querySelector('.option-group-max-per-item-input')?.value) || (repeat ? 999 : 1); // 第1682行：获取每个选项最大选择数量
-        
-        if (!title || !rules) {
-            // 第1683行：如果标题或规则为空
-            showNotification(`选项组 ${groupIndex + 1} 的标题或规则不能为空`, 'error'); // 第1684行：显示错误通知
-            return; // 第1685行：返回
-        }
-        
-        // 第1686行：收集选项项数据
-        const items = []; // 第1687行：初始化选项项数组
-        const optionItemsContainer = document.getElementById(`option-items-${groupId}`); // 第1688行：获取选项项容器
-        
-        if (optionItemsContainer) {
-            // 第1689行：如果选项项容器存在
-            optionItemsContainer.querySelectorAll('.option-item-list-item').forEach(itemElement => {
-                // 第1690行：遍历选项项元素
-                const name = itemElement.querySelector('.option-item-name-input')?.value?.trim(); // 第1691行：获取选项项名称
-                const addPrice = parseFloat(itemElement.querySelector('.option-item-price-input')?.value) || 0; // 第1692行：获取附加价格
-                
-                if (name) {
-                    // 第1693行：如果选项项名称不为空
-                    items.push({ name, addPrice }); // 第1694行：添加到选项项数组
-                }
-            });
-        }
-        
-        if (items.length === 0) {
-            // 第1695行：如果没有选项项
-            showNotification(`选项组 "${title}" 需要至少一个选项项`, 'error'); // 第1696行：显示错误通知
-            return; // 第1697行：返回
-        }
-        
-        // 第1698行：添加到选项组数组
-        optionGroups.push({
-            title, // 第1699行：组标题
-            rules, // 第1700行：规则描述
-            minSelect, // 第1701行：最少选择数量
-            maxSelect, // 第1702行：最多选择数量
-            repeat, // 第1703行：是否可重复选择
-            maxPerItem, // 第1704行：每个选项最大选择数量
-            items // 第1705行：选项项数组
-        });
-    });
-    
-    // 第1706行：收集固定搭配数据
-    const fixedItems = []; // 第1707行：初始化固定搭配数组
-    document.querySelectorAll('.fixed-item-list-item').forEach(itemElement => {
-        // 第1708行：遍历固定搭配元素
-        const name = itemElement.querySelector('.fixed-item-name-input')?.value?.trim(); // 第1709行：获取名称
-        const quantity = parseInt(itemElement.querySelector('.fixed-item-quantity-input')?.value) || 1; // 第1710行：获取数量
-        
-        if (name) {
-            // 第1711行：如果名称不为空
-            fixedItems.push({ name, quantity }); // 第1712行：添加到固定搭配数组
-        }
-    });
-    
-    // 第1713行：构建套餐数据对象
-    // 第1713行：构建套餐数据对象
+  try {
+    // 收集表单数据
     const mealData = {
-        name: mealName, // 第1714行：套餐名称
-        price: parseFloat(mealPrice), // 第1715行：套餐价格
-        tags: tags, // 第1716行：套餐标签
-        description: mealDescription, // 第1717行：套餐描述
-        active: mealActive, // 第1718行：套餐状态
-        optionGroups: optionGroups.length > 0 ? optionGroups : null, // 第1719行：选项组
-        fixedItems: fixedItems.length > 0 ? fixedItems : null // 第1720行：固定搭配
-        // 移除 createdAt 和 updatedAt，这些字段由LeanCloud自动管理
+      name: document.getElementById('meal-name').value,
+      description: document.getElementById('meal-description').value,
+      price: parseFloat(document.getElementById('meal-price').value),
+      // 其他字段...
+      // 注意：不要手动设置 updatedAt 和 createdAt
     };
     
-    // 第1723行：如果当前套餐ID存在，表示是编辑现有套餐
+    // 如果有 objectId 表示是更新
     if (currentMealId) {
-        mealData.objectId = currentMealId; // 第1724行：设置LeanCloud对象ID
+      mealData.objectId = currentMealId;
     }
     
-    try {
-        // 第1725行：尝试保存套餐
-        console.log('保存套餐数据:', mealData); // 第1726行：日志输出
-        
-        const savedMeal = await saveMealToCloud(mealData); // 第1727行：保存套餐到云端
-        
-        // 第1728行：更新本地数据
-        const existingIndex = meals.findIndex(m => (m.objectId === savedMeal.objectId) || (m.id === savedMeal.objectId)); // 第1729行：查找现有套餐索引
-        
-        if (existingIndex >= 0) {
-            // 第1730行：如果已存在，更新它
-            meals[existingIndex] = savedMeal; // 第1731行：更新套餐数据
-        } else {
-            // 第1732行：如果不存在，添加它
-            meals.push(savedMeal); // 第1733行：添加新套餐
-        }
-        
-        // 第1734行：更新本地存储
-        localStorage.setItem('kfcMeals', JSON.stringify(meals)); // 第1735行：保存到本地存储
-        
-        // 第1736行：更新显示
-        updateHomePage(); // 第1737行：更新首页
-        
-        const activeFilter = document.querySelector('.meal-filter-btn.active')?.dataset?.mealFilter || 'all'; // 第1738行：获取当前筛选类型
-        updateMealList(activeFilter); // 第1739行：更新套餐列表
-        
-        // 第1740行：重置表单
-        resetMealForm(); // 第1741行：重置套餐表单
-        
-        // 第1742行：切换到套餐管理标签页
-        document.querySelector('.admin-tab[data-tab="meals"]').click(); // 第1743行：点击套餐管理标签页
-        
-        showNotification(`套餐"${mealData.name}"保存成功`, 'success'); // 第1744行：显示成功通知
-        
-    } catch (error) {
-        // 第1745行：捕获保存错误
-        console.error("保存套餐失败:", error); // 第1746行：错误日志
-        showNotification("保存套餐失败，请重试", "error"); // 第1747行：显示错误通知
-    }
-} // 第1748行：异步函数定义结束	        
+    // 保存到云端
+    const savedMeal = await saveMealToCloud(mealData);
+    
+    // 处理保存成功后的逻辑
+    console.log('保存成功:', savedMeal);
+    alert('套餐保存成功！');
+    
+  } catch (error) {
+    console.error('保存失败:', error);
+    alert('保存失败：' + error.message);
+  }
+} // 第1760行：异步函数定义结束
+	        
 	        // 第1761行：取消编辑
 	        function cancelEdit() {
 	            // 第1762行：函数定义开始
@@ -5776,30 +5442,9 @@ async function saveMeal() {
 	        
 	        // 第1993行：JavaScript代码结束
 	        console.log("LeanCloud集成代码加载完成");  // 第1994行：完成日志
-			// 检查URL参数
-			function checkUrlParams() {
-			    const urlParams = new URLSearchParams(window.location.search);
-			    const orderId = urlParams.get('order');
-			    const page = urlParams.get('page');
-			    
-			    if (orderId) {
-			        // 如果有订单ID参数，跳转到订单页面
-			        setTimeout(() => {
-			            showMyOrdersPage();
-			            document.getElementById('orderSearchInput').value = orderId;
-			            searchUserOrder(orderId);
-			        }, 500);
-			    }
-			    
-			    if (page === 'admin') {
-			        // 如果页面参数是admin，显示管理员登录
-			        setTimeout(() => {
-			            document.getElementById('adminBtn').click();
-			        }, 1000);
-			    }
-			}
 	    </script>
 		</body>
 		<!-- 第1995行：页面主体结束 -->
 		</html>
 		<!-- 第1996行：HTML文档结束 -->
+
