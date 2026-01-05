@@ -2530,6 +2530,22 @@
     </div>
     <!-- 第504行：图片模态框结束 -->
 	    <script>
+			// 在代码开头添加
+			window.addEventListener('error', function(e) {
+			    // 忽略翻译扩展的错误
+			    if (e.filename && (e.filename.includes('translate') || e.filename.includes('background'))) {
+			        return;
+			    }
+			});
+			
+			// 处理未捕获的Promise异常
+			window.addEventListener('unhandledrejection', function(event) {
+			    // 忽略特定类型的Promise错误
+			    if (event.reason && event.reason.message && 
+			        (event.reason.message.includes('translate') || event.reason.message.includes('beacon'))) {
+			        event.preventDefault(); // 防止默认的未处理错误行为
+			    }
+			});
 			// 第505行：JavaScript代码开始
 			// 添加全局错误处理
 			window.addEventListener('error', function(e) {
@@ -2761,6 +2777,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	        }  // 第619行：异步函数定义结束
 	        
 	        // 第620行：保存套餐到LeanCloud
+	        // 第620行：保存套餐到LeanCloud
 	        async function saveMealToCloud(mealData) {
 	            // 第621行：异步函数定义开始
 	            try {
@@ -2772,10 +2789,12 @@ document.addEventListener('DOMContentLoaded', function() {
 	                    console.log("更新套餐到LeanCloud:", mealData.name);  // 第625行：日志输出
 	                    mealObject = AV.Object.createWithoutData('Meal', mealData.objectId);  // 第626行：根据ID创建对象
 	                    
-	                    // 第627行：设置更新字段
+	                    // 第627行：设置更新字段（排除LeanCloud保留字段）
 	                    Object.keys(mealData).forEach(key => {
 	                        // 第628行：遍历套餐数据的所有键
-	                        if (key !== 'objectId' && key !== 'createdAt' && key !== 'updatedAt') {
+	                        // 排除LeanCloud的保留字段
+	                        if (key !== 'objectId' && key !== 'createdAt' && key !== 'updatedAt' && 
+	                            key !== 'createdAt' && key !== 'updatedAt' && key !== 'ACL') {
 	                            // 第629行：排除不需要更新的字段
 	                            mealObject.set(key, mealData[key]);  // 第630行：设置字段值
 	                        }
@@ -2788,11 +2807,13 @@ document.addEventListener('DOMContentLoaded', function() {
 	                    console.log("保存新套餐到LeanCloud:", mealData.name);  // 第634行：日志输出
 	                    mealObject = new (AV.Object.extend('Meal'))();  // 第635行：创建新的Meal对象
 	                    
-	                    // 第636行：设置所有字段
+	                    // 第636行：设置所有字段（排除LeanCloud保留字段）
 	                    Object.keys(mealData).forEach(key => {
 	                        // 第637行：遍历套餐数据的所有键
-	                        if (key !== 'objectId') {
-	                            // 第638行：排除objectId字段
+	                        // 排除LeanCloud的保留字段
+	                        if (key !== 'objectId' && key !== 'createdAt' && key !== 'updatedAt' && 
+	                            key !== 'createdAt' && key !== 'updatedAt' && key !== 'ACL') {
+	                            // 第638行：排除objectId等保留字段
 	                            mealObject.set(key, mealData[key]);  // 第639行：设置字段值
 	                        }
 	                    });
@@ -2844,6 +2865,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	        }  // 第667行：异步函数定义结束
 	        
 	        // 第668行：保存订单到LeanCloud
+	        // 第668行：保存订单到LeanCloud
 	        async function saveOrderToCloud(orderData) {
 	            // 第669行：异步函数定义开始
 	            try {
@@ -2852,10 +2874,14 @@ document.addEventListener('DOMContentLoaded', function() {
 	                
 	                const orderObject = new (AV.Object.extend('Order'))();  // 第672行：创建新的Order对象
 	                
-	                // 第673行：设置所有字段
+	                // 第673行：设置所有字段（排除LeanCloud保留字段）
 	                Object.keys(orderData).forEach(key => {
 	                    // 第674行：遍历订单数据的所有键
-	                    orderObject.set(key, orderData[key]);  // 第675行：设置字段值
+	                    // 排除LeanCloud的保留字段
+	                    if (key !== 'objectId' && key !== 'createdAt' && key !== 'updatedAt' && 
+	                        key !== 'createdAt' && key !== 'updatedAt' && key !== 'ACL') {
+	                        orderObject.set(key, orderData[key]);  // 第675行：设置字段值
+	                    }
 	                });
 	                
 	                await orderObject.save();  // 第676行：保存对象
@@ -5093,6 +5119,7 @@ async function saveMeal() {
     });
     
     // 第1713行：构建套餐数据对象
+    // 第1713行：构建套餐数据对象
     const mealData = {
         name: mealName, // 第1714行：套餐名称
         price: parseFloat(mealPrice), // 第1715行：套餐价格
@@ -5100,9 +5127,8 @@ async function saveMeal() {
         description: mealDescription, // 第1717行：套餐描述
         active: mealActive, // 第1718行：套餐状态
         optionGroups: optionGroups.length > 0 ? optionGroups : null, // 第1719行：选项组
-        fixedItems: fixedItems.length > 0 ? fixedItems : null, // 第1720行：固定搭配
-        createdAt: currentMealId ? null : new Date().toISOString(), // 第1721行：创建时间
-        updatedAt: new Date().toISOString() // 第1722行：更新时间
+        fixedItems: fixedItems.length > 0 ? fixedItems : null // 第1720行：固定搭配
+        // 移除 createdAt 和 updatedAt，这些字段由LeanCloud自动管理
     };
     
     // 第1723行：如果当前套餐ID存在，表示是编辑现有套餐
