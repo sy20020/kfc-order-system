@@ -2171,10 +2171,10 @@
                     
                     const orderObject = new (AV.Object.extend('Order'))();
                     
-                    orderObject.set('id', orderData.id);
+                    orderObject.set('orderId', orderData.id);
                     orderObject.set('timestamp', orderData.timestamp);
                     orderObject.set('status', orderData.status);
-                    orderObject.set('cart', orderData.cart);
+                    orderObject.set('items', orderData.items);
                     orderObject.set('deliveryInfo', orderData.deliveryInfo);
                     orderObject.set('orderNote', orderData.orderNote || '');
                     orderObject.set('deliveryType', orderData.deliveryType);
@@ -2182,6 +2182,7 @@
                     orderObject.set('hasScreenshot', orderData.hasScreenshot || false);
                     orderObject.set('screenshotData', orderData.screenshotData || '');
                     orderObject.set('userId', orderData.userId);
+                    orderObject.set('mealName', orderData.mealName);
                     
                     await orderObject.save();
                     orderData.objectId = orderObject.id;
@@ -3410,6 +3411,26 @@
                 // 加载管理员数据
                 this.renderAdminOrders('all');
                 this.updateMealList('all');
+                
+                // 从云端加载最新数据
+                this.loadLatestDataForAdmin();
+            },
+            
+            // 加载最新数据用于管理员面板
+            async loadLatestDataForAdmin() {
+                try {
+                    if (this.data.isCloudAvailable) {
+                        await this.loadOrdersFromCloud();
+                        await this.loadMealsFromCloud();
+                        
+                        // 重新渲染
+                        const currentFilter = document.querySelector('.filter-btn.active')?.dataset.filter || 'all';
+                        this.renderAdminOrders(currentFilter);
+                        this.updateMealList('all');
+                    }
+                } catch (error) {
+                    console.error("加载管理员数据失败:", error);
+                }
             },
             
             // 关闭管理员面板
@@ -3794,7 +3815,7 @@
                     let mealData;
                     
                     if (this.data.editingMeal) {
-                        // 更新现有套餐
+                        // 更新现有套餐，保留原有的optionGroups和fixedItems
                         mealData = {
                             ...this.data.editingMeal,
                             name: mealName,
@@ -3802,6 +3823,9 @@
                             tags: mealTags,
                             description: mealDescription,
                             active: mealActive,
+                            // 保留原有的optionGroups和fixedItems
+                            optionGroups: this.data.editingMeal.optionGroups || [],
+                            fixedItems: this.data.editingMeal.fixedItems || [],
                             updatedAt: new Date().toISOString()
                         };
                     } else {
