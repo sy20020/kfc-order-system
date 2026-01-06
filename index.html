@@ -2228,51 +2228,56 @@
 
 				// 新订单计数操作
 				static async loadNewOrdersCount() {
-					try {
-						const Counter = AV.Object.extend('Counter');
-						const query = new Counter();
-						query.equalTo('type', 'newOrdersCount');
-						const result = await query.first();
-
-						if (result) {
-							return result.get('count') || 0;
-						} else {
-							// 如果不存在，创建默认值
-							const counter = new Counter();
-							counter.set('type', 'newOrdersCount');
-							counter.set('count', 0);
-							await counter.save();
-							return 0;
-						}
-					} catch (error) {
-						console.error('加载新订单计数失败:', error);
-						return 0;
-					}
+				    try {
+				        // 正确的查询方式
+				        const query = new AV.Query('Counter');
+				        query.equalTo('type', 'newOrdersCount');
+				        const result = await query.first();
+				
+				        if (result) {
+				            return result.get('count') || 0;
+				        } else {
+				            // 如果不存在，创建默认值
+				            const CounterClass = AV.Object.extend('Counter');
+				            const counter = new CounterClass();
+				            counter.set('type', 'newOrdersCount');
+				            counter.set('count', 0);
+				            await counter.save();
+				            return 0;
+				        }
+				    } catch (error) {
+				        console.error('加载新订单计数失败:', error);
+				        return 0;
+				    }
 				}
 
+				// 找到 LeanCloudData.updateNewOrdersCount 函数，将其修改为：
+				
 				static async updateNewOrdersCount(count) {
-					try {
-						const Counter = AV.Object.extend('Counter');
-						const query = new Counter();
-						query.equalTo('type', 'newOrdersCount');
-						const result = await query.first();
-
-						let counter;
-						if (result) {
-							counter = result;
-						} else {
-							counter = new Counter();
-							counter.set('type', 'newOrdersCount');
-						}
-
-						counter.set('count', count);
-						await counter.save();
-						console.log('新订单计数更新成功:', count);
-						return true;
-					} catch (error) {
-						console.error('更新新订单计数失败:', error);
-						throw error;
-					}
+				    try {
+				        // 正确的查询方式
+				        const query = new AV.Query('Counter');  // 直接使用 AV.Query 创建查询
+				        query.equalTo('type', 'newOrdersCount');
+				        const result = await query.first();
+				
+				        let counter;
+				        if (result) {
+				            counter = result;
+				        } else {
+				            // 如果不存在，创建新的
+				            const CounterClass = AV.Object.extend('Counter');
+				            counter = new CounterClass();
+				            counter.set('type', 'newOrdersCount');
+				        }
+				
+				        counter.set('count', count);
+				        await counter.save();
+				        console.log('新订单计数更新成功:', count);
+				        return true;
+				    } catch (error) {
+				        console.error('更新新订单计数失败:', error);
+				        throw error;
+				    }
 				}
 
 				// 初始化数据库表（如果不存在）
