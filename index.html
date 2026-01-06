@@ -1994,17 +1994,18 @@
 			</button>
 			<img class="modal-image" id="modalImage" src="" alt="预览图片">
 		</div>
-		const APP_ID = 'Tu8MLJ2PHUY0z4Kgol3hockE-gzGzoHsz';
-		const APP_KEY = '7sdmY7swmMFU9ppvBGheW4oz';
-		const SERVER_URL = 'https://tu8mlj2p.lc-cn-n1-shared.com'; // 如果是国际版可以删除这行
-
-		// 初始化 LeanCloud
-		AV.init({
-		appId: APP_ID,
-		appKey: APP_KEY,
-		serverURLs: SERVER_URL || 'https://tu8mlj2p.lc-cn-n1-shared.com' // 国际版
-		});
+		
 		<script>
+			const APP_ID = 'Tu8MLJ2PHUY0z4Kgol3hockE-gzGzoHsz';
+			const APP_KEY = '7sdmY7swmMFU9ppvBGheW4oz';
+			const SERVER_URL = 'https://tu8mlj2p.lc-cn-n1-shared.com'; // 如果是国际版可以删除这行
+			
+			// 初始化 LeanCloud
+			AV.init({
+			appId: APP_ID,
+			appKey: APP_KEY,
+			serverURLs: SERVER_URL || 'https://tu8mlj2p.lc-cn-n1-shared.com' // 国际版
+			});
 			// LeanCloud 数据存储函数
 			// 套餐数据操作
 			const Meal = AV.Object.extend('Meals');
