@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>肯德基自助点餐系统</title>
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-		<!-- 在 font-awesome 链接后添加 -->
-		<script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 添加以下代码防止浏览器扩展干扰 -->
+    <meta name="google" content="notranslate">
+    <meta name="robots" content="noindex, nofollow, notranslate">
+    <meta name="referrer" content="no-referrer">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline' 'unsafe-eval'">
+    <title>肯德基自助点餐系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 添加 LeanCloud SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
 		<style>
 			/* 所有CSS样式保持不变 */
         * {
@@ -1996,6 +2001,96 @@
 		</div>
 		
 		<script>
+			// ==================== 错误处理和兼容性修复 ====================
+			// 全局错误处理器，处理浏览器扩展引起的错误
+			window.addEventListener('error', function(event) {
+			    // 过滤掉浏览器扩展的错误
+			    if (event.error && 
+			        (event.error.message && event.error.message.includes('background-select-words-setContextMenus') || 
+			         event.error.message && event.error.message.includes('message port closed'))) {
+			        event.preventDefault();
+			        console.log('忽略浏览器扩展错误:', event.error);
+			        return;
+			    }
+			});
+			
+			// 处理未捕获的 Promise 错误
+			window.addEventListener('unhandledrejection', function(event) {
+			    if (event.reason && 
+			        (event.reason.message && event.reason.message.includes('background-select-words-setContextMenus') ||
+			         event.reason.cmd === 'background-select-words-setContextMenus')) {
+			        event.preventDefault();
+			        console.log('忽略浏览器扩展的 Promise 错误:', event.reason);
+			        return;
+			    }
+			});
+			
+			// 保护原生函数不被扩展修改
+			(function() {
+			    // 备份原生函数
+			    const originalAddEventListener = EventTarget.prototype.addEventListener;
+			    const originalQuerySelector = Document.prototype.querySelector;
+			    const originalQuerySelectorAll = Document.prototype.querySelectorAll;
+			    
+			    // 重写 addEventListener，捕获并忽略扩展错误
+			    EventTarget.prototype.addEventListener = function(type, listener, options) {
+			        try {
+			            return originalAddEventListener.call(this, type, listener, options);
+			        } catch (error) {
+			            if (error.message && error.message.includes('background-select-words-setContextMenus')) {
+			                console.warn('扩展错误已被捕获并忽略:', error);
+			                return;
+			            }
+			            throw error;
+			        }
+			    };
+			    
+			    // 确保 querySelector 和 querySelectorAll 正常工作
+			    Document.prototype.querySelector = function(selector) {
+			        try {
+			            return originalQuerySelector.call(this, selector);
+			        } catch (error) {
+			            console.error('querySelector 错误:', error, '选择器:', selector);
+			            return null;
+			        }
+			    };
+			    
+			    Document.prototype.querySelectorAll = function(selector) {
+			        try {
+			            return originalQuerySelectorAll.call(this, selector);
+			        } catch (error) {
+			            console.error('querySelectorAll 错误:', error, '选择器:', selector);
+			            return [];
+			        }
+			    };
+			})();
+			
+			// 安全地初始化事件监听器
+			function safeAddEventListener(element, event, handler) {
+			    if (!element) return;
+			    
+			    try {
+			        element.addEventListener(event, handler);
+			    } catch (error) {
+			        if (error.message && error.message.includes('background-select-words-setContextMenus')) {
+			            console.log('安全地忽略了扩展错误');
+			            // 尝试用另一种方式绑定事件
+			            element['on' + event] = handler;
+			        }
+			    }
+			}
+			
+			// 延迟初始化，确保 DOM 完全加载
+			function safeInitialize() {
+			    // 等待一小段时间确保所有扩展都已完成初始化
+			    setTimeout(() => {
+			        try {
+			            // 你的初始化代码...
+			        } catch (error) {
+			            console.error('初始化失败:', error);
+			        }
+			    }, 100);
+			}
 			const APP_ID = 'Tu8MLJ2PHUY0z4Kgol3hockE-gzGzoHsz';
 			const APP_KEY = '7sdmY7swmMFU9ppvBGheW4oz';
 			const SERVER_URL = 'https://tu8mlj2p.lc-cn-n1-shared.com'; // 如果是国际版可以删除这行
@@ -2526,13 +2621,174 @@
 			// 在 initHeaderButtons 中添加同步按钮
 			function initHeaderButtons() {
 				// 原有代码...
+				const viewOrdersBtn = document.getElementById('viewOrdersBtn');
+				const viewHomeBtn = document.getElementById('viewHomeBtn');
+				
+				viewOrdersBtn.addEventListener('click', function() {
+				    showMyOrdersPage();
+				});
+				
+				viewHomeBtn.addEventListener('click', function() {
+				    showPage('homePage');
+				    this.style.display = 'none';
+				    viewOrdersBtn.style.display = 'flex';
+				});
 				addSyncButton();
 			}
 
 			// 修改保存套餐函数，调用云端保存
 			async function saveMeal() {
 				// 原有验证代码...
-
+const mealId = document.getElementById('currentMealId').value;
+            const mealName = document.getElementById('mealName').value.trim();
+            const mealPrice = parseFloat(document.getElementById('mealPrice').value);
+            const mealTags = document.getElementById('mealTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
+            const mealDescription = document.getElementById('mealDescription').value.trim();
+            const mealActive = document.getElementById('mealActive').checked;
+            
+            // 验证必填字段
+            if (!mealName) {
+                showNotification('请填写套餐名称', 'error');
+                document.getElementById('mealName').focus();
+                return;
+            }
+            
+            if (isNaN(mealPrice) || mealPrice <= 0) {
+                showNotification('请填写有效的套餐价格', 'error');
+                document.getElementById('mealPrice').focus();
+                return;
+            }
+            
+            if (mealTags.length === 0) {
+                showNotification('请至少填写一个套餐标签', 'error');
+                document.getElementById('mealTags').focus();
+                return;
+            }
+            
+            if (!mealDescription) {
+                showNotification('请填写套餐描述', 'error');
+                document.getElementById('mealDescription').focus();
+                return;
+            }
+            
+            // 收集选项组
+            const optionGroups = [];
+            document.querySelectorAll('.option-group-item').forEach((groupElement, index) => {
+                const title = groupElement.querySelector('.option-group-title-input').value.trim();
+                const rules = groupElement.querySelector('.option-group-rules-input').value.trim();
+                const minSelect = parseInt(groupElement.querySelector('.option-group-min-input').value) || 1;
+                const maxSelect = parseInt(groupElement.querySelector('.option-group-max-input').value) || 1;
+                const repeat = groupElement.querySelector('.option-group-repeat-input').checked;
+                const maxPerItem = parseInt(groupElement.querySelector('.option-group-max-per-item-input').value) || (repeat ? 999 : 1);
+                
+                // 验证选项组
+                if (!title) {
+                    showNotification(`选项组 ${index + 1} 的标题不能为空`, 'error');
+                    groupElement.querySelector('.option-group-title-input').focus();
+                    throw new Error('选项组标题为空');
+                }
+                
+                if (!rules) {
+                    showNotification(`选项组 ${index + 1} 的规则描述不能为空`, 'error');
+                    groupElement.querySelector('.option-group-rules-input').focus();
+                    throw new Error('选项组规则为空');
+                }
+                
+                if (minSelect < 0) {
+                    showNotification(`选项组 ${index + 1} 的最少选择数量不能小于0`, 'error');
+                    groupElement.querySelector('.option-group-min-input').focus();
+                    throw new Error('最小选择数量无效');
+                }
+                
+                if (maxSelect < minSelect) {
+                    showNotification(`选项组 ${index + 1} 的最多选择数量不能小于最少选择数量`, 'error');
+                    groupElement.querySelector('.option-group-max-input').focus();
+                    throw new Error('最大选择数量无效');
+                }
+                
+                const items = [];
+                groupElement.querySelectorAll('.option-item-list-item').forEach(itemElement => {
+                    const name = itemElement.querySelector('.option-item-name-input').value.trim();
+                    const addPrice = parseFloat(itemElement.querySelector('.option-item-price-input').value) || 0;
+                    
+                    if (name) {
+                        items.push({ name, addPrice });
+                    }
+                });
+                
+                if (items.length === 0) {
+                    showNotification(`选项组 ${index + 1} 至少需要一个选项项`, 'error');
+                    throw new Error('选项组没有选项项');
+                }
+                
+                optionGroups.push({
+                    title,
+                    rules,
+                    minSelect,
+                    maxSelect,
+                    repeat,
+                    maxPerItem,
+                    items
+                });
+            });
+            
+            // 收集固定搭配项
+            const fixedItems = [];
+            document.querySelectorAll('.fixed-item-list-item').forEach((itemElement, index) => {
+                const name = itemElement.querySelector('.fixed-item-name-input').value.trim();
+                const quantity = parseInt(itemElement.querySelector('.fixed-item-quantity-input').value) || 1;
+                
+                if (name) {
+                    fixedItems.push({ name, quantity });
+                }
+            });
+            
+            let meal;
+            const now = Date.now();
+            
+            if (mealId) {
+                // 编辑现有套餐
+                meal = meals.find(m => m.id === mealId);
+                if (meal) {
+                    meal.name = mealName;
+                    meal.price = mealPrice;
+                    meal.tags = mealTags;
+                    meal.description = mealDescription;
+                    meal.active = mealActive;
+                    meal.optionGroups = optionGroups;
+                    meal.fixedItems = fixedItems;
+                    meal.updatedAt = now;
+                }
+            } else {
+                // 创建新套餐
+                meal = {
+                    id: 'meal-' + now + '-' + Math.random().toString(36).substr(2, 9),
+                    name: mealName,
+                    price: mealPrice,
+                    tags: mealTags,
+                    description: mealDescription,
+                    active: mealActive,
+                    optionGroups: optionGroups,
+                    fixedItems: fixedItems,
+                    createdAt: now,
+                    updatedAt: now
+                };
+                
+                meals.push(meal);
+            }
+            
+            localStorage.setItem('kfcMeals', JSON.stringify(meals));
+            
+            updateHomePage();
+            
+            const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
+            updateMealList(activeFilter);
+            
+            resetMealForm();
+            
+            document.querySelector('.admin-tab[data-tab="meals"]').click();
+            
+            showNotification(mealId ? '套餐已更新' : '套餐已添加', 'success');
 				// 修改保存部分
 				try {
 					const mealData = {
@@ -2564,7 +2820,40 @@
 			// 修改删除套餐函数
 			async function deleteMeal(mealId) {
 				// 原有确认代码...
-
+const mealIndex = meals.findIndex(m => m.id === mealId);
+            if (mealIndex === -1) return;
+            
+            const meal = meals[mealIndex];
+            
+            if (!confirm(`确定要删除套餐 "${meal.name}" 吗？\n\n价格：¥${meal.price}\n标签：${meal.tags.join(', ')}\n\n此操作不可恢复！`)) {
+                return;
+            }
+            
+            // 检查是否有订单包含此套餐
+            let hasOrders = false;
+            orders.forEach(order => {
+                order.cart.forEach(item => {
+                    if (item.id === mealId) {
+                        hasOrders = true;
+                    }
+                });
+            });
+            
+            if (hasOrders) {
+                if (!confirm('警告：有订单包含此套餐。删除套餐不会删除相关订单，但会影响订单详情显示。\n\n确定要继续删除吗？')) {
+                    return;
+                }
+            }
+            
+            meals.splice(mealIndex, 1);
+            localStorage.setItem('kfcMeals', JSON.stringify(meals));
+            
+            updateHomePage();
+            
+            const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
+            updateMealList(activeFilter);
+            
+            showNotification(`套餐"${meal.name}"已删除`, 'success');
 				try {
 					await deleteMealFromCloud(mealId);
 
@@ -2580,7 +2869,34 @@
 			// 修改 completeCheckout 函数
 			async function completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container) {
 				// 原有确认代码...
-
+let totalPrice = 0;
+            cart.forEach(item => {
+                totalPrice += item.totalPrice;
+            });
+            
+            let orderSummary = "订单详情：\n\n";
+            cart.forEach((item, index) => {
+                orderSummary += `${index + 1}. ${item.name} - ¥${item.totalPrice.toFixed(2)}\n`;
+                
+                const optionCount = {};
+                item.options.forEach(option => {
+                    optionCount[option] = (optionCount[option] || 0) + 1;
+                });
+                
+                Object.keys(optionCount).forEach(option => {
+                    const count = optionCount[option];
+                    orderSummary += `   ${option}${count > 1 ? ` ×${count}` : ''}\n`;
+                });
+                orderSummary += "\n";
+            });
+            
+            orderSummary += `\n总计：¥${totalPrice.toFixed(2)}\n`;
+            orderSummary += `\n${deliveryInfo}\n`;
+            if (orderNote) {
+                orderSummary += `备注：${orderNote}\n`;
+            }
+            
+            const confirmed = confirm(`请确认订单信息：\n\n${orderSummary}\n\n确认提交订单吗？`);
 				if (confirmed) {
 					const orderId = 'KFC' + Date.now().toString().slice(-6) + Math.floor(Math.random() * 100);
 					const timestamp = new Date().toLocaleString('zh-CN');
@@ -2618,7 +2934,22 @@
 			// 修改 handleOrderAction 函数
 			async function handleOrderAction(action, orderId) {
 				// 原有确认代码...
-
+   const orderIndex = orders.findIndex(o => o.id === orderId);
+            if (orderIndex === -1) return;
+            
+            let confirmMessage = '';
+            
+            switch(action) {
+                case 'process':
+                    confirmMessage = `确认将订单 ${orderId} 标记为处理中吗？`;
+                    break;
+                case 'complete':
+                    confirmMessage = `确认将订单 ${orderId} 标记为已完成吗？`;
+                    break;
+                case 'delete':
+                    confirmMessage = `确认删除订单 ${orderId} 吗？`;
+                    break;
+            }
 				if (confirm(confirmMessage)) {
 					try {
 						switch (action) {
