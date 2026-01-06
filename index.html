@@ -1,17 +1,12 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- 添加以下代码防止浏览器扩展干扰 -->
-    <meta name="google" content="notranslate">
-    <meta name="robots" content="noindex, nofollow, notranslate">
-    <meta name="referrer" content="no-referrer">
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline' 'unsafe-eval'">
-    <title>肯德基自助点餐系统</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- 添加 LeanCloud SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>肯德基自助点餐系统</title>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+		<!-- 在现有的 font-awesome 链接之后添加 -->
+		<script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
 		<style>
 			/* 所有CSS样式保持不变 */
         * {
@@ -1877,6 +1872,10 @@
 						<button class="filter-btn" data-filter="processing">处理中</button>
 						<button class="filter-btn" data-filter="completed">已完成</button>
 						<button class="filter-btn" id="clearAllOrders">清空所有订单</button>
+						<!-- 添加同步按钮 -->
+						<button class="filter-btn" id="syncOrdersBtn" style="background-color: #4CAF50; color: white;">
+							<i class="fas fa-sync-alt"></i> 同步订单
+						</button>
 					</div>
 
 					<div class="orders-container" id="ordersContainer">
@@ -1893,6 +1892,10 @@
 						<button class="meal-filter-btn active" data-meal-filter="all">全部套餐</button>
 						<button class="meal-filter-btn" data-meal-filter="active">已上架</button>
 						<button class="meal-filter-btn" data-meal-filter="inactive">已下架</button>
+						<!-- 添加同步按钮 -->
+						<button class="meal-filter-btn" id="syncMealsBtn" style="background-color: #4CAF50; color: white;">
+							<i class="fas fa-sync-alt"></i> 同步套餐
+						</button>
 					</div>
 
 					<div class="meal-list" id="mealList">
@@ -1999,904 +2002,1470 @@
 			</button>
 			<img class="modal-image" id="modalImage" src="" alt="预览图片">
 		</div>
-		
+
 		<script>
-			// ==================== 错误处理和兼容性修复 ====================
-			// 全局错误处理器，处理浏览器扩展引起的错误
-			window.addEventListener('error', function(event) {
-			    // 过滤掉浏览器扩展的错误
-			    if (event.error && 
-			        (event.error.message && event.error.message.includes('background-select-words-setContextMenus') || 
-			         event.error.message && event.error.message.includes('message port closed'))) {
-			        event.preventDefault();
-			        console.log('忽略浏览器扩展错误:', event.error);
-			        return;
-			    }
-			});
-			
-			// 处理未捕获的 Promise 错误
-			window.addEventListener('unhandledrejection', function(event) {
-			    if (event.reason && 
-			        (event.reason.message && event.reason.message.includes('background-select-words-setContextMenus') ||
-			         event.reason.cmd === 'background-select-words-setContextMenus')) {
-			        event.preventDefault();
-			        console.log('忽略浏览器扩展的 Promise 错误:', event.reason);
-			        return;
-			    }
-			});
-			
-			// 保护原生函数不被扩展修改
-			(function() {
-			    // 备份原生函数
-			    const originalAddEventListener = EventTarget.prototype.addEventListener;
-			    const originalQuerySelector = Document.prototype.querySelector;
-			    const originalQuerySelectorAll = Document.prototype.querySelectorAll;
-			    
-			    // 重写 addEventListener，捕获并忽略扩展错误
-			    EventTarget.prototype.addEventListener = function(type, listener, options) {
-			        try {
-			            return originalAddEventListener.call(this, type, listener, options);
-			        } catch (error) {
-			            if (error.message && error.message.includes('background-select-words-setContextMenus')) {
-			                console.warn('扩展错误已被捕获并忽略:', error);
-			                return;
-			            }
-			            throw error;
-			        }
-			    };
-			    
-			    // 确保 querySelector 和 querySelectorAll 正常工作
-			    Document.prototype.querySelector = function(selector) {
-			        try {
-			            return originalQuerySelector.call(this, selector);
-			        } catch (error) {
-			            console.error('querySelector 错误:', error, '选择器:', selector);
-			            return null;
-			        }
-			    };
-			    
-			    Document.prototype.querySelectorAll = function(selector) {
-			        try {
-			            return originalQuerySelectorAll.call(this, selector);
-			        } catch (error) {
-			            console.error('querySelectorAll 错误:', error, '选择器:', selector);
-			            return [];
-			        }
-			    };
-			})();
-			
-			// 安全地初始化事件监听器
-			function safeAddEventListener(element, event, handler) {
-			    if (!element) return;
-			    
-			    try {
-			        element.addEventListener(event, handler);
-			    } catch (error) {
-			        if (error.message && error.message.includes('background-select-words-setContextMenus')) {
-			            console.log('安全地忽略了扩展错误');
-			            // 尝试用另一种方式绑定事件
-			            element['on' + event] = handler;
-			        }
-			    }
-			}
-			
-			// 延迟初始化，确保 DOM 完全加载
-			function safeInitialize() {
-			    // 等待一小段时间确保所有扩展都已完成初始化
-			    setTimeout(() => {
-			        try {
-			            // 你的初始化代码...
-			        } catch (error) {
-			            console.error('初始化失败:', error);
-			        }
-			    }, 100);
-			}
-			const APP_ID = 'Tu8MLJ2PHUY0z4Kgol3hockE-gzGzoHsz';
-			const APP_KEY = '7sdmY7swmMFU9ppvBGheW4oz';
-			const SERVER_URL = 'https://tu8mlj2p.lc-cn-n1-shared.com'; // 如果是国际版可以删除这行
-			
+			// LeanCloud 配置 - 请替换为您的实际 App ID 和 Key
+			const LEANCLOUD_APP_ID = 'Tu8MLJ2PHUY0z4Kgol3hockE-gzGzoHsz';
+			const LEANCLOUD_APP_KEY = '7sdmY7swmMFU9ppvBGheW4oz';
+			const LEANCLOUD_SERVER_URL = 'https://tu8mlj2p.lc-cn-n1-shared.com'; // 可选，国内版需要
+
 			// 初始化 LeanCloud
 			AV.init({
-			appId: APP_ID,
-			appKey: APP_KEY,
-			serverURLs: SERVER_URL || 'https://tu8mlj2p.lc-cn-n1-shared.com' // 国际版
+				appId: LEANCLOUD_APP_ID,
+				appKey: LEANCLOUD_APP_KEY,
+				serverURL: LEANCLOUD_SERVER_URL
 			});
-			// LeanCloud 数据存储函数
-			// 套餐数据操作
-			const Meal = AV.Object.extend('Meals');
-			const Order = AV.Object.extend('Orders');
-			const Counter = AV.Object.extend('Counters');
-			const User = AV.Object.extend('Users');
 
-			// 全局变量
+			// LeanCloud 数据表
+			const Meal = AV.Object.extend('Meal');
+			const Order = AV.Object.extend('Order');
+			const User = AV.Object.extend('_User'); // 使用系统内置的 User 表
+
+			// 数据结构
 			let meals = [];
-			let cart = [];
 			let orders = [];
+			let cart = [];
 			let newOrdersCount = 0;
+			let currentUser = null;
 			const ADMIN_PASSWORD = "200104";
+
+			// 初始化标志
+			let isInitialized = false;
+			
+			let isOnline = navigator.onLine;
+
+			// 监听网络状态变化
+			window.addEventListener('online', () => {
+				isOnline = true;
+				showNotification('网络已恢复，正在同步数据...', 'info');
+
+				// 尝试同步数据
+				setTimeout(() => {
+					if (isInitialized) {
+						Promise.all([
+							loadMealsFromCloud(),
+							loadOrdersFromCloud()
+						]).then(() => {
+							showNotification('数据同步完成', 'success');
+						}).catch(error => {
+							console.error('自动同步失败:', error);
+						});
+					}
+				}, 2000);
+			});
+
+			window.addEventListener('offline', () => {
+				isOnline = false;
+				showNotification('网络已断开，使用本地数据', 'warning');
+			});
+
+			// 保存函数，添加重试逻辑
+			async function saveWithRetry(object, maxRetries = 3) {
+				for (let i = 0; i < maxRetries; i++) {
+					try {
+						return await object.save();
+					} catch (error) {
+						if (i === maxRetries - 1) {
+							throw error;
+						}
+						console.log(`保存失败，第${i + 1}次重试...`);
+						await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+					}
+				}
+			}
 
 			// 用户标识符
 			let currentUserId = localStorage.getItem('kfcUserId');
-			let currentUser = null;
 
-			// 初始化数据
-			async function initData() {
-				try {
-					// 获取或创建用户
-					await getOrCreateUser();
-
-					// 获取套餐数据
-					await fetchMeals();
-
-					// 获取订单数据
-					await fetchOrders();
-
-					// 获取新订单计数
-					await fetchNewOrdersCount();
-
-					console.log('数据初始化完成');
-				} catch (error) {
-					console.error('初始化数据失败:', error);
-					showNotification('数据加载失败，请刷新页面重试', 'error');
-				}
+			if (!currentUserId) {
+				currentUserId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+				localStorage.setItem('kfcUserId', currentUserId);
 			}
 
-			// 获取或创建用户
-			async function getOrCreateUser() {
-				if (!currentUserId) {
-					currentUserId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-					localStorage.setItem('kfcUserId', currentUserId);
-				}
-
-				try {
-					// 查询用户
-					const query = new AV.Query('Users');
-					query.equalTo('userId', currentUserId);
-					const results = await query.find();
-
-					if (results.length > 0) {
-						currentUser = results[0];
-					} else {
-						// 创建新用户
-						currentUser = new User();
-						currentUser.set('userId', currentUserId);
-						currentUser.set('createdAt', new Date());
-						currentUser.set('lastLogin', new Date());
-						await currentUser.save();
-					}
-
-					// 更新最后登录时间
-					currentUser.set('lastLogin', new Date());
-					await currentUser.save();
-
-				} catch (error) {
-					console.error('获取用户失败:', error);
-					// 创建临时用户对象
-					currentUser = {
-						id: currentUserId
-					};
-				}
-
-				// 显示用户ID
-				const userIdDisplay = document.getElementById('currentUserIdDisplay');
-				if (userIdDisplay) {
-					userIdDisplay.textContent = currentUserId.substring(0, 12) + '...';
-				}
-			}
-
-			// 从 LeanCloud 获取套餐数据
-			async function fetchMeals() {
-				try {
-					const query = new AV.Query('Meals');
-					query.addDescending('createdAt'); // 按创建时间降序
-					const results = await query.find();
-
-					meals = results.map(meal => {
-						const data = meal.toJSON();
-						return {
-							id: meal.id,
-							name: data.name,
-							price: data.price,
-							tags: data.tags || [],
-							description: data.description,
-							active: data.active !== false,
-							optionGroups: data.optionGroups || [],
-							fixedItems: data.fixedItems || [],
-							createdAt: data.createdAt,
-							updatedAt: data.updatedAt
-						};
-					});
-
-					// 保存到本地存储作为缓存
-					localStorage.setItem('kfcMeals', JSON.stringify(meals));
-
-					return meals;
-				} catch (error) {
-					console.error('获取套餐数据失败:', error);
-					// 尝试从本地存储恢复
-					const localMeals = JSON.parse(localStorage.getItem('kfcMeals')) || [];
-					if (localMeals.length > 0) {
-						meals = localMeals;
-						showNotification('使用本地缓存数据', 'info');
-					}
-					return meals;
-				}
-			}
-
-			// 保存套餐到 LeanCloud
-			async function saveMeal(mealData) {
-				try {
-					let mealObject;
-
-					if (mealData.id && mealData.id.startsWith('meal-')) {
-						// 更新现有套餐
-						mealObject = AV.Object.createWithoutData('Meals', mealData.id);
-					} else {
-						// 创建新套餐
-						mealObject = new Meal();
-					}
-
-					// 设置套餐属性
-					mealObject.set('name', mealData.name);
-					mealObject.set('price', mealData.price);
-					mealObject.set('tags', mealData.tags);
-					mealObject.set('description', mealData.description);
-					mealObject.set('active', mealData.active !== false);
-					mealObject.set('optionGroups', mealData.optionGroups || []);
-					mealObject.set('fixedItems', mealData.fixedItems || []);
-
-					// 保存到 LeanCloud
-					await mealObject.save();
-
-					// 更新本地数据
-					const mealIndex = meals.findIndex(m => m.id === mealData.id);
-					const updatedMeal = {
-						...mealData,
-						id: mealObject.id,
-						createdAt: mealData.createdAt || new Date().toISOString(),
-						updatedAt: new Date().toISOString()
-					};
-
-					if (mealIndex >= 0) {
-						meals[mealIndex] = updatedMeal;
-					} else {
-						meals.push(updatedMeal);
-					}
-
-					// 更新本地存储
-					localStorage.setItem('kfcMeals', JSON.stringify(meals));
-
-					return updatedMeal;
-				} catch (error) {
-					console.error('保存套餐失败:', error);
-					throw error;
-				}
-			}
-
-			// 删除套餐
-			async function deleteMealFromCloud(mealId) {
-				try {
-					const mealObject = AV.Object.createWithoutData('Meals', mealId);
-					await mealObject.destroy();
-
-					// 从本地数据中移除
-					const mealIndex = meals.findIndex(m => m.id === mealId);
-					if (mealIndex >= 0) {
-						meals.splice(mealIndex, 1);
-						localStorage.setItem('kfcMeals', JSON.stringify(meals));
-					}
-
-					return true;
-				} catch (error) {
-					console.error('删除套餐失败:', error);
-					throw error;
-				}
-			}
-
-			// 从 LeanCloud 获取订单数据
-			async function fetchOrders() {
-				try {
-					const query = new AV.Query('Orders');
-					query.addDescending('createdAt'); // 按创建时间降序
-
-					// 如果是普通用户，只获取自己的订单
-					if (currentUserId && !window.isAdmin) {
-						query.equalTo('userId', currentUserId);
-					}
-
-					const results = await query.find();
-
-					orders = results.map(order => {
-						const data = order.toJSON();
-						return {
-							id: data.orderId || order.id,
-							timestamp: data.timestamp || data.createdAt,
-							status: data.status || 'new',
-							cart: data.cart || [],
-							deliveryInfo: data.deliveryInfo || '',
-							orderNote: data.orderNote || '',
-							deliveryType: data.deliveryType || 'delivery',
-							totalPrice: data.totalPrice || 0,
-							hasScreenshot: data.hasScreenshot || false,
-							screenshotData: data.screenshotData || null,
-							userId: data.userId || currentUserId,
-							createdAt: data.createdAt
-						};
-					});
-
-					// 保存到本地存储作为缓存
-					localStorage.setItem('kfcOrders', JSON.stringify(orders));
-
-					return orders;
-				} catch (error) {
-					console.error('获取订单数据失败:', error);
-					// 尝试从本地存储恢复
-					const localOrders = JSON.parse(localStorage.getItem('kfcOrders')) || [];
-					if (localOrders.length > 0) {
-						orders = localOrders.filter(order =>
-							window.isAdmin || order.userId === currentUserId
-						);
-						showNotification('使用本地订单缓存', 'info');
-					}
-					return orders;
-				}
-			}
-
-			// 保存订单到 LeanCloud
-			async function saveOrder(orderData) {
-				try {
-					const orderObject = new Order();
-
-					// 设置订单属性
-					orderObject.set('orderId', orderData.id);
-					orderObject.set('timestamp', orderData.timestamp);
-					orderObject.set('status', orderData.status);
-					orderObject.set('cart', orderData.cart);
-					orderObject.set('deliveryInfo', orderData.deliveryInfo);
-					orderObject.set('orderNote', orderData.orderNote);
-					orderObject.set('deliveryType', orderData.deliveryType);
-					orderObject.set('totalPrice', orderData.totalPrice);
-					orderObject.set('hasScreenshot', orderData.hasScreenshot);
-					orderObject.set('screenshotData', orderData.screenshotData);
-					orderObject.set('userId', orderData.userId);
-
-					// 保存到 LeanCloud
-					await orderObject.save();
-
-					// 添加到本地数据
-					orders.unshift(orderData);
-					localStorage.setItem('kfcOrders', JSON.stringify(orders));
-
-					// 更新新订单计数
-					await incrementNewOrdersCount();
-
-					return orderData;
-				} catch (error) {
-					console.error('保存订单失败:', error);
-
-					// 如果云端保存失败，保存到本地
-					orders.unshift(orderData);
-					localStorage.setItem('kfcOrders', JSON.stringify(orders));
-
-					showNotification('订单已保存到本地，稍后将同步到云端', 'info');
-					return orderData;
-				}
-			}
-
-			// 更新订单状态
-			async function updateOrderStatus(orderId, status) {
-				try {
-					const query = new AV.Query('Orders');
-					query.equalTo('orderId', orderId);
-					const results = await query.find();
-
-					if (results.length > 0) {
-						const orderObject = results[0];
-						orderObject.set('status', status);
-						await orderObject.save();
-					}
-
-					// 更新本地数据
-					const orderIndex = orders.findIndex(o => o.id === orderId);
-					if (orderIndex >= 0) {
-						orders[orderIndex].status = status;
-						localStorage.setItem('kfcOrders', JSON.stringify(orders));
-					}
-
-					return true;
-				} catch (error) {
-					console.error('更新订单状态失败:', error);
-					throw error;
-				}
-			}
-
-			// 删除订单
-			async function deleteOrderFromCloud(orderId) {
-				try {
-					const query = new AV.Query('Orders');
-					query.equalTo('orderId', orderId);
-					const results = await query.find();
-
-					if (results.length > 0) {
-						await results[0].destroy();
-					}
-
-					// 从本地数据中移除
-					const orderIndex = orders.findIndex(o => o.id === orderId);
-					if (orderIndex >= 0) {
-						orders.splice(orderIndex, 1);
-						localStorage.setItem('kfcOrders', JSON.stringify(orders));
-					}
-
-					return true;
-				} catch (error) {
-					console.error('删除订单失败:', error);
-					throw error;
-				}
-			}
-
-			// 获取新订单计数
-			async function fetchNewOrdersCount() {
-				try {
-					const query = new AV.Query('Counters');
-					query.equalTo('name', 'newOrders');
-					const results = await query.find();
-
-					if (results.length > 0) {
-						newOrdersCount = results[0].get('count') || 0;
-					} else {
-						// 创建计数器
-						const counter = new Counter();
-						counter.set('name', 'newOrders');
-						counter.set('count', 0);
-						await counter.save();
-						newOrdersCount = 0;
-					}
-
-					localStorage.setItem('newOrdersCount', newOrdersCount);
-
-					return newOrdersCount;
-				} catch (error) {
-					console.error('获取新订单计数失败:', error);
-					newOrdersCount = parseInt(localStorage.getItem('newOrdersCount')) || 0;
-					return newOrdersCount;
-				}
-			}
-
-			// 增加新订单计数
-			async function incrementNewOrdersCount() {
-				try {
-					const query = new AV.Query('Counters');
-					query.equalTo('name', 'newOrders');
-					const results = await query.find();
-
-					if (results.length > 0) {
-						const counter = results[0];
-						const currentCount = counter.get('count') || 0;
-						counter.set('count', currentCount + 1);
-						await counter.save();
-						newOrdersCount = currentCount + 1;
-					} else {
-						const counter = new Counter();
-						counter.set('name', 'newOrders');
-						counter.set('count', 1);
-						await counter.save();
-						newOrdersCount = 1;
-					}
-
-					localStorage.setItem('newOrdersCount', newOrdersCount);
-					updateOrderBadge();
-
-					return newOrdersCount;
-				} catch (error) {
-					console.error('更新新订单计数失败:', error);
-					newOrdersCount = (parseInt(localStorage.getItem('newOrdersCount')) || 0) + 1;
-					localStorage.setItem('newOrdersCount', newOrdersCount);
-					updateOrderBadge();
-					return newOrdersCount;
-				}
-			}
-
-			// 重置新订单计数
-			async function resetNewOrdersCount() {
-				try {
-					const query = new AV.Query('Counters');
-					query.equalTo('name', 'newOrders');
-					const results = await query.find();
-
-					if (results.length > 0) {
-						const counter = results[0];
-						counter.set('count', 0);
-						await counter.save();
-					}
-
-					newOrdersCount = 0;
-					localStorage.setItem('newOrdersCount', newOrdersCount);
-					updateOrderBadge();
-
-					return true;
-				} catch (error) {
-					console.error('重置新订单计数失败:', error);
-					newOrdersCount = 0;
-					localStorage.setItem('newOrdersCount', newOrdersCount);
-					updateOrderBadge();
-					return true;
-				}
-			}
-
-			// 清空所有订单
-			async function clearAllOrdersFromCloud() {
-				try {
-					const query = new AV.Query('Orders');
-					const results = await query.find();
-
-					// 批量删除
-					await AV.Object.destroyAll(results);
-
-					// 清空本地数据
-					orders = [];
-					localStorage.setItem('kfcOrders', JSON.stringify(orders));
-
-					// 重置计数器
-					await resetNewOrdersCount();
-
-					return true;
-				} catch (error) {
-					console.error('清空订单失败:', error);
-					throw error;
-				}
-			}
-
-			// 修改 DOMContentLoaded 事件处理
 			document.addEventListener('DOMContentLoaded', async function() {
-				// 先初始化 LeanCloud 数据
-				await initData();
+				try {
+					// 初始化 LeanCloud 和用户系统
+					await initLeanCloud();
 
-				// 然后初始化页面
-				initHomePage();
-				initAdminPanel();
-				initMealManagement();
-				updateCartDisplay();
-				updateOrderBadge();
-				initImagePreview();
-				initPasswordVerification();
-				initStatusToggle();
-				initMyOrdersPage();
-				initHeaderButtons();
+					// 加载数据
+					await Promise.all([
+						loadMealsFromCloud(),
+						loadOrdersFromCloud()
+					]);
 
-				checkUrlParams();
+					// 初始化页面
+					initHomePage();
+					initAdminPanel();
+					initMealManagement();
+					updateCartDisplay();
+					updateOrderBadge();
+					initImagePreview();
+					initPasswordVerification();
+					initStatusToggle();
+					initMyOrdersPage();
+					initHeaderButtons();
+
+					document.getElementById('currentUserIdDisplay').textContent = currentUser ? currentUser.id.substring(0, 12) +
+						'...' : '未登录';
+
+					checkUrlParams();
+					isInitialized = true;
+				} catch (error) {
+					console.error('初始化失败:', error);
+					showNotification('系统初始化失败，请刷新页面重试', 'error');
+				}
 			});
 
-			// 修改 showNotification 函数，添加同步状态显示
-			function showNotification(message, type = 'info') {
-				// 原有的通知代码保持不变，只添加以下判断
-				if (message.includes('保存到本地') || message.includes('同步')) {
-					// 对于同步相关的消息，显示更长时间
-					notificationDuration = 5000;
-				}
-				// ... 原有代码 ...
-			}
-
-			// 添加自动同步功能
-			async function syncData() {
+			// 初始化 LeanCloud 和用户系统
+			async function initLeanCloud() {
 				try {
-					// 同步套餐数据
-					await fetchMeals();
-					updateHomePage();
+					// 尝试使用当前用户标识符登录
+					let userId = localStorage.getItem('kfcUserId');
 
-					// 同步订单数据
-					await fetchOrders();
+					if (userId) {
+						// 尝试查询已有用户
+						const query = new AV.Query('_User');
+						query.equalTo('username', userId);
+						const users = await query.find();
 
-					// 如果是管理员，更新订单列表
-					if (window.isAdmin) {
-						renderOrders('all');
+						if (users.length > 0) {
+							currentUser = users[0];
+						} else {
+							// 创建新用户
+							currentUser = new AV.User();
+							currentUser.setUsername(userId);
+							currentUser.setPassword('temp_password_' + Math.random().toString(36).substr(2));
+							await currentUser.signUp();
+						}
+					} else {
+						// 创建新用户标识符
+						userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+						localStorage.setItem('kfcUserId', userId);
+
+						// 创建新用户
+						currentUser = new AV.User();
+						currentUser.setUsername(userId);
+						currentUser.setPassword('temp_password_' + Math.random().toString(36).substr(2));
+						await currentUser.signUp();
 					}
 
-					// 更新用户订单
-					renderUserOrders('all');
-
-					console.log('数据同步完成');
+					console.log('用户登录成功:', currentUser.id);
 				} catch (error) {
-					console.error('数据同步失败:', error);
+					console.error('用户登录失败，使用匿名模式:', error);
+					// 如果用户系统失败，使用设备标识符
+					if (!localStorage.getItem('kfcUserId')) {
+						const userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+						localStorage.setItem('kfcUserId', userId);
+					}
 				}
 			}
 
-			// 定期同步数据（每30秒一次）
-			setInterval(syncData, 30000);
+			// 从云端加载套餐数据
+			// 从云端加载套餐数据
+			async function loadMealsFromCloud() {
+				try {
+					// 先检查本地缓存的时间和版本
+					const cacheKey = 'meals_cache_info';
+					const cacheInfo = JSON.parse(localStorage.getItem(cacheKey)) || {};
+					const now = Date.now();
+					const cacheExpiry = 5 * 60 * 1000; // 5分钟缓存
 
-			// 添加手动同步按钮
-			function addSyncButton() {
-				const syncBtn = document.createElement('button');
-				syncBtn.className = 'header-btn';
-				syncBtn.id = 'syncBtn';
-				syncBtn.innerHTML = '<i class="fas fa-sync-alt"></i> 同步数据';
-				syncBtn.addEventListener('click', syncData);
+					// 如果缓存有效且在5分钟内，使用缓存
+					if (cacheInfo.timestamp && (now - cacheInfo.timestamp < cacheExpiry) && cacheInfo.data) {
+						meals = cacheInfo.data;
+						console.log('使用缓存的套餐数据');
+						return;
+					}
 
-				const headerButtons = document.querySelector('.header-buttons');
-				if (headerButtons) {
-					headerButtons.appendChild(syncBtn);
+					const query = new AV.Query('Meal');
+					query.addDescending('createdAt');
+					const results = await query.find();
+
+					meals = results.map(item => {
+						return {
+							id: item.id,
+							name: item.get('name'),
+							price: item.get('price'),
+							tags: item.get('tags') || [],
+							description: item.get('description'),
+							active: item.get('active') !== false,
+							optionGroups: item.get('optionGroups') || [],
+							fixedItems: item.get('fixedItems') || [],
+							createdAt: item.get('createdAt') ? .getTime() || Date.now(),
+							updatedAt: item.get('updatedAt') ? .getTime() || Date.now()
+						};
+					});
+
+					console.log('从云端加载套餐:', meals.length, '个');
+
+					// 更新缓存
+					cacheInfo.timestamp = now;
+					cacheInfo.data = meals;
+					localStorage.setItem(cacheKey, JSON.stringify(cacheInfo));
+
+					// 如果云端没有数据，使用本地数据并同步到云端
+					if (meals.length === 0) {
+						const localMeals = JSON.parse(localStorage.getItem('kfcMeals')) || [];
+						if (localMeals.length > 0) {
+							await saveLocalMealsToCloud(localMeals);
+							await loadMealsFromCloud(); // 重新加载
+						}
+					}
+				} catch (error) {
+					console.error('加载套餐数据失败:', error);
+					// 尝试使用缓存
+					const cacheKey = 'meals_cache_info';
+					const cacheInfo = JSON.parse(localStorage.getItem(cacheKey)) || {};
+					if (cacheInfo.data) {
+						meals = cacheInfo.data;
+						console.log('网络失败，使用缓存的套餐数据');
+						showNotification('使用缓存的套餐数据', 'warning');
+					} else {
+						// 降级到本地存储
+						meals = JSON.parse(localStorage.getItem('kfcMeals')) || [];
+						showNotification('加载套餐数据失败，使用本地缓存', 'error');
+					}
+				}
+			}
+			// 从云端加载订单数据
+			async function loadOrdersFromCloud() {
+				try {
+					const query = new AV.Query('Order');
+					query.addDescending('createdAt'); // 按创建时间倒序
+					const results = await query.find();
+
+					orders = results.map(item => {
+						return {
+							id: item.get('orderId') || item.id,
+							timestamp: item.get('timestamp'),
+							status: item.get('status') || 'new',
+							cart: item.get('cart') || [],
+							deliveryInfo: item.get('deliveryInfo') || '',
+							orderNote: item.get('orderNote') || '',
+							deliveryType: item.get('deliveryType') || 'delivery',
+							totalPrice: item.get('totalPrice') || 0,
+							hasScreenshot: item.get('hasScreenshot') || false,
+							screenshotData: item.get('screenshotData') || null,
+							userId: item.get('userId') || '',
+							objectId: item.id,
+							createdAt: item.get('createdAt') ? .getTime() || Date.now()
+						};
+					});
+
+					console.log('从云端加载订单:', orders.length, '个');
+
+					// 计算新订单数量
+					newOrdersCount = orders.filter(order => order.status === 'new').length;
+					updateOrderBadge();
+
+					// 如果云端没有数据，使用本地数据并同步到云端
+					if (orders.length === 0) {
+						const localOrders = JSON.parse(localStorage.getItem('kfcOrders')) || [];
+						if (localOrders.length > 0) {
+							await saveLocalOrdersToCloud(localOrders);
+							await loadOrdersFromCloud(); // 重新加载
+						}
+					}
+				} catch (error) {
+					console.error('加载订单数据失败:', error);
+					// 降级到本地存储
+					orders = JSON.parse(localStorage.getItem('kfcOrders')) || [];
+					newOrdersCount = JSON.parse(localStorage.getItem('newOrdersCount')) || 0;
+					showNotification('加载订单数据失败，使用本地缓存', 'error');
 				}
 			}
 
-			// 在 initHeaderButtons 中添加同步按钮
+			// 将本地套餐数据保存到云端
+			async function saveLocalMealsToCloud(localMeals) {
+				try {
+					for (const meal of localMeals) {
+						const mealObj = new Meal();
+						mealObj.set('name', meal.name);
+						mealObj.set('price', meal.price);
+						mealObj.set('tags', meal.tags || []);
+						mealObj.set('description', meal.description || '');
+						mealObj.set('active', meal.active !== false);
+						mealObj.set('optionGroups', meal.optionGroups || []);
+						mealObj.set('fixedItems', meal.fixedItems || []);
+						await mealObj.save();
+					}
+					console.log('本地套餐数据已同步到云端');
+				} catch (error) {
+					console.error('同步套餐数据到云端失败:', error);
+				}
+			}
+
+			// 将本地订单数据保存到云端
+			async function saveLocalOrdersToCloud(localOrders) {
+				try {
+					for (const order of localOrders) {
+						const orderObj = new Order();
+						orderObj.set('orderId', order.id);
+						orderObj.set('timestamp', order.timestamp);
+						orderObj.set('status', order.status || 'new');
+						orderObj.set('cart', order.cart || []);
+						orderObj.set('deliveryInfo', order.deliveryInfo || '');
+						orderObj.set('orderNote', order.orderNote || '');
+						orderObj.set('deliveryType', order.deliveryType || 'delivery');
+						orderObj.set('totalPrice', order.totalPrice || 0);
+						orderObj.set('hasScreenshot', order.hasScreenshot || false);
+						orderObj.set('screenshotData', order.screenshotData || null);
+						orderObj.set('userId', order.userId || localStorage.getItem('kfcUserId') || '');
+						await orderObj.save();
+					}
+					console.log('本地订单数据已同步到云端');
+				} catch (error) {
+					console.error('同步订单数据到云端失败:', error);
+				}
+			}
+
 			function initHeaderButtons() {
-				// 原有代码...
 				const viewOrdersBtn = document.getElementById('viewOrdersBtn');
 				const viewHomeBtn = document.getElementById('viewHomeBtn');
-				
+
 				viewOrdersBtn.addEventListener('click', function() {
-				    showMyOrdersPage();
+					showMyOrdersPage();
 				});
-				
+
 				viewHomeBtn.addEventListener('click', function() {
-				    showPage('homePage');
-				    this.style.display = 'none';
-				    viewOrdersBtn.style.display = 'flex';
+					showPage('homePage');
+					this.style.display = 'none';
+					viewOrdersBtn.style.display = 'flex';
 				});
-				addSyncButton();
 			}
 
-			// 修改保存套餐函数，调用云端保存
-			async function saveMeal() {
-				// 原有验证代码...
-const mealId = document.getElementById('currentMealId').value;
-            const mealName = document.getElementById('mealName').value.trim();
-            const mealPrice = parseFloat(document.getElementById('mealPrice').value);
-            const mealTags = document.getElementById('mealTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
-            const mealDescription = document.getElementById('mealDescription').value.trim();
-            const mealActive = document.getElementById('mealActive').checked;
-            
-            // 验证必填字段
-            if (!mealName) {
-                showNotification('请填写套餐名称', 'error');
-                document.getElementById('mealName').focus();
-                return;
-            }
-            
-            if (isNaN(mealPrice) || mealPrice <= 0) {
-                showNotification('请填写有效的套餐价格', 'error');
-                document.getElementById('mealPrice').focus();
-                return;
-            }
-            
-            if (mealTags.length === 0) {
-                showNotification('请至少填写一个套餐标签', 'error');
-                document.getElementById('mealTags').focus();
-                return;
-            }
-            
-            if (!mealDescription) {
-                showNotification('请填写套餐描述', 'error');
-                document.getElementById('mealDescription').focus();
-                return;
-            }
-            
-            // 收集选项组
-            const optionGroups = [];
-            document.querySelectorAll('.option-group-item').forEach((groupElement, index) => {
-                const title = groupElement.querySelector('.option-group-title-input').value.trim();
-                const rules = groupElement.querySelector('.option-group-rules-input').value.trim();
-                const minSelect = parseInt(groupElement.querySelector('.option-group-min-input').value) || 1;
-                const maxSelect = parseInt(groupElement.querySelector('.option-group-max-input').value) || 1;
-                const repeat = groupElement.querySelector('.option-group-repeat-input').checked;
-                const maxPerItem = parseInt(groupElement.querySelector('.option-group-max-per-item-input').value) || (repeat ? 999 : 1);
-                
-                // 验证选项组
-                if (!title) {
-                    showNotification(`选项组 ${index + 1} 的标题不能为空`, 'error');
-                    groupElement.querySelector('.option-group-title-input').focus();
-                    throw new Error('选项组标题为空');
-                }
-                
-                if (!rules) {
-                    showNotification(`选项组 ${index + 1} 的规则描述不能为空`, 'error');
-                    groupElement.querySelector('.option-group-rules-input').focus();
-                    throw new Error('选项组规则为空');
-                }
-                
-                if (minSelect < 0) {
-                    showNotification(`选项组 ${index + 1} 的最少选择数量不能小于0`, 'error');
-                    groupElement.querySelector('.option-group-min-input').focus();
-                    throw new Error('最小选择数量无效');
-                }
-                
-                if (maxSelect < minSelect) {
-                    showNotification(`选项组 ${index + 1} 的最多选择数量不能小于最少选择数量`, 'error');
-                    groupElement.querySelector('.option-group-max-input').focus();
-                    throw new Error('最大选择数量无效');
-                }
-                
-                const items = [];
-                groupElement.querySelectorAll('.option-item-list-item').forEach(itemElement => {
-                    const name = itemElement.querySelector('.option-item-name-input').value.trim();
-                    const addPrice = parseFloat(itemElement.querySelector('.option-item-price-input').value) || 0;
-                    
-                    if (name) {
-                        items.push({ name, addPrice });
-                    }
-                });
-                
-                if (items.length === 0) {
-                    showNotification(`选项组 ${index + 1} 至少需要一个选项项`, 'error');
-                    throw new Error('选项组没有选项项');
-                }
-                
-                optionGroups.push({
-                    title,
-                    rules,
-                    minSelect,
-                    maxSelect,
-                    repeat,
-                    maxPerItem,
-                    items
-                });
-            });
-            
-            // 收集固定搭配项
-            const fixedItems = [];
-            document.querySelectorAll('.fixed-item-list-item').forEach((itemElement, index) => {
-                const name = itemElement.querySelector('.fixed-item-name-input').value.trim();
-                const quantity = parseInt(itemElement.querySelector('.fixed-item-quantity-input').value) || 1;
-                
-                if (name) {
-                    fixedItems.push({ name, quantity });
-                }
-            });
-            
-            let meal;
-            const now = Date.now();
-            
-            if (mealId) {
-                // 编辑现有套餐
-                meal = meals.find(m => m.id === mealId);
-                if (meal) {
-                    meal.name = mealName;
-                    meal.price = mealPrice;
-                    meal.tags = mealTags;
-                    meal.description = mealDescription;
-                    meal.active = mealActive;
-                    meal.optionGroups = optionGroups;
-                    meal.fixedItems = fixedItems;
-                    meal.updatedAt = now;
-                }
-            } else {
-                // 创建新套餐
-                meal = {
-                    id: 'meal-' + now + '-' + Math.random().toString(36).substr(2, 9),
-                    name: mealName,
-                    price: mealPrice,
-                    tags: mealTags,
-                    description: mealDescription,
-                    active: mealActive,
-                    optionGroups: optionGroups,
-                    fixedItems: fixedItems,
-                    createdAt: now,
-                    updatedAt: now
-                };
-                
-                meals.push(meal);
-            }
-            
-            localStorage.setItem('kfcMeals', JSON.stringify(meals));
-            
-            updateHomePage();
-            
-            const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
-            updateMealList(activeFilter);
-            
-            resetMealForm();
-            
-            document.querySelector('.admin-tab[data-tab="meals"]').click();
-            
-            showNotification(mealId ? '套餐已更新' : '套餐已添加', 'success');
-				// 修改保存部分
+			function checkUrlParams() {
+				const urlParams = new URLSearchParams(window.location.search);
+				const orderId = urlParams.get('order');
+
+				if (orderId) {
+					showMyOrdersPage();
+
+					setTimeout(() => {
+						document.getElementById('orderSearchInput').value = orderId;
+						searchUserOrder(orderId);
+					}, 100);
+				}
+			}
+
+			function initMyOrdersPage() {
+				const orderSearchBtn = document.getElementById('orderSearchBtn');
+				const orderSearchInput = document.getElementById('orderSearchInput');
+
+				orderSearchBtn.addEventListener('click', function() {
+					const searchTerm = orderSearchInput.value.trim();
+					if (searchTerm) {
+						searchUserOrder(searchTerm);
+					} else {
+						renderUserOrders('all');
+					}
+				});
+
+				orderSearchInput.addEventListener('keypress', function(e) {
+					if (e.key === 'Enter') {
+						orderSearchBtn.click();
+					}
+				});
+
+				document.querySelectorAll('.order-filter-tab').forEach(tab => {
+					tab.addEventListener('click', function() {
+						document.querySelectorAll('.order-filter-tab').forEach(t => {
+							t.classList.remove('active');
+						});
+
+						this.classList.add('active');
+
+						const filter = this.dataset.orderFilter;
+						renderUserOrders(filter);
+					});
+				});
+			}
+
+			function showMyOrdersPage() {
+				showPage('myOrdersPage');
+				renderUserOrders('all');
+
+				document.getElementById('viewOrdersBtn').style.display = 'none';
+				document.getElementById('viewHomeBtn').style.display = 'flex';
+			}
+
+			async function renderUserOrders(filter = 'all') {
 				try {
-					const mealData = {
-						id: document.getElementById('currentMealId').value,
-						name: mealName,
-						price: mealPrice,
-						tags: mealTags,
-						description: mealDescription,
-						active: mealActive,
-						optionGroups: optionGroups,
-						fixedItems: fixedItems
+					// 确保订单数据是最新的
+					await loadOrdersFromCloud();
+
+					const myOrdersContainer = document.getElementById('myOrdersContainer');
+					const noUserOrdersMessage = document.getElementById('noUserOrdersMessage');
+
+					myOrdersContainer.innerHTML = '';
+
+					let userOrders = orders.filter(order => order.userId === localStorage.getItem('kfcUserId'));
+
+					if (filter !== 'all') {
+						userOrders = userOrders.filter(order => order.status === filter);
+					}
+
+					userOrders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+					if (userOrders.length === 0) {
+						noUserOrdersMessage.style.display = 'block';
+						return;
+					}
+
+					noUserOrdersMessage.style.display = 'none';
+
+					userOrders.forEach(order => {
+						const orderElement = createUserOrderElement(order);
+						myOrdersContainer.appendChild(orderElement);
+					});
+				} catch (error) {
+					console.error('渲染用户订单失败:', error);
+					showNotification('加载订单失败', 'error');
+				}
+			}
+
+			function createUserOrderElement(order) {
+				const orderElement = document.createElement('div');
+				orderElement.className = 'user-order-item';
+
+				let statusText, statusClass;
+				switch (order.status) {
+					case 'new':
+						statusText = '新订单';
+						statusClass = 'user-status-new';
+						break;
+					case 'processing':
+						statusText = '处理中';
+						statusClass = 'user-status-processing';
+						break;
+					case 'completed':
+						statusText = '已完成';
+						statusClass = 'user-status-completed';
+						break;
+					default:
+						statusText = '新订单';
+						statusClass = 'user-status-new';
+				}
+
+				const deliveryTypeText = order.deliveryType === 'delivery' ? '宅急送' : '到店自提';
+
+				let itemsHTML = '';
+				order.cart.forEach((item, index) => {
+					const optionCount = {};
+					item.options.forEach(option => {
+						optionCount[option] = (optionCount[option] || 0) + 1;
+					});
+
+					const optionText = Object.keys(optionCount).map(option => {
+						const count = optionCount[option];
+						return `${option}${count > 1 ? ` ×${count}` : ''}`;
+					}).join(', ');
+
+					itemsHTML +=
+						`<div class="user-order-item-detail">
+                    <div class="user-order-item-name">
+                        <div><strong>${item.name}</strong></div>
+                        <div style="font-size:0.9rem; color:#666;">${optionText}</div>
+                    </div>
+                    <div class="user-order-item-price">¥${item.totalPrice.toFixed(2)}</div>
+                </div>`;
+				});
+
+				const infoLines = order.deliveryInfo.split('\n');
+				let deliveryHTML = '';
+				infoLines.forEach(line => {
+					if (line.trim()) {
+						deliveryHTML += `<p>${line}</p>`;
+					}
+				});
+
+				let screenshotHTML = '';
+				if (order.hasScreenshot && order.screenshotData) {
+					screenshotHTML =
+						`
+                    <div class="screenshot-container">
+                        <p><strong>门店截图：</strong></p>
+                        <img src="${order.screenshotData}" alt="门店截图" class="screenshot-thumbnail" data-order-id="${order.id}">
+                    </div>
+                `;
+				}
+
+				orderElement.innerHTML =
+					`
+                <div class="user-order-header">
+                    <div>
+                        <div class="user-order-id">订单号：${order.id}</div>
+                        <div class="user-order-time">${order.timestamp} | ${deliveryTypeText}</div>
+                    </div>
+                    <div class="user-order-status ${statusClass}">${statusText}</div>
+                </div>
+                
+                <div class="user-order-items">
+                    ${itemsHTML}
+                </div>
+                
+                <div class="user-order-total">
+                    总计：¥${order.totalPrice.toFixed(2)}
+                </div>
+                
+                <div class="user-order-info">
+                    ${deliveryHTML}
+                    ${order.orderNote ? `<p><strong>备注：</strong>${order.orderNote}</p>` : ''}
+                    ${screenshotHTML}
+                </div>
+            `;
+
+				if (order.hasScreenshot && order.screenshotData) {
+					const screenshotImg = orderElement.querySelector('.screenshot-thumbnail');
+					if (screenshotImg) {
+						screenshotImg.addEventListener('click', function() {
+							showFullImage(order.screenshotData);
+						});
+					}
+				}
+
+				return orderElement;
+			}
+
+			function searchUserOrder(searchTerm) {
+				const myOrdersContainer = document.getElementById('myOrdersContainer');
+				const noUserOrdersMessage = document.getElementById('noUserOrdersMessage');
+
+				myOrdersContainer.innerHTML = '';
+
+				const searchResults = orders.filter(order =>
+					order.userId === currentUserId &&
+					order.id.toLowerCase().includes(searchTerm.toLowerCase())
+				);
+
+				searchResults.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+				if (searchResults.length === 0) {
+					noUserOrdersMessage.style.display = 'block';
+					noUserOrdersMessage.innerHTML =
+						`
+                    <i class="fas fa-search"></i>
+                    <h3>未找到相关订单</h3>
+                    <p>没有找到订单号包含"${searchTerm}"的订单</p>
+                `;
+					return;
+				}
+
+				noUserOrdersMessage.style.display = 'none';
+
+				searchResults.forEach(order => {
+					const orderElement = createUserOrderElement(order);
+					myOrdersContainer.appendChild(orderElement);
+				});
+			}
+
+			function initHomePage() {
+				updateHomePage();
+			}
+
+			function updateHomePage() {
+				const mealGrid = document.getElementById('mealGrid');
+				const noMealsMessage = document.getElementById('noMealsMessage');
+
+				mealGrid.innerHTML = '';
+
+				const activeMeals = meals.filter(meal => meal.active !== false);
+
+				if (activeMeals.length === 0) {
+					noMealsMessage.style.display = 'block';
+					return;
+				}
+
+				noMealsMessage.style.display = 'none';
+
+				activeMeals.forEach(meal => {
+					const mealCard = document.createElement('a');
+					mealCard.href = '#';
+					mealCard.className = 'meal-card';
+					if (meal.active === false) {
+						mealCard.classList.add('inactive');
+					}
+					mealCard.onclick = function(e) {
+						e.preventDefault();
+						if (meal.active === false) return;
+						showMealDetail(meal.id);
 					};
 
-					await saveMeal(mealData);
+					mealCard.innerHTML =
+						`
+                    <div class="meal-header">
+                        <h4 class="meal-name">${meal.name}</h4>
+                        <div class="meal-price">¥${meal.price}</div>
+                    </div>
+                    <div class="meal-description">
+                        ${meal.tags.map(tag => `<span class="meal-tag">${tag}</span>`).join('')}
+                        <p style="margin-top: 10px;">${meal.description}</p>
+                    </div>
+                `;
 
-					// 更新页面
-					updateHomePage();
-					updateMealList('all');
+					mealGrid.appendChild(mealCard);
+				});
+			}
 
-					resetMealForm();
-					document.querySelector('.admin-tab[data-tab="meals"]').click();
+			function initStatusToggle() {
+				const statusToggle = document.getElementById('mealActive');
+				const statusText = document.getElementById('statusText');
 
-					showNotification(mealData.id ? '套餐已更新并同步到云端' : '套餐已添加并同步到云端', 'success');
-				} catch (error) {
-					showNotification('保存失败，请检查网络连接', 'error');
+				if (statusToggle && statusText) {
+					statusToggle.addEventListener('change', function() {
+						if (this.checked) {
+							statusText.textContent = '上架';
+							statusText.className = 'status-active';
+						} else {
+							statusText.textContent = '下架';
+							statusText.className = 'status-inactive';
+						}
+					});
 				}
 			}
 
-			// 修改删除套餐函数
-			async function deleteMeal(mealId) {
-				// 原有确认代码...
-const mealIndex = meals.findIndex(m => m.id === mealId);
-            if (mealIndex === -1) return;
-            
-            const meal = meals[mealIndex];
-            
-            if (!confirm(`确定要删除套餐 "${meal.name}" 吗？\n\n价格：¥${meal.price}\n标签：${meal.tags.join(', ')}\n\n此操作不可恢复！`)) {
-                return;
-            }
-            
-            // 检查是否有订单包含此套餐
-            let hasOrders = false;
-            orders.forEach(order => {
-                order.cart.forEach(item => {
-                    if (item.id === mealId) {
-                        hasOrders = true;
-                    }
-                });
-            });
-            
-            if (hasOrders) {
-                if (!confirm('警告：有订单包含此套餐。删除套餐不会删除相关订单，但会影响订单详情显示。\n\n确定要继续删除吗？')) {
-                    return;
+			function showMealDetail(mealId) {
+				const meal = meals.find(m => m.id === mealId);
+				if (!meal) return;
+
+				const mealDetailPage = document.getElementById('mealDetailPage');
+
+				mealDetailPage.innerHTML =
+					`
+                <a href="#" class="back-btn" onclick="showPage('homePage')">
+                    <i class="fas fa-arrow-left"></i>
+                    返回套餐列表
+                </a>
+                
+                <div class="main-content">
+                    <div class="menu-section">
+                        <h2 class="section-title">
+                            <i class="fas fa-hamburger"></i>
+                            ${meal.name}
+                        </h2>
+                        
+                        <div class="instructions">
+                            <p><strong>套餐详情：</strong></p>
+                            <ul>
+                                <li>${meal.description}</li>
+                                <li>请按照要求选择选项</li>
+                                <li>提交订单后可在右上角"查看我的订单"查看订单状态</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="meal-options" id="mealOptions">
+                            ${generateOptionsHTML(meal)}
+                        </div>
+                        <button class="add-to-cart" data-meal-id="${meal.id}" data-meal-name="${meal.name}" data-meal-price="${meal.price}" disabled>
+                            <i class="fas fa-cart-plus"></i>
+                            加入购物车
+                        </button>
+                    </div>
+                    
+                    <div class="cart-section">
+                        <h2 class="section-title">
+                            <i class="fas fa-shopping-cart"></i>
+                            购物车
+                        </h2>
+                        
+                        <div class="cart-items" id="cartItems">
+                            <div class="empty-cart-message">购物车是空的，请选择套餐</div>
+                        </div>
+                        
+                        <div class="cart-total">
+                            <span>总计：</span>
+                            <span class="total-price" id="totalPrice">¥0.00</span>
+                        </div>
+                        
+                        <button class="checkout-btn" id="checkoutBtn" disabled>
+                            <i class="fas fa-credit-card"></i>
+                            提交订单
+                        </button>
+                        
+                        <div class="delivery-form">
+                            <h3 class="section-title">
+                                <i class="fas fa-truck"></i>
+                                配送信息
+                            </h3>
+                            
+                            <div class="order-type">
+                                <label>
+                                    <input type="radio" name="deliveryType" value="delivery" checked>
+                                    <span>宅急送（免配送费）</span>
+                                </label>
+                                <label>
+                                    <input type="radio" name="deliveryType" value="pickup">
+                                    <span>到店自提</span>
+                                </label>
+                            </div>
+                            
+                            <div class="delivery-fields" id="deliveryFields">
+                                <div class="form-group">
+                                    <label class="form-label">收货人姓名 <span class="required">*</span></label>
+                                    <input type="text" class="form-input" id="customerName" placeholder="请输入姓名" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">联系电话 <span class="required">*</span></label>
+                                    <input type="tel" class="form-input" id="customerPhone" placeholder="请输入手机号码" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">配送地址 <span class="required">*</span></label>
+                                    <input type="text" class="form-input" id="deliveryAddress" placeholder="请输入详细地址" required>
+                                </div>
+                            </div>
+                            
+                            <div class="pickup-fields hidden" id="pickupFields">
+                                <div class="form-group">
+                                    <label class="form-label">门店信息提供方式 <span class="required">*</span></label>
+                                    <div class="info-method-selector">
+                                        <label class="method-option">
+                                            <input type="radio" name="pickupMethod" value="text" checked>
+                                            <span>手动填写</span>
+                                        </label>
+                                        <label class="method-option">
+                                            <input type="radio" name="pickupMethod" value="screenshot">
+                                            <span>上传截图</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-method-fields" id="textMethodFields">
+                                    <div class="store-selection">
+                                        <div class="form-group">
+                                            <label class="form-label">自提城市 <span class="required">*</span></label>
+                                            <input type="text" class="form-input" id="pickupCityInput" placeholder="例如：北京市" required>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label class="form-label">自提门店 <span class="required">*</span></label>
+                                            <input type="text" class="form-input" id="pickupStoreInput" placeholder="例如：肯德基王府井店" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="screenshot-method-fields hidden" id="screenshotMethodFields">
+                                    <div class="form-group">
+                                        <label class="form-label">上传门店截图 <span class="required">*</span></label>
+                                        <div class="screenshot-upload-area" id="screenshotUploadArea">
+                                            <i class="fas fa-cloud-upload-alt"></i>
+                                            <p>点击或拖拽上传截图</p>
+                                            <p class="upload-hint">支持 JPG、PNG 格式，大小不超过 5MB</p>
+                                            <input type="file" id="storeScreenshot" accept="image/*" style="display: none;">
+                                        </div>
+                                        <div class="screenshot-preview hidden" id="screenshotPreview">
+                                            <img id="previewImage" src="" alt="截图预览">
+                                            <button type="button" class="remove-screenshot" id="removeScreenshot">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <div class="form-hint">
+                                            <i class="fas fa-lightbulb"></i> 您可以截图包含门店地址的聊天记录、地图或订单页面
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">订单备注</label>
+                                <textarea class="form-input" id="orderNote" rows="3" placeholder="如有特殊要求请在此备注（例如：不吃辣，多要番茄酱等）"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+				initOptionSelection(mealDetailPage);
+				initDeliveryTypeToggle(mealDetailPage);
+				initPickupMethod(mealDetailPage);
+				initCart(mealDetailPage);
+				initCheckout(mealDetailPage);
+
+				if (!meal.optionGroups || meal.optionGroups.length === 0) {
+					const addToCartBtn = mealDetailPage.querySelector('.add-to-cart');
+					if (addToCartBtn) {
+						addToCartBtn.disabled = false;
+						addToCartBtn.style.opacity = '1';
+						addToCartBtn.style.cursor = 'pointer';
+					}
+				}
+
+				showPage('mealDetailPage');
+
+				document.getElementById('viewOrdersBtn').style.display = 'none';
+				document.getElementById('viewHomeBtn').style.display = 'flex';
+			}
+
+			function generateOptionsHTML(meal) {
+				let html = '';
+
+				if (meal.optionGroups && meal.optionGroups.length > 0) {
+					meal.optionGroups.forEach((group, groupIndex) => {
+						const groupId = `group-${meal.id}-${groupIndex}`;
+						const repeat = group.repeat ? 'true' : 'false';
+						const maxPerItem = group.maxPerItem || (group.repeat ? 999 : 1);
+
+						html +=
+							`
+                        <div class="option-group" data-group-id="${groupId}" data-min-select="${group.minSelect}" data-max-select="${group.maxSelect}" data-repeat="${repeat}" data-max-per-item="${maxPerItem}">
+                            <div class="option-title">${group.title}</div>
+                            <div class="option-rules">${group.rules}</div>
+                            <div class="option-items">
+                    `;
+
+						if (group.items && group.items.length > 0) {
+							group.items.forEach((item, itemIndex) => {
+								const itemId = `${groupId}-${itemIndex}`;
+								const addPrice = item.addPrice || 0;
+								const addPriceText = addPrice > 0 ? ` (+¥${addPrice})` : '';
+
+								html +=
+									`
+                                <div class="option-item" data-item-id="${itemId}" data-name="${item.name}" data-add-price="${addPrice}">
+                                    <span>${item.name}${addPriceText}</span>
+                                    <div class="selection-counter">
+                                        <button class="counter-btn decrement" disabled>-</button>
+                                        <span class="counter-value">0</span>
+                                        <button class="counter-btn increment">+</button>
+                                    </div>
+                                </div>
+                            `;
+							});
+						}
+
+						html +=
+							`
+                            </div>
+                            <div class="selection-status invalid">已选择 0 份，还需选择 ${group.minSelect} 份</div>
+                        </div>
+                    `;
+					});
+				}
+
+				if (meal.fixedItems && meal.fixedItems.length > 0) {
+					html +=
+						`
+                    <div class="fixed-combo-items">
+                        <div class="option-title">固定搭配：</div>
+                        <div class="option-rules">套餐包含固定搭配，无需选择</div>
+                        <div class="fixed-combo-list">
+                `;
+
+					meal.fixedItems.forEach(item => {
+						html +=
+							`
+                        <div class="fixed-combo-item">
+                            <div class="fixed-combo-item-name">${item.name}</div>
+                            <div class="fixed-combo-item-qty">×${item.quantity}</div>
+                        </div>
+                    `;
+					});
+
+					html += `
+                        </div>
+                    </div>
+                `;
+				}
+
+				return html;
+			}
+
+			function showPage(pageId) {
+				document.querySelectorAll('.meal-page-container').forEach(page => {
+					page.classList.remove('active');
+				});
+
+				document.getElementById(pageId).classList.add('active');
+
+				window.scrollTo(0, 0);
+
+				if (pageId === 'homePage') {
+					document.getElementById('viewOrdersBtn').style.display = 'flex';
+					document.getElementById('viewHomeBtn').style.display = 'none';
+				}
+			}
+
+			function initPasswordVerification() {
+				const passwordModal = document.getElementById('passwordModal');
+				const adminPasswordInput = document.getElementById('adminPassword');
+				const submitPasswordBtn = document.getElementById('submitPassword');
+				const passwordError = document.getElementById('passwordError');
+
+				submitPasswordBtn.addEventListener('click', function() {
+					const enteredPassword = adminPasswordInput.value.trim();
+
+					if (enteredPassword === ADMIN_PASSWORD) {
+						passwordModal.classList.remove('active');
+						adminPasswordInput.value = '';
+						passwordError.style.display = 'none';
+
+						openAdminPanel();
+					} else {
+						passwordError.style.display = 'block';
+						adminPasswordInput.value = '';
+						adminPasswordInput.focus();
+
+						adminPasswordInput.style.animation = 'none';
+						setTimeout(() => {
+							adminPasswordInput.style.animation = 'shake 0.5s';
+						}, 10);
+					}
+				});
+
+				adminPasswordInput.addEventListener('keypress', function(e) {
+					if (e.key === 'Enter') {
+						submitPasswordBtn.click();
+					}
+				});
+
+				const style = document.createElement('style');
+				style.textContent =
+					`
+                @keyframes shake {
+                    0%, 100% {transform: translateX(0);}
+                    10%, 30%, 50%, 70%, 90% {transform: translateX(-5px);}
+                    20%, 40%, 60%, 80% {transform: translateX(5px);}
                 }
-            }
-            
-            meals.splice(mealIndex, 1);
-            localStorage.setItem('kfcMeals', JSON.stringify(meals));
-            
-            updateHomePage();
-            
-            const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
-            updateMealList(activeFilter);
-            
-            showNotification(`套餐"${meal.name}"已删除`, 'success');
-				try {
-					await deleteMealFromCloud(mealId);
+            `;
+				document.head.appendChild(style);
+			}
 
-					updateHomePage();
-					updateMealList('all');
+			function openAdminPanel() {
+				const adminPanel = document.getElementById('adminPanel');
+				const panelOverlay = document.getElementById('panelOverlay');
 
-					showNotification(`套餐已删除`, 'success');
-				} catch (error) {
-					showNotification('删除失败，请检查网络连接', 'error');
+				adminPanel.classList.add('active');
+				panelOverlay.classList.add('active');
+				document.body.style.overflow = 'hidden';
+
+				newOrdersCount = 0;
+				localStorage.setItem('newOrdersCount', newOrdersCount);
+				updateOrderBadge();
+
+				renderOrders('all');
+				updateMealList('all');
+			}
+
+			function initOptionSelection(container) {
+				container.querySelectorAll('.counter-btn.increment').forEach(button => {
+					button.addEventListener('click', function(e) {
+						e.stopPropagation();
+						const optionItem = this.closest('.option-item');
+						const counterValue = optionItem.querySelector('.counter-value');
+						const decrementBtn = optionItem.querySelector('.decrement');
+						const group = optionItem.closest('.option-group');
+
+						const maxSelect = parseInt(group.dataset.maxSelect) || Infinity;
+						const repeat = group.dataset.repeat === 'true';
+						const maxPerItem = parseInt(group.dataset.maxPerItem) || (repeat ? Infinity : 1);
+
+						let totalSelected = 0;
+						group.querySelectorAll('.counter-value').forEach(value => {
+							totalSelected += parseInt(value.textContent);
+						});
+
+						let currentSelected = parseInt(counterValue.textContent);
+
+						if (totalSelected >= maxSelect) {
+							showNotification(`该选项组最多只能选择${maxSelect}份`);
+							return;
+						}
+
+						if (currentSelected >= maxPerItem) {
+							showNotification(`该选项最多只能选择${maxPerItem}份`);
+							return;
+						}
+
+						currentSelected++;
+						counterValue.textContent = currentSelected;
+
+						decrementBtn.disabled = false;
+						optionItem.classList.add('selected');
+
+						updateGroupSelectionStatus(group);
+					});
+				});
+
+				container.querySelectorAll('.counter-btn.decrement').forEach(button => {
+					button.addEventListener('click', function(e) {
+						e.stopPropagation();
+						const optionItem = this.closest('.option-item');
+						const counterValue = optionItem.querySelector('.counter-value');
+
+						let currentSelected = parseInt(counterValue.textContent);
+
+						if (currentSelected > 0) {
+							currentSelected--;
+							counterValue.textContent = currentSelected;
+
+							this.disabled = currentSelected === 0;
+
+							if (currentSelected === 0) {
+								optionItem.classList.remove('selected');
+							}
+
+							const group = optionItem.closest('.option-group');
+							updateGroupSelectionStatus(group);
+						}
+					});
+				});
+
+				container.querySelectorAll('.option-item').forEach(item => {
+					if (!item.classList.contains('selected')) {
+						item.addEventListener('click', function() {
+							const incrementBtn = this.querySelector('.increment');
+							if (incrementBtn) {
+								incrementBtn.click();
+							}
+						});
+					}
+				});
+			}
+
+			function updateGroupSelectionStatus(group) {
+				if (!group.dataset.minSelect) return;
+
+				const minSelect = parseInt(group.dataset.minSelect);
+				const maxSelect = parseInt(group.dataset.maxSelect);
+
+				let totalSelected = 0;
+				group.querySelectorAll('.counter-value').forEach(value => {
+					totalSelected += parseInt(value.textContent);
+				});
+
+				const statusElement = group.querySelector('.selection-status');
+				if (statusElement) {
+					if (totalSelected >= minSelect && totalSelected <= maxSelect) {
+						statusElement.textContent = `已选择 ${totalSelected} 份，符合要求`;
+						statusElement.className = 'selection-status valid';
+					} else if (totalSelected < minSelect) {
+						statusElement.textContent = `已选择 ${totalSelected} 份，还需选择 ${minSelect - totalSelected} 份`;
+						statusElement.className = 'selection-status invalid';
+					} else {
+						statusElement.textContent = `已选择 ${totalSelected} 份，已超过最大 ${maxSelect} 份`;
+						statusElement.className = 'selection-status invalid';
+					}
+				}
+
+				const mealContainer = group.closest('.meal-page-container');
+				updateAddToCartButton(mealContainer);
+			}
+
+			function updateAddToCartButton(mealContainer) {
+				const addToCartBtn = mealContainer.querySelector('.add-to-cart');
+				if (!addToCartBtn) return;
+
+				const optionGroups = mealContainer.querySelectorAll('.option-group');
+				if (optionGroups.length === 0) {
+					addToCartBtn.disabled = false;
+					addToCartBtn.style.opacity = '1';
+					addToCartBtn.style.cursor = 'pointer';
+					return;
+				}
+
+				let isValid = true;
+
+				optionGroups.forEach(group => {
+					if (!group.dataset.minSelect) return;
+
+					const minSelect = parseInt(group.dataset.minSelect);
+					const maxSelect = parseInt(group.dataset.maxSelect);
+
+					let totalSelected = 0;
+					group.querySelectorAll('.counter-value').forEach(value => {
+						totalSelected += parseInt(value.textContent);
+					});
+
+					if (totalSelected < minSelect || totalSelected > maxSelect) {
+						isValid = false;
+					}
+				});
+
+				if (isValid) {
+					addToCartBtn.disabled = false;
+					addToCartBtn.style.opacity = '1';
+					addToCartBtn.style.cursor = 'pointer';
+				} else {
+					addToCartBtn.disabled = true;
+					addToCartBtn.style.opacity = '0.6';
+					addToCartBtn.style.cursor = 'not-allowed';
 				}
 			}
 
-			// 修改 completeCheckout 函数
-			async function completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container) {
-				// 原有确认代码...
-let totalPrice = 0;
-            cart.forEach(item => {
-                totalPrice += item.totalPrice;
-            });
-            
-            let orderSummary = "订单详情：\n\n";
-            cart.forEach((item, index) => {
-                orderSummary += `${index + 1}. ${item.name} - ¥${item.totalPrice.toFixed(2)}\n`;
-                
-                const optionCount = {};
-                item.options.forEach(option => {
-                    optionCount[option] = (optionCount[option] || 0) + 1;
-                });
-                
-                Object.keys(optionCount).forEach(option => {
-                    const count = optionCount[option];
-                    orderSummary += `   ${option}${count > 1 ? ` ×${count}` : ''}\n`;
-                });
-                orderSummary += "\n";
-            });
-            
-            orderSummary += `\n总计：¥${totalPrice.toFixed(2)}\n`;
-            orderSummary += `\n${deliveryInfo}\n`;
-            if (orderNote) {
-                orderSummary += `备注：${orderNote}\n`;
-            }
-            
-            const confirmed = confirm(`请确认订单信息：\n\n${orderSummary}\n\n确认提交订单吗？`);
+			function initDeliveryTypeToggle(container) {
+				container.querySelectorAll('input[name="deliveryType"]').forEach(radio => {
+					radio.addEventListener('change', function() {
+						const deliveryFields = container.querySelector('.delivery-fields');
+						const pickupFields = container.querySelector('.pickup-fields');
+
+						if (this.value === 'delivery') {
+							deliveryFields.classList.remove('hidden');
+							pickupFields.classList.add('hidden');
+						} else {
+							pickupFields.classList.remove('hidden');
+							deliveryFields.classList.add('hidden');
+						}
+					});
+				});
+			}
+
+			function initPickupMethod(container) {
+				container.querySelectorAll('input[name="pickupMethod"]').forEach(radio => {
+					radio.addEventListener('change', function() {
+						const textFields = container.querySelector('.text-method-fields');
+						const screenshotFields = container.querySelector('.screenshot-method-fields');
+
+						if (this.value === 'text') {
+							textFields.classList.remove('hidden');
+							screenshotFields.classList.add('hidden');
+						} else {
+							screenshotFields.classList.remove('hidden');
+							textFields.classList.add('hidden');
+						}
+					});
+				});
+
+				const uploadArea = container.querySelector('.screenshot-upload-area');
+				if (uploadArea) {
+					const fileInput = uploadArea.querySelector('input[type="file"]');
+					const previewContainer = uploadArea.parentElement.querySelector('.screenshot-preview');
+					const previewImage = previewContainer ? previewContainer.querySelector('img') : null;
+					const removeBtn = previewContainer ? previewContainer.querySelector('.remove-screenshot') : null;
+
+					if (uploadArea && fileInput && previewContainer && previewImage && removeBtn) {
+						uploadArea.addEventListener('click', function() {
+							fileInput.click();
+						});
+
+						uploadArea.addEventListener('dragover', function(e) {
+							e.preventDefault();
+							this.style.borderColor = '#e31837';
+							this.style.backgroundColor = '#fff5f5';
+						});
+
+						uploadArea.addEventListener('dragleave', function(e) {
+							e.preventDefault();
+							this.style.borderColor = '#ddd';
+							this.style.backgroundColor = '#f9f9f9';
+						});
+
+						uploadArea.addEventListener('drop', function(e) {
+							e.preventDefault();
+							this.style.borderColor = '#ddd';
+							this.style.backgroundColor = '#f9f9f9';
+
+							if (e.dataTransfer.files.length) {
+								handleFileSelect(e.dataTransfer.files[0], fileInput, previewContainer, previewImage, uploadArea);
+							}
+						});
+
+						fileInput.addEventListener('change', function(e) {
+							if (e.target.files.length) {
+								handleFileSelect(e.target.files[0], fileInput, previewContainer, previewImage, uploadArea);
+							}
+						});
+
+						removeBtn.addEventListener('click', function() {
+							fileInput.value = '';
+							previewContainer.classList.add('hidden');
+							uploadArea.style.display = 'block';
+						});
+					}
+				}
+
+				function handleFileSelect(file, fileInput, previewContainer, previewImage, uploadArea) {
+					if (!file.type.match('image.*')) {
+						showNotification('请选择图片文件', 'error');
+						return;
+					}
+
+					if (file.size > 5 * 1024 * 1024) {
+						showNotification('图片大小不能超过5MB', 'error');
+						return;
+					}
+
+					const reader = new FileReader();
+					reader.onload = function(e) {
+						previewImage.src = e.target.result;
+						previewContainer.classList.remove('hidden');
+						uploadArea.style.display = 'none';
+					};
+					reader.readAsDataURL(file);
+				}
+			}
+
+			function initCart(container) {
+				const addToCartBtn = container.querySelector('.add-to-cart');
+				if (addToCartBtn) {
+					addToCartBtn.addEventListener('click', function() {
+						const optionGroups = container.querySelectorAll('.option-group');
+
+						if (this.disabled && optionGroups.length > 0) {
+							showNotification('请先完成选项选择，确保每个选项组的选择数量符合要求');
+							return;
+						}
+
+						const mealId = this.dataset.mealId;
+						const mealName = this.dataset.mealName;
+						const mealPrice = parseFloat(this.dataset.mealPrice);
+
+						const meal = meals.find(m => m.id === mealId);
+						if (!meal) return;
+
+						const selectedOptions = [];
+						let additionalPrice = 0;
+
+						container.querySelectorAll('.option-group').forEach(group => {
+							group.querySelectorAll('.option-item').forEach(item => {
+								const counterValue = item.querySelector('.counter-value');
+								const count = parseInt(counterValue.textContent);
+
+								if (count > 0) {
+									const itemName = item.dataset.name || item.textContent;
+									const itemAddPrice = parseFloat(item.dataset.addPrice) || 0;
+
+									for (let i = 0; i < count; i++) {
+										selectedOptions.push(itemName);
+										additionalPrice += itemAddPrice;
+									}
+								}
+							});
+						});
+
+						if (meal.fixedItems && meal.fixedItems.length > 0) {
+							meal.fixedItems.forEach(item => {
+								for (let i = 0; i < item.quantity; i++) {
+									selectedOptions.push(item.name);
+								}
+							});
+						}
+
+						if (selectedOptions.length === 0) {
+							showNotification('该套餐没有任何项目，无法加入购物车');
+							return;
+						}
+
+						const totalPrice = mealPrice + additionalPrice;
+
+						const mealItem = {
+							id: mealId,
+							name: mealName,
+							basePrice: mealPrice,
+							additionalPrice: additionalPrice,
+							totalPrice: totalPrice,
+							options: [...selectedOptions]
+						};
+
+						cart.push(mealItem);
+
+						updateCartDisplay();
+
+						showNotification(`已添加 "${mealName}" 到购物车`, 'success');
+
+						resetOptions(container);
+					});
+				}
+			}
+
+			function resetOptions(container) {
+				container.querySelectorAll('.option-group').forEach(group => {
+					group.querySelectorAll('.option-item').forEach(item => {
+						const counterValue = item.querySelector('.counter-value');
+						const decrementBtn = item.querySelector('.decrement');
+
+						counterValue.textContent = '0';
+						if (decrementBtn) {
+							decrementBtn.disabled = true;
+						}
+						item.classList.remove('selected');
+					});
+
+					updateGroupSelectionStatus(group);
+				});
+			}
+
+			function updateCartDisplay() {
+				document.querySelectorAll('.cart-items').forEach(container => {
+					container.innerHTML = '';
+
+					let totalPrice = 0;
+
+					if (cart.length === 0) {
+						container.innerHTML = '<div class="empty-cart-message">购物车是空的，请选择套餐</div>';
+					} else {
+						cart.forEach((item, index) => {
+							const cartItemElement = document.createElement('div');
+							cartItemElement.className = 'cart-item';
+
+							const optionsHtml = item.options.map(option => `<div>• ${option}</div>`).join('');
+
+							cartItemElement.innerHTML =
+								`
+                            <div class="cart-item-name">
+                                <div><strong>${item.name}</strong></div>
+                                <div style="font-size:0.9rem; color:#666; margin-top:5px;">
+                                    ${optionsHtml}
+                                </div>
+                            </div>
+                            <div class="cart-item-price">¥${item.totalPrice.toFixed(2)}</div>
+                            <button class="cart-item-remove" data-index="${index}">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        `;
+
+							container.appendChild(cartItemElement);
+
+							totalPrice += item.totalPrice;
+
+							cartItemElement.querySelector('.cart-item-remove').addEventListener('click', function() {
+								const indexToRemove = parseInt(this.dataset.index);
+								cart.splice(indexToRemove, 1);
+								updateCartDisplay();
+								showNotification('已从购物车中移除商品');
+							});
+						});
+					}
+
+					const totalPriceElement = container.closest('.cart-section').querySelector('.total-price');
+					const checkoutBtn = container.closest('.cart-section').querySelector('.checkout-btn');
+
+					if (totalPriceElement) {
+						totalPriceElement.textContent = `¥${totalPrice.toFixed(2)}`;
+					}
+
+					if (checkoutBtn) {
+						checkoutBtn.disabled = cart.length === 0;
+					}
+				});
+			}
+
+			function initCheckout(container) {
+				const checkoutBtn = container.querySelector('.checkout-btn');
+				if (checkoutBtn) {
+					checkoutBtn.addEventListener('click', function() {
+						const deliveryType = container.querySelector('input[name="deliveryType"]:checked').value;
+						const orderNote = container.querySelector('#orderNote') ? container.querySelector('#orderNote').value.trim() :
+							'';
+
+						let deliveryInfo = '';
+						let hasScreenshot = false;
+						let screenshotData = null;
+
+						if (deliveryType === 'delivery') {
+							const customerName = container.querySelector('#customerName') ? container.querySelector('#customerName').value
+								.trim() : '';
+							const customerPhone = container.querySelector('#customerPhone') ? container.querySelector('#customerPhone').value
+								.trim() : '';
+							const deliveryAddress = container.querySelector('#deliveryAddress') ? container.querySelector(
+								'#deliveryAddress').value.trim() : '';
+
+							if (!customerName) {
+								showNotification('请输入收货人姓名', 'error');
+								const nameInput = container.querySelector('#customerName');
+								if (nameInput) nameInput.focus();
+								return;
+							}
+
+							if (!customerPhone) {
+								showNotification('请输入联系电话', 'error');
+								const phoneInput = container.querySelector('#customerPhone');
+								if (phoneInput) phoneInput.focus();
+								return;
+							}
+
+							if (!deliveryAddress) {
+								showNotification('请输入配送地址', 'error');
+								const addressInput = container.querySelector('#deliveryAddress');
+								if (addressInput) addressInput.focus();
+								return;
+							}
+
+							deliveryInfo = `配送方式：宅急送\n收货人：${customerName}\n联系电话：${customerPhone}\n配送地址：${deliveryAddress}`;
+						} else {
+							const pickupMethod = container.querySelector('input[name="pickupMethod"]:checked').value;
+
+							if (pickupMethod === 'text') {
+								const pickupCity = container.querySelector('#pickupCityInput') ? container.querySelector('#pickupCityInput').value
+									.trim() : '';
+								const pickupStore = container.querySelector('#pickupStoreInput') ? container.querySelector(
+									'#pickupStoreInput').value.trim() : '';
+
+								if (!pickupCity) {
+									showNotification('请输入自提城市', 'error');
+									const cityInput = container.querySelector('#pickupCityInput');
+									if (cityInput) cityInput.focus();
+									return;
+								}
+
+								if (!pickupStore) {
+									showNotification('请输入自提门店', 'error');
+									const storeInput = container.querySelector('#pickupStoreInput');
+									if (storeInput) storeInput.focus();
+									return;
+								}
+
+								deliveryInfo = `配送方式：到店自提\n信息提供：手动填写\n自提城市：${pickupCity}\n自提门店：${pickupStore}`;
+							} else {
+								const screenshotInput = container.querySelector('#storeScreenshot');
+
+								if (!screenshotInput.files || !screenshotInput.files.length) {
+									showNotification('请上传门店截图', 'error');
+									return;
+								}
+
+								const file = screenshotInput.files[0];
+								const reader = new FileReader();
+
+								reader.onload = function(e) {
+									screenshotData = e.target.result;
+									hasScreenshot = true;
+
+									deliveryInfo = `配送方式：到店自提\n信息提供：截图上传`;
+
+									completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container);
+								};
+
+								reader.readAsDataURL(file);
+								return;
+							}
+						}
+
+						completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container);
+					});
+				}
+			}
+
+			function completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container) {
+				let totalPrice = 0;
+				cart.forEach(item => {
+					totalPrice += item.totalPrice;
+				});
+
+				let orderSummary = "订单详情：\n\n";
+				cart.forEach((item, index) => {
+					orderSummary += `${index + 1}. ${item.name} - ¥${item.totalPrice.toFixed(2)}\n`;
+
+					const optionCount = {};
+					item.options.forEach(option => {
+						optionCount[option] = (optionCount[option] || 0) + 1;
+					});
+
+					Object.keys(optionCount).forEach(option => {
+						const count = optionCount[option];
+						orderSummary += `   ${option}${count > 1 ? ` ×${count}` : ''}\n`;
+					});
+					orderSummary += "\n";
+				});
+
+				orderSummary += `\n总计：¥${totalPrice.toFixed(2)}\n`;
+				orderSummary += `\n${deliveryInfo}\n`;
+				if (orderNote) {
+					orderSummary += `备注：${orderNote}\n`;
+				}
+
+				const confirmed = confirm(`请确认订单信息：\n\n${orderSummary}\n\n确认提交订单吗？`);
+
 				if (confirmed) {
 					const orderId = 'KFC' + Date.now().toString().slice(-6) + Math.floor(Math.random() * 100);
 					const timestamp = new Date().toLocaleString('zh-CN');
@@ -2912,142 +3481,314 @@ let totalPrice = 0;
 						totalPrice: totalPrice,
 						hasScreenshot: hasScreenshot,
 						screenshotData: screenshotData,
-						userId: currentUserId
+						userId: localStorage.getItem('kfcUserId') || ''
 					};
 
 					try {
 						// 保存到云端
-						await saveOrder(orderData);
+						const orderObj = new Order();
+						orderObj.set('orderId', orderId);
+						orderObj.set('timestamp', timestamp);
+						orderObj.set('status', 'new');
+						orderObj.set('cart', cart);
+						orderObj.set('deliveryInfo', deliveryInfo);
+						orderObj.set('orderNote', orderNote);
+						orderObj.set('deliveryType', deliveryType);
+						orderObj.set('totalPrice', totalPrice);
+						orderObj.set('hasScreenshot', hasScreenshot);
+						orderObj.set('screenshotData', screenshotData);
+						orderObj.set('userId', localStorage.getItem('kfcUserId') || '');
+						await orderObj.save();
+
+						// 保存到本地
+						orders.unshift(orderData);
+						localStorage.setItem('kfcOrders', JSON.stringify(orders));
+
+						newOrdersCount++;
+						updateOrderBadge();
+
+						cart = [];
+						updateCartDisplay();
+
+						resetForm(container);
+
+						const orderSubmitted = confirm(`订单提交成功！\n订单号：${orderId}\n\n点击"确定"查看您的订单详情，或点击"取消"返回首页。`);
+
+						if (orderSubmitted) {
+							showMyOrdersPage();
+
+							const url = new URL(window.location);
+							url.searchParams.set('order', orderId);
+							window.history.pushState({}, '', url);
+
+							setTimeout(() => {
+								document.getElementById('orderSearchInput').value = orderId;
+								searchUserOrder(orderId);
+
+								const orderElements = document.querySelectorAll('.user-order-item');
+								orderElements.forEach(el => {
+									const orderIdElement = el.querySelector('.user-order-id');
+									if (orderIdElement && orderIdElement.textContent.includes(orderId)) {
+										el.style.animation = 'highlightOrder 2s';
+										el.scrollIntoView({
+											behavior: 'smooth',
+											block: 'center'
+										});
+									}
+								});
+							}, 100);
+						} else {
+							showPage('homePage');
+						}
+
+						if (document.getElementById('adminPanel').classList.contains('active')) {
+							// 重新从云端加载订单数据
+							await loadOrdersFromCloud();
+							renderOrders('all');
+						}
+
+					} catch (error) {
+						console.error('保存订单到云端失败:', error);
+
+						// 云端保存失败，保存到本地
+						orders.unshift(orderData);
+						localStorage.setItem('kfcOrders', JSON.stringify(orders));
+						newOrdersCount++;
+						localStorage.setItem('newOrdersCount', newOrdersCount);
+						updateOrderBadge();
+
+						showNotification('订单已保存到本地（云端保存失败）', 'warning');
 
 						cart = [];
 						updateCartDisplay();
 						resetForm(container);
 
-						// 后续处理...
-					} catch (error) {
-						// 即使云端保存失败，本地已保存
-						// 后续处理...
+						alert(`订单提交成功（本地保存）！\n订单号：${orderId}\n\n由于网络问题，订单未同步到云端。`);
 					}
 				}
 			}
 
-			// 修改 handleOrderAction 函数
-			async function handleOrderAction(action, orderId) {
-				// 原有确认代码...
-   const orderIndex = orders.findIndex(o => o.id === orderId);
-            if (orderIndex === -1) return;
-            
-            let confirmMessage = '';
-            
-            switch(action) {
-                case 'process':
-                    confirmMessage = `确认将订单 ${orderId} 标记为处理中吗？`;
-                    break;
-                case 'complete':
-                    confirmMessage = `确认将订单 ${orderId} 标记为已完成吗？`;
-                    break;
-                case 'delete':
-                    confirmMessage = `确认删除订单 ${orderId} 吗？`;
-                    break;
+			const highlightStyle = document.createElement('style');
+			highlightStyle.textContent =
+				`
+            @keyframes highlightOrder {
+                0% { box-shadow: 0 0 0 0 rgba(227, 24, 55, 0.7); }
+                70% { box-shadow: 0 0 0 10px rgba(227, 24, 55, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(227, 24, 55, 0); }
             }
-				if (confirm(confirmMessage)) {
-					try {
-						switch (action) {
-							case 'process':
-								await updateOrderStatus(orderId, 'processing');
-								break;
-							case 'complete':
-								await updateOrderStatus(orderId, 'completed');
-								break;
-							case 'delete':
-								await deleteOrderFromCloud(orderId);
-								break;
-						}
+        `;
+			document.head.appendChild(highlightStyle);
 
-						// 更新显示
-						const activeFilterBtn = document.querySelector('.filter-btn.active');
-						const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
-						renderOrders(activeFilter);
+			function resetForm(container) {
+				container.querySelectorAll('input[type="text"], input[type="tel"], textarea').forEach(input => {
+					input.value = '';
+				});
 
-						showNotification(`订单 ${orderId} 操作成功`, 'success');
-					} catch (error) {
-						showNotification('操作失败，请检查网络连接', 'error');
-					}
+				const deliveryRadio = container.querySelector('input[name="deliveryType"][value="delivery"]');
+				if (deliveryRadio) {
+					deliveryRadio.checked = true;
+					const deliveryFields = container.querySelector('.delivery-fields');
+					const pickupFields = container.querySelector('.pickup-fields');
+					if (deliveryFields) deliveryFields.classList.remove('hidden');
+					if (pickupFields) pickupFields.classList.add('hidden');
+				}
+
+				const textMethodRadio = container.querySelector('input[name="pickupMethod"][value="text"]');
+				if (textMethodRadio) {
+					textMethodRadio.checked = true;
+					const textFields = container.querySelector('.text-method-fields');
+					const screenshotFields = container.querySelector('.screenshot-method-fields');
+					if (textFields) textFields.classList.remove('hidden');
+					if (screenshotFields) screenshotFields.classList.add('hidden');
+				}
+
+				const screenshotInput = container.querySelector('#storeScreenshot');
+				const previewContainer = container.querySelector('.screenshot-preview');
+				const uploadArea = container.querySelector('.screenshot-upload-area');
+				if (screenshotInput) {
+					screenshotInput.value = '';
+					if (previewContainer) previewContainer.classList.add('hidden');
+					if (uploadArea) uploadArea.style.display = 'block';
 				}
 			}
 
-			// 修改 clearAllOrders 事件监听
-			clearAllOrders.addEventListener('click', async function() {
-				if (orders.length > 0 && confirm('确定要清空所有订单吗？此操作不可恢复！')) {
-					try {
-						await clearAllOrdersFromCloud();
+			function initAdminPanel() {
+				const adminBtn = document.getElementById('adminBtn');
+				const closePanel = document.getElementById('closePanel');
+				const panelOverlay = document.getElementById('panelOverlay');
+				const adminPanel = document.getElementById('adminPanel');
+				const clearAllOrders = document.getElementById('clearAllOrders');
+				const adminTabs = document.querySelectorAll('.admin-tab');
+
+				adminBtn.addEventListener('click', function() {
+					const passwordModal = document.getElementById('passwordModal');
+					const adminPasswordInput = document.getElementById('adminPassword');
+
+					passwordModal.classList.add('active');
+					adminPasswordInput.focus();
+				});
+
+				closePanel.addEventListener('click', function() {
+					adminPanel.classList.remove('active');
+					panelOverlay.classList.remove('active');
+					document.body.style.overflow = 'auto';
+				});
+
+				panelOverlay.addEventListener('click', function() {
+					adminPanel.classList.remove('active');
+					panelOverlay.classList.remove('active');
+					document.body.style.overflow = 'auto';
+				});
+
+				clearAllOrders.addEventListener('click', function() {
+					if (orders.length > 0 && confirm('确定要清空所有订单吗？此操作不可恢复！')) {
+						orders = [];
+						localStorage.setItem('kfcOrders', JSON.stringify(orders));
+						newOrdersCount = 0;
+						localStorage.setItem('newOrdersCount', newOrdersCount);
+						updateOrderBadge();
 						renderOrders('all');
 						showNotification('已清空所有订单', 'success');
-					} catch (error) {
-						showNotification('清空失败，请检查网络连接', 'error');
-					}
-				}
-			});
-			adminTabs.forEach(tab => {
-				tab.addEventListener('click', function() {
-					const tabId = this.dataset.tab;
-
-					adminTabs.forEach(t => t.classList.remove('active'));
-
-					this.classList.add('active');
-
-					document.querySelectorAll('.admin-tab-content').forEach(content => {
-						content.classList.remove('active');
-					});
-
-					document.getElementById(`${tabId}Tab`).classList.add('active');
-
-					if (tabId === 'meals') {
-						updateMealList('all');
 					}
 				});
-			});
 
-			document.querySelectorAll('.filter-btn').forEach(btn => {
-				if (btn.id !== 'clearAllOrders') {
-					btn.addEventListener('click', function() {
-						document.querySelectorAll('.filter-btn').forEach(b => {
-							if (b.id !== 'clearAllOrders') {
-								b.classList.remove('active');
-							}
-						});
+				adminTabs.forEach(tab => {
+					tab.addEventListener('click', function() {
+						const tabId = this.dataset.tab;
+
+						adminTabs.forEach(t => t.classList.remove('active'));
 
 						this.classList.add('active');
 
-						const filter = this.dataset.filter;
-						renderOrders(filter);
+						document.querySelectorAll('.admin-tab-content').forEach(content => {
+							content.classList.remove('active');
+						});
+
+						document.getElementById(`${tabId}Tab`).classList.add('active');
+
+						if (tabId === 'meals') {
+							updateMealList('all');
+						}
 					});
-				}
-			});
-
-			function renderOrders(filter = 'all') {
-				const ordersContainer = document.getElementById('ordersContainer');
-				const noOrdersMessage = document.getElementById('noOrdersMessage');
-
-				const orderElements = ordersContainer.querySelectorAll('.admin-order-item');
-				orderElements.forEach(el => el.remove());
-
-				let filteredOrders = orders;
-				if (filter !== 'all') {
-					filteredOrders = orders.filter(order => order.status === filter);
-				}
-
-				if (filteredOrders.length === 0) {
-					noOrdersMessage.style.display = 'block';
-					return;
-				}
-
-				noOrdersMessage.style.display = 'none';
-
-				filteredOrders.forEach(order => {
-					const orderElement = createOrderElement(order);
-					ordersContainer.appendChild(orderElement);
 				});
+
+				document.querySelectorAll('.filter-btn').forEach(btn => {
+					if (btn.id !== 'clearAllOrders') {
+						btn.addEventListener('click', function() {
+							document.querySelectorAll('.filter-btn').forEach(b => {
+								if (b.id !== 'clearAllOrders') {
+									b.classList.remove('active');
+								}
+							});
+
+							this.classList.add('active');
+
+							const filter = this.dataset.filter;
+							renderOrders(filter);
+						});
+					}
+				});
+
+				// ==================== 新增代码开始 ====================
+				// 添加同步按钮事件
+				document.getElementById('syncOrdersBtn').addEventListener('click', syncOrders);
+				document.getElementById('syncMealsBtn').addEventListener('click', syncMeals);
+				// ==================== 新增代码结束 ====================
+			}
+
+			// ==================== 新增同步函数开始 ====================
+
+			// 同步订单数据
+			async function syncOrders() {
+				try {
+					showNotification('正在同步订单数据...', 'info');
+
+					// 从云端重新加载
+					await loadOrdersFromCloud();
+
+					// 如果有本地订单未同步，同步到云端
+					const localOrders = JSON.parse(localStorage.getItem('kfcOrders')) || [];
+					if (localOrders.length > 0) {
+						await saveLocalOrdersToCloud(localOrders);
+						await loadOrdersFromCloud(); // 重新加载
+					}
+
+					// 更新显示
+					if (document.getElementById('adminPanel').classList.contains('active')) {
+						const activeFilterBtn = document.querySelector('.filter-btn.active');
+						const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
+						renderOrders(activeFilter);
+					}
+
+					showNotification('订单数据同步完成', 'success');
+				} catch (error) {
+					console.error('同步订单数据失败:', error);
+					showNotification('同步订单数据失败: ' + error.message, 'error');
+				}
+			}
+
+			// 同步套餐数据
+			async function syncMeals() {
+				try {
+					showNotification('正在同步套餐数据...', 'info');
+
+					// 从云端重新加载
+					await loadMealsFromCloud();
+
+					// 如果有本地套餐未同步，同步到云端
+					const localMeals = JSON.parse(localStorage.getItem('kfcMeals')) || [];
+					if (localMeals.length > 0) {
+						await saveLocalMealsToCloud(localMeals);
+						await loadMealsFromCloud(); // 重新加载
+					}
+
+					// 更新显示
+					updateHomePage();
+
+					if (document.getElementById('adminPanel').classList.contains('active')) {
+						const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
+						updateMealList(activeFilter);
+					}
+
+					showNotification('套餐数据同步完成', 'success');
+				} catch (error) {
+					console.error('同步套餐数据失败:', error);
+					showNotification('同步套餐数据失败: ' + error.message, 'error');
+				}
+			}
+
+			// ==================== 新增同步函数结束 ====================
+			async function renderOrders(filter = 'all') {
+				try {
+					// 确保订单数据是最新的
+					await loadOrdersFromCloud();
+
+					const ordersContainer = document.getElementById('ordersContainer');
+					const noOrdersMessage = document.getElementById('noOrdersMessage');
+
+					const orderElements = ordersContainer.querySelectorAll('.admin-order-item');
+					orderElements.forEach(el => el.remove());
+
+					let filteredOrders = orders;
+					if (filter !== 'all') {
+						filteredOrders = orders.filter(order => order.status === filter);
+					}
+
+					if (filteredOrders.length === 0) {
+						noOrdersMessage.style.display = 'block';
+						return;
+					}
+
+					noOrdersMessage.style.display = 'none';
+
+					filteredOrders.forEach(order => {
+						const orderElement = createOrderElement(order);
+						ordersContainer.appendChild(orderElement);
+					});
+				} catch (error) {
+					console.error('渲染订单失败:', error);
+					showNotification('加载订单失败', 'error');
+				}
 			}
 
 			function createOrderElement(order) {
@@ -3089,9 +3830,9 @@ let totalPrice = 0;
 
 					itemsHTML +=
 						`<div class="order-item-detail">
-		                <div><strong>${item.name}</strong> - ¥${item.totalPrice.toFixed(2)}</div>
-		                <div style="font-size:0.9rem; color:#666;">${optionText}</div>
-		            </div>`;
+                    <div><strong>${item.name}</strong> - ¥${item.totalPrice.toFixed(2)}</div>
+                    <div style="font-size:0.9rem; color:#666;">${optionText}</div>
+                </div>`;
 				});
 
 				const infoLines = order.deliveryInfo.split('\n');
@@ -3106,44 +3847,44 @@ let totalPrice = 0;
 				if (order.hasScreenshot && order.screenshotData) {
 					screenshotHTML =
 						`
-		                <div class="screenshot-container">
-		                    <p><strong>门店截图：</strong></p>
-		                    <img src="${order.screenshotData}" alt="门店截图" class="screenshot-thumbnail" data-order-id="${order.id}">
-		                </div>
-		            `;
+                    <div class="screenshot-container">
+                        <p><strong>门店截图：</strong></p>
+                        <img src="${order.screenshotData}" alt="门店截图" class="screenshot-thumbnail" data-order-id="${order.id}">
+                    </div>
+                `;
 				}
 
 				const userInfo = order.userId ? `<p><strong>用户ID：</strong>${order.userId.substring(0, 12)}...</p>` : '';
 
 				orderElement.innerHTML =
 					`
-		            <div class="order-id">订单号：${order.id}</div>
-		            <div class="order-time">${order.timestamp} | ${deliveryTypeText}</div>
-		            <div class="order-status ${statusClass}">${statusText}</div>
-		            
-		            <div class="order-details">
-		                <div class="order-items">
-		                    ${itemsHTML}
-		                </div>
-		                
-		                <div class="order-total">
-		                    总计：¥${order.totalPrice.toFixed(2)}
-		                </div>
-		            </div>
-		            
-		            <div class="customer-info">
-		                ${deliveryHTML}
-		                ${userInfo}
-		                ${order.orderNote ? `<p><strong>备注：</strong>${order.orderNote}</p>` : ''}
-		                ${screenshotHTML}
-		            </div>
-		            
-		            <div style="margin-top: 15px; display: flex; gap: 10px;">
-		                ${order.status === 'new' ? `<button class="filter-btn" style="padding: 6px 12px; font-size: 0.9rem;" data-action="process" data-order-id="${order.id}">标记为处理中</button>` : ''}
-		                ${order.status === 'processing' ? `<button class="filter-btn" style="padding: 6px 12px; font-size: 0.9rem;" data-action="complete" data-order-id="${order.id}">标记为已完成</button>` : ''}
-		                <button class="filter-btn" style="padding: 6px 12px; font-size: 0.9rem; background-color: #f44336; color: white;" data-action="delete" data-order-id="${order.id}">删除订单</button>
-		            </div>
-		        `;
+                <div class="order-id">订单号：${order.id}</div>
+                <div class="order-time">${order.timestamp} | ${deliveryTypeText}</div>
+                <div class="order-status ${statusClass}">${statusText}</div>
+                
+                <div class="order-details">
+                    <div class="order-items">
+                        ${itemsHTML}
+                    </div>
+                    
+                    <div class="order-total">
+                        总计：¥${order.totalPrice.toFixed(2)}
+                    </div>
+                </div>
+                
+                <div class="customer-info">
+                    ${deliveryHTML}
+                    ${userInfo}
+                    ${order.orderNote ? `<p><strong>备注：</strong>${order.orderNote}</p>` : ''}
+                    ${screenshotHTML}
+                </div>
+                
+                <div style="margin-top: 15px; display: flex; gap: 10px;">
+                    ${order.status === 'new' ? `<button class="filter-btn" style="padding: 6px 12px; font-size: 0.9rem;" data-action="process" data-order-id="${order.id}">标记为处理中</button>` : ''}
+                    ${order.status === 'processing' ? `<button class="filter-btn" style="padding: 6px 12px; font-size: 0.9rem;" data-action="complete" data-order-id="${order.id}">标记为已完成</button>` : ''}
+                    <button class="filter-btn" style="padding: 6px 12px; font-size: 0.9rem; background-color: #f44336; color: white;" data-action="delete" data-order-id="${order.id}">删除订单</button>
+                </div>
+            `;
 
 				orderElement.querySelectorAll('button[data-action]').forEach(btn => {
 					btn.addEventListener('click', function() {
@@ -3165,7 +3906,7 @@ let totalPrice = 0;
 				return orderElement;
 			}
 
-			function handleOrderAction(action, orderId) {
+			async function handleOrderAction(action, orderId) {
 				const orderIndex = orders.findIndex(o => o.id === orderId);
 				if (orderIndex === -1) return;
 
@@ -3184,29 +3925,54 @@ let totalPrice = 0;
 				}
 
 				if (confirm(confirmMessage)) {
-					switch (action) {
-						case 'process':
-							orders[orderIndex].status = 'processing';
-							break;
-						case 'complete':
-							orders[orderIndex].status = 'completed';
-							break;
-						case 'delete':
-							orders.splice(orderIndex, 1);
-							break;
+					try {
+						// 更新云端
+						if (orders[orderIndex].objectId) {
+							const query = new AV.Query('Order');
+							const orderObj = await query.get(orders[orderIndex].objectId);
+
+							if (orderObj) {
+								switch (action) {
+									case 'process':
+										orderObj.set('status', 'processing');
+										orders[orderIndex].status = 'processing';
+										break;
+									case 'complete':
+										orderObj.set('status', 'completed');
+										orders[orderIndex].status = 'completed';
+										break;
+									case 'delete':
+										await orderObj.destroy();
+										orders.splice(orderIndex, 1);
+										break;
+								}
+
+								if (action !== 'delete') {
+									await orderObj.save();
+								}
+							}
+						}
+
+						// 更新本地
+						if (action !== 'delete') {
+							localStorage.setItem('kfcOrders', JSON.stringify(orders));
+						} else {
+							localStorage.setItem('kfcOrders', JSON.stringify(orders));
+						}
+
+						const activeFilterBtn = document.querySelector('.filter-btn.active');
+						const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
+
+						renderOrders(activeFilter);
+
+						showNotification(`订单 ${orderId} 操作成功`, 'success');
+
+					} catch (error) {
+						console.error('更新订单状态到云端失败:', error);
+						showNotification('操作失败: ' + error.message, 'error');
 					}
-
-					localStorage.setItem('kfcOrders', JSON.stringify(orders));
-
-					const activeFilterBtn = document.querySelector('.filter-btn.active');
-					const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
-
-					renderOrders(activeFilter);
-
-					showNotification(`订单 ${orderId} 操作成功`, 'success');
 				}
 			}
-
 			// 初始化套餐管理功能
 			function initMealManagement() {
 				updateMealList('all');
@@ -3346,33 +4112,33 @@ let totalPrice = 0;
 
 					mealItem.innerHTML =
 						`
-		                <div class="meal-list-item-info">
-		                    <h4>${meal.name} ${meal.active === false ? '<span class="status-inactive">(已下架)</span>' : '<span class="status-active">(已上架)</span>'}</h4>
-		                    <p><strong>价格:</strong> ¥${meal.price} | <strong>标签:</strong> ${meal.tags.join(', ')}</p>
-		                    <p><strong>描述:</strong> ${meal.description}</p>
-		                    <p><strong>创建时间:</strong> ${createdAt}</p>
-		                    <p><strong>选项组:</strong> ${meal.optionGroups ? meal.optionGroups.length : 0} 个 | 
-		                       <strong>选项项:</strong> ${totalOptions} 个 | 
-		                       <strong>固定搭配:</strong> ${totalFixed} 项</p>
-		                </div>
-		                <div class="meal-list-item-actions">
-		                    <div class="status-label">
-		                        <label class="status-toggle">
-		                            <input type="checkbox" class="status-toggle-input" data-meal-id="${meal.id}" ${meal.active !== false ? 'checked' : ''}>
-		                            <span class="status-slider"></span>
-		                        </label>
-		                        <span class="${meal.active !== false ? 'status-active' : 'status-inactive'}">${meal.active !== false ? '上架' : '下架'}</span>
-		                    </div>
-		                    <div style="display: flex; gap: 10px;">
-		                        <button class="action-btn edit-btn" data-meal-id="${meal.id}">
-		                            <i class="fas fa-edit"></i> 编辑
-		                        </button>
-		                        <button class="action-btn delete-btn" data-meal-id="${meal.id}">
-		                            <i class="fas fa-trash"></i> 删除
-		                        </button>
-		                    </div>
-		                </div>
-		            `;
+                    <div class="meal-list-item-info">
+                        <h4>${meal.name} ${meal.active === false ? '<span class="status-inactive">(已下架)</span>' : '<span class="status-active">(已上架)</span>'}</h4>
+                        <p><strong>价格:</strong> ¥${meal.price} | <strong>标签:</strong> ${meal.tags.join(', ')}</p>
+                        <p><strong>描述:</strong> ${meal.description}</p>
+                        <p><strong>创建时间:</strong> ${createdAt}</p>
+                        <p><strong>选项组:</strong> ${meal.optionGroups ? meal.optionGroups.length : 0} 个 | 
+                           <strong>选项项:</strong> ${totalOptions} 个 | 
+                           <strong>固定搭配:</strong> ${totalFixed} 项</p>
+                    </div>
+                    <div class="meal-list-item-actions">
+                        <div class="status-label">
+                            <label class="status-toggle">
+                                <input type="checkbox" class="status-toggle-input" data-meal-id="${meal.id}" ${meal.active !== false ? 'checked' : ''}>
+                                <span class="status-slider"></span>
+                            </label>
+                            <span class="${meal.active !== false ? 'status-active' : 'status-inactive'}">${meal.active !== false ? '上架' : '下架'}</span>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="action-btn edit-btn" data-meal-id="${meal.id}">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                            <button class="action-btn delete-btn" data-meal-id="${meal.id}">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                        </div>
+                    </div>
+                `;
 
 					mealList.appendChild(mealItem);
 				});
@@ -3404,7 +4170,8 @@ let totalPrice = 0;
 			}
 
 			// 切换套餐状态
-			function toggleMealStatus(mealId, isActive) {
+			// 切换套餐状态
+			async function toggleMealStatus(mealId, isActive) {
 				const mealIndex = meals.findIndex(m => m.id === mealId);
 				if (mealIndex === -1) return;
 
@@ -3412,16 +4179,37 @@ let totalPrice = 0;
 				const action = isActive ? '上架' : '下架';
 
 				if (confirm(`确定要将套餐 "${meal.name}" ${action} 吗？${isActive ? '' : '下架后用户将无法看到此套餐。'}`)) {
-					meals[mealIndex].active = isActive;
-					meals[mealIndex].updatedAt = Date.now(); // 记录更新时间
-					localStorage.setItem('kfcMeals', JSON.stringify(meals));
+					try {
+						// 更新云端
+						const query = new AV.Query('Meal');
+						const mealObj = await query.get(mealId);
+						if (mealObj) {
+							mealObj.set('active', isActive);
+							await mealObj.save();
+						}
 
-					updateHomePage();
+						// 更新本地
+						meals[mealIndex].active = isActive;
+						meals[mealIndex].updatedAt = Date.now();
+						localStorage.setItem('kfcMeals', JSON.stringify(meals));
 
-					const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
-					updateMealList(activeFilter);
+						updateHomePage();
 
-					showNotification(`套餐"${meal.name}"已${action}`, 'success');
+						const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
+						updateMealList(activeFilter);
+
+						showNotification(`套餐"${meal.name}"已${action}`, 'success');
+
+					} catch (error) {
+						console.error('更新套餐状态到云端失败:', error);
+						showNotification('更新套餐状态失败: ' + error.message, 'error');
+
+						// 如果更新失败，恢复复选框状态
+						const toggle = document.querySelector(`.status-toggle-input[data-meal-id="${mealId}"]`);
+						if (toggle) {
+							toggle.checked = !isActive;
+						}
+					}
 				} else {
 					// 如果取消，恢复复选框状态
 					const toggle = document.querySelector(`.status-toggle-input[data-meal-id="${mealId}"]`);
@@ -3477,55 +4265,55 @@ let totalPrice = 0;
 						optionGroup.className = 'option-group-item';
 						optionGroup.innerHTML =
 							`
-		                    <div class="option-group-header">
-		                        <div class="option-group-title">选项组 ${index + 1}</div>
-		                        <div>
-		                            <button class="action-btn add-btn add-option-item-btn" data-group-id="${groupId}">
-		                                <i class="fas fa-plus"></i> 添加选项
-		                            </button>
-		                            <button class="action-btn delete-btn delete-option-group-btn" data-group-id="${groupId}">
-		                                <i class="fas fa-trash"></i> 删除组
-		                            </button>
-		                        </div>
-		                    </div>
-		                    <div class="form-row">
-		                        <div class="form-group">
-		                            <label class="form-label">组标题 <span class="required">*</span></label>
-		                            <input type="text" class="form-input option-group-title-input" data-group-id="${groupId}" placeholder="例如：① 任选3份（可以重复选）" value="${group.title || '选项组' + (index + 1)}">
-		                        </div>
-		                        <div class="form-group">
-		                            <label class="form-label">规则描述 <span class="required">*</span></label>
-		                            <input type="text" class="form-input option-group-rules-input" data-group-id="${groupId}" placeholder="例如：需要选择3份，可以重复选择相同选项" value="${group.rules || '请选择选项'}">
-		                        </div>
-		                    </div>
-		                    <div class="form-row">
-		                        <div class="form-group">
-		                            <label class="form-label">最少选择数量 <span class="required">*</span></label>
-		                            <input type="number" class="form-input option-group-min-input" data-group-id="${groupId}" placeholder="例如：3" min="0" value="${group.minSelect || 1}">
-		                        </div>
-		                        <div class="form-group">
-		                            <label class="form-label">最多选择数量 <span class="required">*</span></label>
-		                            <input type="number" class="form-input option-group-max-input" data-group-id="${groupId}" placeholder="例如：3" min="1" value="${group.maxSelect || 1}">
-		                        </div>
-		                    </div>
-		                    <div class="form-row">
-		                        <div class="form-group">
-		                            <label class="form-label">是否可以重复选择</label>
-		                            <div style="margin-top: 8px;">
-		                                <label style="display: flex; align-items: center; gap: 8px;">
-		                                    <input type="checkbox" class="option-group-repeat-input" data-group-id="${groupId}" ${group.repeat ? 'checked' : ''}>
-		                                    <span>可以重复选择相同选项</span>
-		                                </label>
-		                            </div>
-		                        </div>
-		                        <div class="form-group">
-		                            <label class="form-label">每个选项最多选择几份</label>
-		                            <input type="number" class="form-input option-group-max-per-item-input" data-group-id="${groupId}" placeholder="例如：2" min="1" value="${group.maxPerItem || (group.repeat ? 999 : 1)}">
-		                        </div>
-		                    </div>
-		                    <div class="option-items-list" id="option-items-${groupId}">
-		                    </div>
-		                `;
+                        <div class="option-group-header">
+                            <div class="option-group-title">选项组 ${index + 1}</div>
+                            <div>
+                                <button class="action-btn add-btn add-option-item-btn" data-group-id="${groupId}">
+                                    <i class="fas fa-plus"></i> 添加选项
+                                </button>
+                                <button class="action-btn delete-btn delete-option-group-btn" data-group-id="${groupId}">
+                                    <i class="fas fa-trash"></i> 删除组
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">组标题 <span class="required">*</span></label>
+                                <input type="text" class="form-input option-group-title-input" data-group-id="${groupId}" placeholder="例如：① 任选3份（可以重复选）" value="${group.title || '选项组' + (index + 1)}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">规则描述 <span class="required">*</span></label>
+                                <input type="text" class="form-input option-group-rules-input" data-group-id="${groupId}" placeholder="例如：需要选择3份，可以重复选择相同选项" value="${group.rules || '请选择选项'}">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">最少选择数量 <span class="required">*</span></label>
+                                <input type="number" class="form-input option-group-min-input" data-group-id="${groupId}" placeholder="例如：3" min="0" value="${group.minSelect || 1}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">最多选择数量 <span class="required">*</span></label>
+                                <input type="number" class="form-input option-group-max-input" data-group-id="${groupId}" placeholder="例如：3" min="1" value="${group.maxSelect || 1}">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">是否可以重复选择</label>
+                                <div style="margin-top: 8px;">
+                                    <label style="display: flex; align-items: center; gap: 8px;">
+                                        <input type="checkbox" class="option-group-repeat-input" data-group-id="${groupId}" ${group.repeat ? 'checked' : ''}>
+                                        <span>可以重复选择相同选项</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">每个选项最多选择几份</label>
+                                <input type="number" class="form-input option-group-max-per-item-input" data-group-id="${groupId}" placeholder="例如：2" min="1" value="${group.maxPerItem || (group.repeat ? 999 : 1)}">
+                            </div>
+                        </div>
+                        <div class="option-items-list" id="option-items-${groupId}">
+                        </div>
+                    `;
 
 						document.getElementById('optionGroupsManagement').appendChild(optionGroup);
 
@@ -3578,55 +4366,55 @@ let totalPrice = 0;
 				optionGroup.className = 'option-group-item';
 				optionGroup.innerHTML =
 					`
-		            <div class="option-group-header">
-		                <div class="option-group-title">选项组 ${optionGroupsManagement.children.length + 1}</div>
-		                <div>
-		                    <button class="action-btn add-btn add-option-item-btn" data-group-id="${groupId}">
-		                        <i class="fas fa-plus"></i> 添加选项
-		                    </button>
-		                    <button class="action-btn delete-btn delete-option-group-btn" data-group-id="${groupId}">
-		                        <i class="fas fa-trash"></i> 删除组
-		                    </button>
-		                </div>
-		            </div>
-		            <div class="form-row">
-		                <div class="form-group">
-		                    <label class="form-label">组标题 <span class="required">*</span></label>
-		                    <input type="text" class="form-input option-group-title-input" data-group-id="${groupId}" placeholder="例如：① 任选3份（可以重复选）" value="选项组 ${optionGroupsManagement.children.length + 1}">
-		                </div>
-		                <div class="form-group">
-		                    <label class="form-label">规则描述 <span class="required">*</span></label>
-		                    <input type="text" class="form-input option-group-rules-input" data-group-id="${groupId}" placeholder="例如：需要选择3份，可以重复选择相同选项" value="请选择选项">
-		                </div>
-		            </div>
-		            <div class="form-row">
-		                <div class="form-group">
-		                    <label class="form-label">最少选择数量 <span class="required">*</span></label>
-		                    <input type="number" class="form-input option-group-min-input" data-group-id="${groupId}" placeholder="例如：3" min="0" value="1">
-		                </div>
-		                <div class="form-group">
-		                    <label class="form-label">最多选择数量 <span class="required">*</span></label>
-		                    <input type="number" class="form-input option-group-max-input" data-group-id="${groupId}" placeholder="例如：3" min="1" value="1">
-		                </div>
-		            </div>
-		            <div class="form-row">
-		                <div class="form-group">
-		                    <label class="form-label">是否可以重复选择</label>
-		                    <div style="margin-top: 8px;">
-		                        <label style="display: flex; align-items: center; gap: 8px;">
-		                            <input type="checkbox" class="option-group-repeat-input" data-group-id="${groupId}" checked>
-		                            <span>可以重复选择相同选项</span>
-		                        </label>
-		                    </div>
-		                </div>
-		                <div class="form-group">
-		                    <label class="form-label">每个选项最多选择几份</label>
-		                    <input type="number" class="form-input option-group-max-per-item-input" data-group-id="${groupId}" placeholder="例如：2" min="1" value="999">
-		                </div>
-		            </div>
-		            <div class="option-items-list" id="option-items-${groupId}">
-		            </div>
-		        `;
+                <div class="option-group-header">
+                    <div class="option-group-title">选项组 ${optionGroupsManagement.children.length + 1}</div>
+                    <div>
+                        <button class="action-btn add-btn add-option-item-btn" data-group-id="${groupId}">
+                            <i class="fas fa-plus"></i> 添加选项
+                        </button>
+                        <button class="action-btn delete-btn delete-option-group-btn" data-group-id="${groupId}">
+                            <i class="fas fa-trash"></i> 删除组
+                        </button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">组标题 <span class="required">*</span></label>
+                        <input type="text" class="form-input option-group-title-input" data-group-id="${groupId}" placeholder="例如：① 任选3份（可以重复选）" value="选项组 ${optionGroupsManagement.children.length + 1}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">规则描述 <span class="required">*</span></label>
+                        <input type="text" class="form-input option-group-rules-input" data-group-id="${groupId}" placeholder="例如：需要选择3份，可以重复选择相同选项" value="请选择选项">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">最少选择数量 <span class="required">*</span></label>
+                        <input type="number" class="form-input option-group-min-input" data-group-id="${groupId}" placeholder="例如：3" min="0" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">最多选择数量 <span class="required">*</span></label>
+                        <input type="number" class="form-input option-group-max-input" data-group-id="${groupId}" placeholder="例如：3" min="1" value="1">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">是否可以重复选择</label>
+                        <div style="margin-top: 8px;">
+                            <label style="display: flex; align-items: center; gap: 8px;">
+                                <input type="checkbox" class="option-group-repeat-input" data-group-id="${groupId}" checked>
+                                <span>可以重复选择相同选项</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">每个选项最多选择几份</label>
+                        <input type="number" class="form-input option-group-max-per-item-input" data-group-id="${groupId}" placeholder="例如：2" min="1" value="999">
+                    </div>
+                </div>
+                <div class="option-items-list" id="option-items-${groupId}">
+                </div>
+            `;
 
 				optionGroupsManagement.appendChild(optionGroup);
 
@@ -3659,14 +4447,14 @@ let totalPrice = 0;
 				optionItem.className = 'option-item-list-item';
 				optionItem.innerHTML =
 					`
-		            <div style="display: flex; gap: 10px; width: 100%;">
-		                <input type="text" class="form-input option-item-name-input" style="flex: 3;" placeholder="选项名称，例如：香辣鸡腿堡" value="${name || '选项'}">
-		                <input type="number" class="form-input option-item-price-input" style="flex: 1;" placeholder="附加价格" min="0" step="0.01" value="${price || 0}">
-		            </div>
-		            <button class="action-btn delete-btn delete-option-item-btn" data-item-id="${itemId}">
-		                <i class="fas fa-trash"></i>
-		            </button>
-		        `;
+                <div style="display: flex; gap: 10px; width: 100%;">
+                    <input type="text" class="form-input option-item-name-input" style="flex: 3;" placeholder="选项名称，例如：香辣鸡腿堡" value="${name || '选项'}">
+                    <input type="number" class="form-input option-item-price-input" style="flex: 1;" placeholder="附加价格" min="0" step="0.01" value="${price || 0}">
+                </div>
+                <button class="action-btn delete-btn delete-option-item-btn" data-item-id="${itemId}">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
 
 				optionItemsList.appendChild(optionItem);
 
@@ -3706,14 +4494,14 @@ let totalPrice = 0;
 				fixedItem.className = 'fixed-item-list-item';
 				fixedItem.innerHTML =
 					`
-		            <div style="display: flex; gap: 10px; width: 100%;">
-		                <input type="text" class="form-input fixed-item-name-input" style="flex: 3;" placeholder="固定搭配项名称，例如：可乐" value="${name || '固定搭配项'}">
-		                <input type="number" class="form-input fixed-item-quantity-input" style="flex: 1;" placeholder="数量" min="1" value="${quantity || 1}">
-		            </div>
-		            <button class="action-btn delete-btn delete-fixed-item-btn">
-		                <i class="fas fa-trash"></i>
-		            </button>
-		        `;
+                <div style="display: flex; gap: 10px; width: 100%;">
+                    <input type="text" class="form-input fixed-item-name-input" style="flex: 3;" placeholder="固定搭配项名称，例如：可乐" value="${name || '固定搭配项'}">
+                    <input type="number" class="form-input fixed-item-quantity-input" style="flex: 1;" placeholder="数量" min="1" value="${quantity || 1}">
+                </div>
+                <button class="action-btn delete-btn delete-fixed-item-btn">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
 
 				fixedItemsManagement.appendChild(fixedItem);
 
@@ -3723,7 +4511,8 @@ let totalPrice = 0;
 			}
 
 			// 删除套餐
-			function deleteMeal(mealId) {
+			// 删除套餐
+			async function deleteMeal(mealId) {
 				const mealIndex = meals.findIndex(m => m.id === mealId);
 				if (mealIndex === -1) return;
 
@@ -3749,19 +4538,34 @@ let totalPrice = 0;
 					}
 				}
 
-				meals.splice(mealIndex, 1);
-				localStorage.setItem('kfcMeals', JSON.stringify(meals));
+				try {
+					// 从云端删除
+					const query = new AV.Query('Meal');
+					const mealObj = await query.get(mealId);
+					if (mealObj) {
+						await mealObj.destroy();
+					}
 
-				updateHomePage();
+					// 从本地删除
+					meals.splice(mealIndex, 1);
+					localStorage.setItem('kfcMeals', JSON.stringify(meals));
 
-				const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
-				updateMealList(activeFilter);
+					updateHomePage();
 
-				showNotification(`套餐"${meal.name}"已删除`, 'success');
+					const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
+					updateMealList(activeFilter);
+
+					showNotification(`套餐"${meal.name}"已删除`, 'success');
+
+				} catch (error) {
+					console.error('从云端删除套餐失败:', error);
+					showNotification('删除套餐失败: ' + error.message, 'error');
+				}
 			}
 
 			// 保存套餐
-			function saveMeal() {
+			// 保存套餐
+			async function saveMeal() {
 				const mealId = document.getElementById('currentMealId').value;
 				const mealName = document.getElementById('mealName').value.trim();
 				const mealPrice = parseFloat(document.getElementById('mealPrice').value);
@@ -3876,51 +4680,88 @@ let totalPrice = 0;
 				let meal;
 				const now = Date.now();
 
-				if (mealId) {
-					// 编辑现有套餐
-					meal = meals.find(m => m.id === mealId);
-					if (meal) {
-						meal.name = mealName;
-						meal.price = mealPrice;
-						meal.tags = mealTags;
-						meal.description = mealDescription;
-						meal.active = mealActive;
-						meal.optionGroups = optionGroups;
-						meal.fixedItems = fixedItems;
-						meal.updatedAt = now;
+				try {
+					if (mealId) {
+						// 编辑现有套餐
+						meal = meals.find(m => m.id === mealId);
+						if (meal) {
+							// 更新本地数据
+							meal.name = mealName;
+							meal.price = mealPrice;
+							meal.tags = mealTags;
+							meal.description = mealDescription;
+							meal.active = mealActive;
+							meal.optionGroups = optionGroups;
+							meal.fixedItems = fixedItems;
+							meal.updatedAt = now;
+
+							// 更新云端
+							const query = new AV.Query('Meal');
+							const mealObj = await query.get(mealId);
+							if (mealObj) {
+								mealObj.set('name', mealName);
+								mealObj.set('price', mealPrice);
+								mealObj.set('tags', mealTags);
+								mealObj.set('description', mealDescription);
+								mealObj.set('active', mealActive);
+								mealObj.set('optionGroups', optionGroups);
+								mealObj.set('fixedItems', fixedItems);
+								await mealObj.save();
+							}
+						}
+					} else {
+						// 创建新套餐
+						meal = {
+							id: '', // 先留空，保存后会从云端获取
+							name: mealName,
+							price: mealPrice,
+							tags: mealTags,
+							description: mealDescription,
+							active: mealActive,
+							optionGroups: optionGroups,
+							fixedItems: fixedItems,
+							createdAt: now,
+							updatedAt: now
+						};
+
+						// 保存到云端
+						const mealObj = new Meal();
+						mealObj.set('name', mealName);
+						mealObj.set('price', mealPrice);
+						mealObj.set('tags', mealTags);
+						mealObj.set('description', mealDescription);
+						mealObj.set('active', mealActive);
+						mealObj.set('optionGroups', optionGroups);
+						mealObj.set('fixedItems', fixedItems);
+						const savedMeal = await mealObj.save();
+
+						// 获取云端返回的 ID
+						meal.id = savedMeal.id;
+						meals.push(meal);
 					}
-				} else {
-					// 创建新套餐
-					meal = {
-						id: 'meal-' + now + '-' + Math.random().toString(36).substr(2, 9),
-						name: mealName,
-						price: mealPrice,
-						tags: mealTags,
-						description: mealDescription,
-						active: mealActive,
-						optionGroups: optionGroups,
-						fixedItems: fixedItems,
-						createdAt: now,
-						updatedAt: now
-					};
 
-					meals.push(meal);
+					// 保存到本地缓存
+					localStorage.setItem('kfcMeals', JSON.stringify(meals));
+
+					updateHomePage();
+
+					const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
+					updateMealList(activeFilter);
+
+					resetMealForm();
+
+					document.querySelector('.admin-tab[data-tab="meals"]').click();
+
+					showNotification(mealId ? '套餐已更新' : '套餐已添加', 'success');
+
+				} catch (error) {
+					console.error('保存套餐到云端失败:', error);
+					showNotification('保存套餐失败: ' + error.message, 'error');
+
+					// 如果云端保存失败，至少保存到本地
+					localStorage.setItem('kfcMeals', JSON.stringify(meals));
 				}
-
-				localStorage.setItem('kfcMeals', JSON.stringify(meals));
-
-				updateHomePage();
-
-				const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
-				updateMealList(activeFilter);
-
-				resetMealForm();
-
-				document.querySelector('.admin-tab[data-tab="meals"]').click();
-
-				showNotification(mealId ? '套餐已更新' : '套餐已添加', 'success');
 			}
-
 			// 取消编辑
 			function cancelEdit() {
 				resetMealForm();
@@ -3987,32 +4828,32 @@ let totalPrice = 0;
 				notification.textContent = message;
 				notification.style.cssText =
 					`
-		            position: fixed;
-		            top: 20px;
-		            right: 20px;
-		            background-color: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#e31837' : '#e31837'};
-		            color: white;
-		            padding: 15px 20px;
-		            border-radius: 8px;
-		            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-		            z-index: 1000;
-		            font-weight: bold;
-		            animation: slideIn 0.3s ease;
-		            max-width: 400px;
-		        `;
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background-color: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#e31837' : '#e31837'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                z-index: 1000;
+                font-weight: bold;
+                animation: slideIn 0.3s ease;
+                max-width: 400px;
+            `;
 
 				const style = document.createElement('style');
 				style.textContent =
 					`
-		            @keyframes slideIn {
-		                from { transform: translateX(100%); opacity: 0; }
-		                to { transform: translateX(0); opacity: 1; }
-		            }
-		            @keyframes slideOut {
-		                from { transform: translateX(0); opacity: 1; }
-		                to { transform: translateX(100%); opacity: 0; }
-		            }
-		        `;
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes slideOut {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+            `;
 				document.head.appendChild(style);
 
 				document.body.appendChild(notification);
@@ -4026,9 +4867,6 @@ let totalPrice = 0;
 					}, 300);
 				}, 3000);
 			}
-			// 其他原有函数保持不变...
 		</script>
-
 	</body>
 </html>
-
