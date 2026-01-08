@@ -1893,7 +1893,8 @@
 			</div>
 
 			<div class="footer">
-				<p>© 2026 肯德基自助点餐系统 | 宅急送免配送费 | 商品特殊售出不退不换</p>
+				<p>© 2023 肯德基自助点餐系统 | 宅急送免配送费 | 商品特殊售出不退不换</p>
+				<p>#春日出游必备 #吃鸡神器</p>
 			</div>
 		</div>
 
@@ -2300,11 +2301,10 @@
 					}
 				}
 
-				// 新订单计数操作
+				// 新订单计数操作 - 修复了查询错误
 				static async loadNewOrdersCount() {
 					try {
-						const Counter = AV.Object.extend('Counter');
-						const query = new Counter();
+						const query = new AV.Query('Counter'); // 使用 AV.Query 而不是直接实例化
 						query.equalTo('type', 'newOrdersCount');
 						const result = await query.first();
 
@@ -2312,6 +2312,7 @@
 							return result.get('count') || 0;
 						} else {
 							// 如果不存在，创建默认值
+							const Counter = AV.Object.extend('Counter');
 							const counter = new Counter();
 							counter.set('type', 'newOrdersCount');
 							counter.set('count', 0);
@@ -2324,10 +2325,11 @@
 					}
 				}
 
+				// 修复了 updateNewOrdersCount 函数 - 使用正确的查询方式
 				static async updateNewOrdersCount(count) {
 					try {
 						const Counter = AV.Object.extend('Counter');
-						const query = new Counter();
+						const query = new AV.Query('Counter'); // 使用 AV.Query 而不是直接实例化
 						query.equalTo('type', 'newOrdersCount');
 						const result = await query.first();
 
@@ -3203,6 +3205,7 @@
 			}
 
 			// ==================== 订单提交功能 ====================
+			// 修复了 completeCheckout 函数，添加了更好的错误处理
 			function initCheckout(container) {
 				const checkoutBtn = container.querySelector('.checkout-btn');
 				if (checkoutBtn) {
@@ -3352,14 +3355,21 @@
 						// 保存到LeanCloud
 						showNotification('正在提交订单...', 'info');
 						const savedOrder = await LeanCloudData.saveOrder(orderData);
+						console.log('订单保存成功:', savedOrder);
 
 						// 添加到本地数据
 						savedOrder.objectId = savedOrder.objectId; // 确保有objectId
 						orders.unshift(savedOrder);
 
-						// 更新新订单计数
+						// 更新新订单计数 - 使用 try-catch 包裹，即使失败也不影响订单提交
 						newOrdersCount++;
-						await LeanCloudData.updateNewOrdersCount(newOrdersCount);
+						try {
+							await LeanCloudData.updateNewOrdersCount(newOrdersCount);
+							console.log('新订单计数更新成功');
+						} catch (countError) {
+							console.warn('更新新订单计数失败，但不影响订单提交:', countError);
+							// 这里只是记录警告，不阻止订单提交
+						}
 
 						// 更新本地缓存
 						localStorage.setItem('kfcOrdersCache', JSON.stringify(orders));
@@ -3411,7 +3421,8 @@
 						}
 					} catch (error) {
 						console.error('提交订单失败:', error);
-						showNotification('订单提交失败，请检查网络连接', 'error');
+						showNotification('订单提交失败：' + (error.message || '请检查网络连接'), 'error');
+						return; // 提前返回，不继续执行
 					}
 				}
 			}
@@ -5140,4 +5151,3 @@
 		</script>
 	</body>
 </html>
-
