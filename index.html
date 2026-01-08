@@ -1611,6 +1611,66 @@
             color: white;
         }
         
+        /* 新增：排序样式 */
+        .sort-order-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .sort-order-input {
+            width: 80px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .sort-order-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .sort-order-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 1px solid #ddd;
+            background-color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .sort-order-btn:hover {
+            background-color: #f0f0f0;
+            border-color: #e31837;
+            color: #e31837;
+        }
+        
+        .sort-order-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .sort-order-btn:disabled:hover {
+            background-color: white;
+            border-color: #ddd;
+            color: inherit;
+        }
+        
+        .order-display {
+            font-size: 0.9rem;
+            color: #666;
+            background-color: #f0f0f0;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 10px;
+        }
+        
         @media (max-width: 768px) {
             .main-content {
                 flex-direction: column;
@@ -1711,6 +1771,10 @@
             .header-btn {
                 width: 200px;
                 justify-content: center;
+            }
+            
+            .sort-order-container {
+                flex-wrap: wrap;
             }
         }
     </style>
@@ -1829,8 +1893,8 @@
 			</div>
 
 			<div class="footer">
-				<p>©  2026肯德基自助点餐系统 | 宅急送免配送费 | 商品特殊售出不退不换</p>
-				
+				<p>© 2023 肯德基自助点餐系统 | 宅急送免配送费 | 商品特殊售出不退不换</p>
+				<p>#春日出游必备 #吃鸡神器</p>
 			</div>
 		</div>
 
@@ -1923,20 +1987,28 @@
 
 						<div class="form-row">
 							<div class="form-group">
+								<label class="form-label">排序顺序 <span class="required">*</span></label>
+								<input type="number" class="form-input" id="mealOrder" placeholder="数字越小越靠前，例如：1" min="0" step="1" value="9999">
+								<div class="form-hint">
+									<i class="fas fa-lightbulb"></i> 数字越小显示越靠前，默认9999（最后）
+								</div>
+							</div>
+							
+							<div class="form-group">
 								<label class="form-label">套餐标签 <span class="required">*</span></label>
 								<input type="text" class="form-input" id="mealTags" placeholder="用逗号分隔，例如：自提/宅急送,3人餐,12件套" required>
 								<div class="form-hint">
 									<i class="fas fa-lightbulb"></i> 标签将显示在套餐卡片上，用逗号分隔多个标签
 								</div>
 							</div>
+						</div>
 
+						<div class="form-row">
 							<div class="form-group">
 								<label class="form-label">套餐描述 <span class="required">*</span></label>
 								<input type="text" class="form-input" id="mealDescription" placeholder="例如：适合3人享用，自提/宅急送都可用" required>
 							</div>
-						</div>
-
-						<div class="form-row">
+							
 							<div class="form-group">
 								<label class="form-label">套餐状态</label>
 								<div class="status-label">
@@ -2044,6 +2116,7 @@
 								price: data.price,
 								tags: data.tags || [],
 								description: data.description,
+								order: data.order || 9999, // 新增：排序字段
 								active: data.active !== false,
 								optionGroups: data.optionGroups || [],
 								fixedItems: data.fixedItems || [],
@@ -2077,6 +2150,7 @@
 						mealObj.set('price', meal.price);
 						mealObj.set('tags', meal.tags);
 						mealObj.set('description', meal.description);
+						mealObj.set('order', meal.order || 9999); // 新增：保存排序字段
 						mealObj.set('active', meal.active !== false);
 						mealObj.set('optionGroups', meal.optionGroups || []);
 						mealObj.set('fixedItems', meal.fixedItems || []);
@@ -2093,6 +2167,7 @@
 							price: meal.price,
 							tags: meal.tags,
 							description: meal.description,
+							order: meal.order || 9999, // 新增：返回排序字段
 							active: meal.active !== false,
 							optionGroups: meal.optionGroups || [],
 							fixedItems: meal.fixedItems || [],
@@ -2228,56 +2303,51 @@
 
 				// 新订单计数操作
 				static async loadNewOrdersCount() {
-				    try {
-				        // 正确的查询方式
-				        const query = new AV.Query('Counter');
-				        query.equalTo('type', 'newOrdersCount');
-				        const result = await query.first();
-				
-				        if (result) {
-				            return result.get('count') || 0;
-				        } else {
-				            // 如果不存在，创建默认值
-				            const CounterClass = AV.Object.extend('Counter');
-				            const counter = new CounterClass();
-				            counter.set('type', 'newOrdersCount');
-				            counter.set('count', 0);
-				            await counter.save();
-				            return 0;
-				        }
-				    } catch (error) {
-				        console.error('加载新订单计数失败:', error);
-				        return 0;
-				    }
+					try {
+						const Counter = AV.Object.extend('Counter');
+						const query = new Counter();
+						query.equalTo('type', 'newOrdersCount');
+						const result = await query.first();
+
+						if (result) {
+							return result.get('count') || 0;
+						} else {
+							// 如果不存在，创建默认值
+							const counter = new Counter();
+							counter.set('type', 'newOrdersCount');
+							counter.set('count', 0);
+							await counter.save();
+							return 0;
+						}
+					} catch (error) {
+						console.error('加载新订单计数失败:', error);
+						return 0;
+					}
 				}
 
-				// 找到 LeanCloudData.updateNewOrdersCount 函数，将其修改为：
-				
 				static async updateNewOrdersCount(count) {
-				    try {
-				        // 正确的查询方式
-				        const query = new AV.Query('Counter');  // 直接使用 AV.Query 创建查询
-				        query.equalTo('type', 'newOrdersCount');
-				        const result = await query.first();
-				
-				        let counter;
-				        if (result) {
-				            counter = result;
-				        } else {
-				            // 如果不存在，创建新的
-				            const CounterClass = AV.Object.extend('Counter');
-				            counter = new CounterClass();
-				            counter.set('type', 'newOrdersCount');
-				        }
-				
-				        counter.set('count', count);
-				        await counter.save();
-				        console.log('新订单计数更新成功:', count);
-				        return true;
-				    } catch (error) {
-				        console.error('更新新订单计数失败:', error);
-				        throw error;
-				    }
+					try {
+						const Counter = AV.Object.extend('Counter');
+						const query = new Counter();
+						query.equalTo('type', 'newOrdersCount');
+						const result = await query.first();
+
+						let counter;
+						if (result) {
+							counter = result;
+						} else {
+							counter = new Counter();
+							counter.set('type', 'newOrdersCount');
+						}
+
+						counter.set('count', count);
+						await counter.save();
+						console.log('新订单计数更新成功:', count);
+						return true;
+					} catch (error) {
+						console.error('更新新订单计数失败:', error);
+						throw error;
+					}
 				}
 
 				// 初始化数据库表（如果不存在）
@@ -2425,7 +2495,16 @@
 
 				mealGrid.innerHTML = '';
 
-				const activeMeals = meals.filter(meal => meal.active !== false);
+				// 获取已上架的套餐并按order字段排序
+				const activeMeals = meals
+					.filter(meal => meal.active !== false)
+					.sort((a, b) => {
+						// 首先按order排序
+						const orderDiff = (a.order || 9999) - (b.order || 9999);
+						if (orderDiff !== 0) return orderDiff;
+						// 如果order相同，按创建时间排序
+						return (b.createdAt || 0) - (a.createdAt || 0);
+					});
 
 				if (activeMeals.length === 0) {
 					noMealsMessage.style.display = 'block';
@@ -4100,8 +4179,12 @@
 					filteredMeals = meals.filter(meal => meal.active === false);
 				}
 
-				// 按创建时间排序，最新的在前面
+				// 按order字段排序，再按创建时间排序
 				filteredMeals.sort((a, b) => {
+					// 首先按order排序
+					const orderDiff = (a.order || 9999) - (b.order || 9999);
+					if (orderDiff !== 0) return orderDiff;
+					// 如果order相同，按创建时间排序
 					const aTime = a.createdAt || 0;
 					const bTime = b.createdAt || 0;
 					return bTime - aTime;
@@ -4139,13 +4222,26 @@
 					// 添加创建时间显示
 					const createdAt = meal.createdAt ? new Date(meal.createdAt).toLocaleString('zh-CN') : '未知时间';
 
+					// 添加排序控制
+					const sortControls = `
+						<div class="sort-order-container">
+							<label>排序:</label>
+							<input type="number" class="sort-order-input" data-meal-id="${meal.id}" value="${meal.order || 9999}" min="0" step="1">
+							<div class="sort-order-buttons">
+								<button class="sort-order-btn" data-action="move-up" data-meal-id="${meal.id}" title="上移"><i class="fas fa-arrow-up"></i></button>
+								<button class="sort-order-btn" data-action="move-down" data-meal-id="${meal.id}" title="下移"><i class="fas fa-arrow-down"></i></button>
+								<button class="sort-order-btn" data-action="apply-order" data-meal-id="${meal.id}" title="应用排序"><i class="fas fa-check"></i></button>
+							</div>
+						</div>
+					`;
+
 					mealItem.innerHTML =
 						`
                     <div class="meal-list-item-info">
                         <h4>${meal.name} ${meal.active === false ? '<span class="status-inactive">(已下架)</span>' : '<span class="status-active">(已上架)</span>'}</h4>
                         <p><strong>价格:</strong> ¥${meal.price} | <strong>标签:</strong> ${meal.tags.join(', ')}</p>
                         <p><strong>描述:</strong> ${meal.description}</p>
-                        <p><strong>创建时间:</strong> ${createdAt}</p>
+                        <p><strong>创建时间:</strong> ${createdAt} | <strong>排序值:</strong> <span class="order-display">${meal.order || 9999}</span></p>
                         <p><strong>选项组:</strong> ${meal.optionGroups ? meal.optionGroups.length : 0} 个 | 
                            <strong>选项项:</strong> ${totalOptions} 个 | 
                            <strong>固定搭配:</strong> ${totalFixed} 项</p>
@@ -4158,6 +4254,7 @@
                             </label>
                             <span class="${meal.active !== false ? 'status-active' : 'status-inactive'}">${meal.active !== false ? '上架' : '下架'}</span>
                         </div>
+                        ${sortControls}
                         <div style="display: flex; gap: 10px;">
                             <button class="action-btn edit-btn" data-meal-id="${meal.id}">
                                 <i class="fas fa-edit"></i> 编辑
@@ -4196,6 +4293,91 @@
 						await deleteMeal(mealId);
 					});
 				});
+
+				// 绑定排序按钮事件
+				document.querySelectorAll('.sort-order-btn').forEach(btn => {
+					btn.addEventListener('click', async function() {
+						const mealId = this.dataset.mealId;
+						const action = this.dataset.action;
+						await handleSortAction(action, mealId);
+					});
+				});
+
+				// 绑定排序输入框事件
+				document.querySelectorAll('.sort-order-input').forEach(input => {
+					input.addEventListener('change', async function() {
+						const mealId = this.dataset.mealId;
+						const newOrder = parseInt(this.value) || 9999;
+						await updateMealOrder(mealId, newOrder);
+					});
+				});
+			}
+
+			// 处理排序操作
+			async function handleSortAction(action, mealId) {
+				const mealIndex = meals.findIndex(m => m.id === mealId);
+				if (mealIndex === -1) return;
+
+				const meal = meals[mealIndex];
+				
+				switch (action) {
+					case 'move-up':
+						// 上移：减小order值
+						const newOrderUp = (meal.order || 9999) - 1;
+						await updateMealOrder(mealId, Math.max(0, newOrderUp));
+						break;
+						
+					case 'move-down':
+						// 下移：增加order值
+						const newOrderDown = (meal.order || 9999) + 1;
+						await updateMealOrder(mealId, newOrderDown);
+						break;
+						
+					case 'apply-order':
+						// 应用当前输入框的值
+						const input = document.querySelector(`.sort-order-input[data-meal-id="${mealId}"]`);
+						if (input) {
+							const newOrder = parseInt(input.value) || 9999;
+							await updateMealOrder(mealId, newOrder);
+						}
+						break;
+				}
+			}
+
+			// 更新套餐排序
+			async function updateMealOrder(mealId, newOrder) {
+				const mealIndex = meals.findIndex(m => m.id === mealId);
+				if (mealIndex === -1) return;
+
+				const meal = meals[mealIndex];
+				const oldOrder = meal.order || 9999;
+				
+				if (newOrder === oldOrder) return;
+
+				try {
+					// 更新本地数据
+					meals[mealIndex].order = newOrder;
+					meals[mealIndex].updatedAt = Date.now();
+
+					// 保存到LeanCloud
+					const updatedMeal = await LeanCloudData.saveMeal(meals[mealIndex]);
+					meals[mealIndex] = updatedMeal;
+
+					// 更新本地缓存
+					localStorage.setItem('kfcMealsCache', JSON.stringify(meals));
+
+					// 更新首页显示
+					updateHomePage();
+
+					// 更新后台列表
+					const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
+					updateMealList(activeFilter);
+
+					showNotification(`套餐"${meal.name}"排序已更新为 ${newOrder}`, 'success');
+				} catch (error) {
+					console.error('更新套餐排序失败:', error);
+					showNotification('更新排序失败，请检查网络连接', 'error');
+				}
 			}
 
 			// 切换套餐状态
@@ -4255,6 +4437,7 @@
 				document.getElementById('currentMealId').value = meal.id;
 				document.getElementById('mealName').value = meal.name;
 				document.getElementById('mealPrice').value = meal.price;
+				document.getElementById('mealOrder').value = meal.order || 9999; // 新增：填充排序字段
 				document.getElementById('mealTags').value = meal.tags.join(', ');
 				document.getElementById('mealDescription').value = meal.description;
 				document.getElementById('mealActive').checked = meal.active !== false;
@@ -4589,6 +4772,7 @@
 				const mealId = document.getElementById('currentMealId').value;
 				const mealName = document.getElementById('mealName').value.trim();
 				const mealPrice = parseFloat(document.getElementById('mealPrice').value);
+				const mealOrder = parseInt(document.getElementById('mealOrder').value) || 9999; // 新增：获取排序值
 				const mealTags = document.getElementById('mealTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
 				const mealDescription = document.getElementById('mealDescription').value.trim();
 				const mealActive = document.getElementById('mealActive').checked;
@@ -4707,6 +4891,7 @@
 						if (meal) {
 							meal.name = mealName;
 							meal.price = mealPrice;
+							meal.order = mealOrder; // 新增：更新排序字段
 							meal.tags = mealTags;
 							meal.description = mealDescription;
 							meal.active = mealActive;
@@ -4729,6 +4914,7 @@
 							id: 'meal-' + now + '-' + Math.random().toString(36).substr(2, 9),
 							name: mealName,
 							price: mealPrice,
+							order: mealOrder, // 新增：设置排序字段
 							tags: mealTags,
 							description: mealDescription,
 							active: mealActive,
@@ -4771,6 +4957,7 @@
 				document.getElementById('currentMealId').value = '';
 				document.getElementById('mealName').value = '';
 				document.getElementById('mealPrice').value = '';
+				document.getElementById('mealOrder').value = '9999'; // 新增：重置排序字段
 				document.getElementById('mealTags').value = '';
 				document.getElementById('mealDescription').value = '';
 				document.getElementById('mealActive').checked = true;
@@ -4954,4 +5141,3 @@
 		</script>
 	</body>
 </html>
-
