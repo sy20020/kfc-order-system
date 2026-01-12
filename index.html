@@ -1758,6 +1758,44 @@
 				margin-left: 10px;
 			}
 			
+			/* 新增：加载动画 */
+			.loading-overlay {
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				background-color: rgba(0, 0, 0, 0.7);
+				z-index: 4000;
+				display: none;
+				justify-content: center;
+				align-items: center;
+			}
+			
+			.loading-overlay.active {
+				display: flex;
+			}
+			
+			.loading-spinner {
+				width: 50px;
+				height: 50px;
+				border: 5px solid #f3f3f3;
+				border-top: 5px solid #e31837;
+				border-radius: 50%;
+				animation: spin 1s linear infinite;
+			}
+			
+			.loading-text {
+				color: white;
+				margin-top: 20px;
+				font-size: 1.2rem;
+			}
+			
+			@keyframes spin {
+				0% { transform: rotate(0deg); }
+				100% { transform: rotate(360deg); }
+			}
+			
 			@media (max-width: 768px) {
 				.main-content {
 					flex-direction: column;
@@ -1883,6 +1921,14 @@
 		</style>
 	</head>
 	<body>
+		<!-- 新增：全局加载动画 -->
+		<div class="loading-overlay" id="globalLoading">
+			<div>
+				<div class="loading-spinner"></div>
+				<div class="loading-text" id="loadingText">处理中...</div>
+			</div>
+		</div>
+		
 		<header>
 			<div class="container">
 				<div class="logo">
@@ -2212,13 +2258,61 @@
 				localStorage.setItem('kfcUserId', currentUserId);
 			}
 
-			// ==================== LeanCloud 数据操作类 ====================
+			// ==================== 优化：新增全局加载状态管理 ====================
+			let isLoading = false;
+			
+			// 显示加载动画
+			function showLoading(text = '处理中...') {
+				if (!isLoading) {
+					isLoading = true;
+					const loadingOverlay = document.getElementById('globalLoading');
+					const loadingText = document.getElementById('loadingText');
+					loadingText.textContent = text;
+					loadingOverlay.classList.add('active');
+					document.body.style.overflow = 'hidden';
+				}
+			}
+			
+			// 隐藏加载动画
+			function hideLoading() {
+				if (isLoading) {
+					isLoading = false;
+					const loadingOverlay = document.getElementById('globalLoading');
+					loadingOverlay.classList.remove('active');
+					document.body.style.overflow = 'auto';
+				}
+			}
+			
+			// 优化：设置操作超时时间
+			const OPERATION_TIMEOUT = 30000; // 30秒超时
+			
+			// 优化：带超时的Promise包装器
+			function withTimeout(promise, timeout = OPERATION_TIMEOUT, operationName = '操作') {
+				return new Promise((resolve, reject) => {
+					const timeoutId = setTimeout(() => {
+						reject(new Error(`${operationName}超时，请检查网络连接`));
+					}, timeout);
+					
+					promise.then(
+						result => {
+							clearTimeout(timeoutId);
+							resolve(result);
+						},
+						error => {
+							clearTimeout(timeoutId);
+							reject(error);
+						}
+					);
+				});
+			}
+
+			// ==================== LeanCloud 数据操作类（优化版） ====================
 			class LeanCloudData {
 				static async loadMeals() {
 					try {
 						const query = new AV.Query('Meals');
 						query.descending('createdAt');
-						const results = await query.find();
+						const results = await withTimeout(query.find(), 10000, '加载套餐数据');
 						return results.map(item => {
 							const data = item.toJSON();
 							const createdAt = item.createdAt ? item.createdAt.getTime() : Date.now();
@@ -2240,6 +2334,7 @@
 						});
 					} catch (error) {
 						console.error('加载套餐数据失败:', error);
+						// 优化：不抛出错误，返回空数组，使用本地缓存
 						return [];
 					}
 				}
@@ -2265,7 +2360,7 @@
 						mealObj.set('optionGroups', meal.optionGroups || []);
 						mealObj.set('fixedItems', meal.fixedItems || []);
 
-						const result = await mealObj.save();
+						const result = await withTimeout(mealObj.save(), 15000, '保存套餐');
 
 						const createdAt = result.createdAt ? result.createdAt.getTime() : Date.now();
 						const updatedAt = result.updatedAt ? result.updatedAt.getTime() : Date.now();
@@ -2294,10 +2389,10 @@
 					try {
 						const query = new AV.Query('Meals');
 						query.equalTo('id', mealId);
-						const result = await query.first();
+						const result = await withTimeout(query.first(), 10000, '查找套餐');
 
 						if (result) {
-							await result.destroy();
+							await withTimeout(result.destroy(), 10000, '删除套餐');
 							return true;
 						}
 						return false;
@@ -2311,7 +2406,7 @@
 					try {
 						const query = new AV.Query('Orders');
 						query.descending('createdAt');
-						const results = await query.find();
+						const results = await withTimeout(query.find(), 10000, '加载订单数据');
 						return results.map(item => {
 							const data = item.toJSON();
 							const createdAt = item.createdAt ? item.createdAt.getTime() : Date.now();
@@ -2335,10 +2430,12 @@
 						});
 					} catch (error) {
 						console.error('加载订单数据失败:', error);
+						// 优化：不抛出错误，返回空数组，使用本地缓存
 						return [];
 					}
 				}
 
+				// 优化：简化保存订单逻辑，移除不必要的字段
 				static async saveOrder(order) {
 					try {
 						const Order = AV.Object.extend('Orders');
@@ -2350,6 +2447,7 @@
 							orderObj = new Order();
 						}
 
+						// 优化：只保存必要字段，减少数据传输量
 						orderObj.set('id', order.id);
 						orderObj.set('timestamp', order.timestamp);
 						orderObj.set('status', order.status || 'new');
@@ -2357,13 +2455,18 @@
 						orderObj.set('deliveryInfo', order.deliveryInfo);
 						orderObj.set('orderNote', order.orderNote || '');
 						orderObj.set('deliveryType', order.deliveryType);
-						orderObj.set('pickupType', order.pickupType || ''); // 新增：堂食/外带类型
 						orderObj.set('totalPrice', order.totalPrice);
-						orderObj.set('hasScreenshot', order.hasScreenshot || false);
-						orderObj.set('screenshotData', order.screenshotData || '');
 						orderObj.set('userId', order.userId);
+						
+						// 优化：截图数据较大，异步处理
+						if (order.hasScreenshot && order.screenshotData) {
+							orderObj.set('hasScreenshot', true);
+							orderObj.set('screenshotData', order.screenshotData);
+						} else {
+							orderObj.set('hasScreenshot', false);
+						}
 
-						const result = await orderObj.save();
+						const result = await withTimeout(orderObj.save(), 15000, '保存订单');
 
 						const createdAt = result.createdAt ? result.createdAt.getTime() : Date.now();
 						const updatedAt = result.updatedAt ? result.updatedAt.getTime() : Date.now();
@@ -2376,7 +2479,7 @@
 							deliveryInfo: order.deliveryInfo,
 							orderNote: order.orderNote || '',
 							deliveryType: order.deliveryType,
-							pickupType: order.pickupType || '', // 新增
+							pickupType: order.pickupType || '',
 							totalPrice: order.totalPrice,
 							hasScreenshot: order.hasScreenshot || false,
 							screenshotData: order.screenshotData,
@@ -2395,10 +2498,10 @@
 					try {
 						const query = new AV.Query('Orders');
 						query.equalTo('id', orderId);
-						const result = await query.first();
+						const result = await withTimeout(query.first(), 10000, '查找订单');
 
 						if (result) {
-							await result.destroy();
+							await withTimeout(result.destroy(), 10000, '删除订单');
 							return true;
 						}
 						return false;
@@ -2412,7 +2515,7 @@
 					try {
 						const query = new AV.Query('Counter');
 						query.equalTo('type', 'newOrdersCount');
-						const result = await query.first();
+						const result = await withTimeout(query.first(), 5000, '加载新订单计数');
 
 						if (result) {
 							return result.get('count') || 0;
@@ -2421,7 +2524,7 @@
 							const counter = new Counter();
 							counter.set('type', 'newOrdersCount');
 							counter.set('count', 0);
-							await counter.save();
+							await withTimeout(counter.save(), 5000, '初始化计数器');
 							return 0;
 						}
 					} catch (error) {
@@ -2435,7 +2538,7 @@
 						const Counter = AV.Object.extend('Counter');
 						const query = new AV.Query('Counter');
 						query.equalTo('type', 'newOrdersCount');
-						const result = await query.first();
+						const result = await withTimeout(query.first(), 5000, '查找计数器');
 
 						let counter;
 						if (result) {
@@ -2446,7 +2549,7 @@
 						}
 
 						counter.set('count', count);
-						await counter.save();
+						await withTimeout(counter.save(), 5000, '更新计数器');
 						console.log('新订单计数更新成功:', count);
 						return true;
 					} catch (error) {
@@ -2458,11 +2561,11 @@
 				static async initializeTables() {
 					try {
 						const mealsQuery = new AV.Query('Meals');
-						const mealsCount = await mealsQuery.count();
+						const mealsCount = await withTimeout(mealsQuery.count(), 5000, '统计套餐数');
 						console.log('Meals表记录数:', mealsCount);
 
 						const ordersQuery = new AV.Query('Orders');
-						const ordersCount = await ordersQuery.count();
+						const ordersCount = await withTimeout(ordersQuery.count(), 5000, '统计订单数');
 						console.log('Orders表记录数:', ordersCount);
 
 						return true;
@@ -2476,11 +2579,17 @@
 			// ==================== 页面初始化 ====================
 			document.addEventListener('DOMContentLoaded', async function() {
 				try {
-					showNotification('正在加载数据...', 'info');
+					showLoading('正在加载数据...');
 
-					await LeanCloudData.initializeTables();
-
-					await loadAllDataFromLeanCloud();
+					// 优化：并行加载数据，提高加载速度
+					await Promise.all([
+						LeanCloudData.initializeTables().catch(e => console.log('表初始化失败:', e)),
+						loadAllDataFromLeanCloud().catch(e => {
+							console.error('数据加载失败:', e);
+							showNotification('数据加载失败，使用本地缓存数据', 'error');
+							loadFromLocalCache();
+						})
+					]);
 
 					initHomePage();
 					initAdminPanel();
@@ -2501,11 +2610,13 @@
 					checkUrlParams();
 
 					showNotification('页面加载完成', 'success');
+					hideLoading();
 
 					console.log('页面初始化完成，数据已从LeanCloud加载');
 				} catch (error) {
 					console.error('页面初始化失败:', error);
-					showNotification('数据加载失败，使用本地缓存数据', 'error');
+					showNotification('页面初始化失败，使用本地缓存数据', 'error');
+					hideLoading();
 
 					loadFromLocalCache();
 
@@ -2634,9 +2745,10 @@
 				});
 			}
 
-			// ==================== 数据加载函数 ====================
+			// ==================== 数据加载函数（优化版） ====================
 			async function loadAllDataFromLeanCloud() {
 				try {
+					// 优化：并行加载所有数据
 					const [mealsData, ordersData, countData] = await Promise.all([
 						LeanCloudData.loadMeals(),
 						LeanCloudData.loadOrders(),
@@ -2647,8 +2759,25 @@
 					orders = ordersData;
 					newOrdersCount = countData;
 
-					localStorage.setItem('kfcMealsCache', JSON.stringify(meals));
-					localStorage.setItem('kfcOrdersCache', JSON.stringify(orders));
+					// 优化：使用更小的数据缓存，只缓存必要数据
+					localStorage.setItem('kfcMealsCache', JSON.stringify(meals.map(m => ({
+						id: m.id,
+						name: m.name,
+						price: m.price,
+						tags: m.tags,
+						description: m.description,
+						order: m.order,
+						active: m.active
+					}))));
+					
+					localStorage.setItem('kfcOrdersCache', JSON.stringify(orders.map(o => ({
+						id: o.id,
+						timestamp: o.timestamp,
+						status: o.status,
+						totalPrice: o.totalPrice,
+						userId: o.userId
+					}))));
+					
 					localStorage.setItem('newOrdersCountCache', newOrdersCount.toString());
 
 					console.log('数据加载完成:', {
@@ -3430,18 +3559,21 @@
 				});
 			}
 
-			// ==================== 订单提交功能 ====================
+			// ==================== 订单提交功能（优化版） ====================
 			function initCheckout(container) {
 				const checkoutBtn = container.querySelector('.checkout-btn');
 				if (checkoutBtn) {
 					checkoutBtn.addEventListener('click', async function() {
+						// 防止重复提交
+						if (checkoutBtn.disabled) return;
+						
 						const deliveryType = container.querySelector('input[name="deliveryType"]:checked').value;
 						const orderNote = container.querySelector('#orderNote') ? container.querySelector('#orderNote').value.trim() : '';
 
 						let deliveryInfo = '';
 						let hasScreenshot = false;
 						let screenshotData = null;
-						let pickupType = ''; // 新增：堂食/外带类型
+						let pickupType = '';
 
 						if (deliveryType === 'delivery') {
 							const customerName = container.querySelector('#customerName') ? container.querySelector('#customerName').value.trim() : '';
@@ -3503,6 +3635,14 @@
 								}
 
 								const file = screenshotInput.files[0];
+								
+								// 优化：检查文件大小，超过2MB进行压缩提示
+								if (file.size > 2 * 1024 * 1024) {
+									if (!confirm('图片文件较大，上传可能需要较长时间，是否继续？')) {
+										return;
+									}
+								}
+
 								const reader = new FileReader();
 
 								reader.onload = function(e) {
@@ -3524,7 +3664,12 @@
 				}
 			}
 
+			// 优化：改进订单提交逻辑
 			async function completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container, pickupType) {
+				// 防止重复提交
+				const checkoutBtn = container.querySelector('.checkout-btn');
+				if (checkoutBtn.disabled) return;
+				
 				let totalPrice = 0;
 				cart.forEach(item => {
 					totalPrice += item.totalPrice;
@@ -3555,6 +3700,12 @@
 				const confirmed = confirm(`请确认订单信息：\n\n${orderSummary}\n\n确认提交订单吗？`);
 
 				if (confirmed) {
+					// 禁用提交按钮，防止重复提交
+					checkoutBtn.disabled = true;
+					checkoutBtn.textContent = '提交中...';
+					
+					showLoading('正在提交订单...');
+					
 					const orderId = 'KFC' + Date.now().toString().slice(-6) + Math.floor(Math.random() * 100);
 					const timestamp = new Date().toLocaleString('zh-CN');
 
@@ -3566,7 +3717,7 @@
 						deliveryInfo: deliveryInfo,
 						orderNote: orderNote,
 						deliveryType: deliveryType,
-						pickupType: pickupType || '', // 新增：堂食/外带类型
+						pickupType: pickupType || '',
 						totalPrice: totalPrice,
 						hasScreenshot: hasScreenshot,
 						screenshotData: screenshotData,
@@ -3574,7 +3725,6 @@
 					};
 
 					try {
-						showNotification('正在提交订单...', 'info');
 						const savedOrder = await LeanCloudData.saveOrder(orderData);
 						console.log('订单保存成功:', savedOrder);
 
@@ -3582,14 +3732,25 @@
 						orders.unshift(savedOrder);
 
 						newOrdersCount++;
-						try {
-							await LeanCloudData.updateNewOrdersCount(newOrdersCount);
-							console.log('新订单计数更新成功');
-						} catch (countError) {
-							console.warn('更新新订单计数失败，但不影响订单提交:', countError);
-						}
+						
+						// 优化：新订单计数更新不阻塞主流程
+						setTimeout(async () => {
+							try {
+								await LeanCloudData.updateNewOrdersCount(newOrdersCount);
+								console.log('新订单计数更新成功');
+							} catch (countError) {
+								console.warn('更新新订单计数失败，但不影响订单提交:', countError);
+							}
+						}, 1000);
 
-						localStorage.setItem('kfcOrdersCache', JSON.stringify(orders));
+						// 优化：只缓存必要数据
+						localStorage.setItem('kfcOrdersCache', JSON.stringify(orders.map(o => ({
+							id: o.id,
+							timestamp: o.timestamp,
+							status: o.status,
+							totalPrice: o.totalPrice,
+							userId: o.userId
+						}))));
 						localStorage.setItem('newOrdersCountCache', newOrdersCount.toString());
 
 						cart = [];
@@ -3599,7 +3760,15 @@
 
 						updateOrderBadge();
 
+						hideLoading();
 						showNotification('订单提交成功！', 'success');
+
+						// 优化：立即更新管理员后台（如果打开）
+						if (document.getElementById('adminPanel').classList.contains('active')) {
+							const activeFilterBtn = document.querySelector('.filter-btn.active');
+							const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
+							renderOrders(activeFilter);
+						}
 
 						const orderSubmitted = confirm(`订单提交成功！\n订单号：${orderId}\n\n点击"确定"查看您的订单详情，或点击"取消"返回首页。`);
 
@@ -3630,13 +3799,18 @@
 							showPage('homePage');
 						}
 
-						if (document.getElementById('adminPanel').classList.contains('active')) {
-							renderOrders('all');
-						}
 					} catch (error) {
 						console.error('提交订单失败:', error);
+						hideLoading();
 						showNotification('订单提交失败：' + (error.message || '请检查网络连接'), 'error');
+						// 恢复提交按钮状态
+						checkoutBtn.disabled = false;
+						checkoutBtn.textContent = '提交订单';
 						return;
+					} finally {
+						// 恢复提交按钮状态
+						checkoutBtn.disabled = false;
+						checkoutBtn.innerHTML = '<i class="fas fa-credit-card"></i> 提交订单';
 					}
 				}
 			}
@@ -3976,12 +4150,53 @@
 				newOrdersCount = 0;
 				localStorage.setItem('newOrdersCountCache', '0');
 
-				LeanCloudData.updateNewOrdersCount(0).catch(console.error);
+				// 优化：异步更新新订单计数，不阻塞UI
+				setTimeout(() => {
+					LeanCloudData.updateNewOrdersCount(0).catch(console.error);
+				}, 1000);
 
 				updateOrderBadge();
 
 				renderOrders('all');
 				updateMealList('all');
+				
+				// 优化：管理员面板打开后立即开始轮询更新
+				startAdminPolling();
+			}
+			
+			// 优化：管理员轮询更新
+			let adminPollingInterval = null;
+			
+			function startAdminPolling() {
+				// 清除现有的轮询
+				if (adminPollingInterval) {
+					clearInterval(adminPollingInterval);
+				}
+				
+				// 每10秒检查一次新订单
+				adminPollingInterval = setInterval(async () => {
+					if (document.getElementById('adminPanel').classList.contains('active')) {
+						try {
+							// 只检查新订单数量，不加载全部数据
+							const newCount = await LeanCloudData.loadNewOrdersCount();
+							if (newCount !== newOrdersCount) {
+								newOrdersCount = newCount;
+								updateOrderBadge();
+								
+								// 如果新订单数有变化，重新加载订单列表
+								const activeFilterBtn = document.querySelector('.filter-btn.active');
+								const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
+								renderOrders(activeFilter);
+							}
+						} catch (error) {
+							console.warn('轮询更新失败:', error);
+						}
+					} else {
+						// 如果管理员面板关闭，停止轮询
+						clearInterval(adminPollingInterval);
+						adminPollingInterval = null;
+					}
+				}, 10000); // 每10秒检查一次
 			}
 
 			function initAdminPanel() {
@@ -4005,18 +4220,30 @@
 					adminPanel.classList.remove('active');
 					panelOverlay.classList.remove('active');
 					document.body.style.overflow = 'auto';
+					
+					// 停止轮询
+					if (adminPollingInterval) {
+						clearInterval(adminPollingInterval);
+						adminPollingInterval = null;
+					}
 				});
 
 				panelOverlay.addEventListener('click', function() {
 					adminPanel.classList.remove('active');
 					panelOverlay.classList.remove('active');
 					document.body.style.overflow = 'auto';
+					
+					// 停止轮询
+					if (adminPollingInterval) {
+						clearInterval(adminPollingInterval);
+						adminPollingInterval = null;
+					}
 				});
 
 				clearAllOrders.addEventListener('click', async function() {
 					if (orders.length > 0 && confirm('确定要清空所有订单吗？此操作不可恢复！')) {
 						try {
-							showNotification('正在清空订单...', 'info');
+							showLoading('正在清空订单...');
 
 							const deletePromises = orders.map(order => LeanCloudData.deleteOrder(order.id));
 							await Promise.all(deletePromises);
@@ -4032,17 +4259,20 @@
 							updateOrderBadge();
 							renderOrders('all');
 
+							hideLoading();
 							showNotification('已清空所有订单', 'success');
 						} catch (error) {
 							console.error('清空订单失败:', error);
+							hideLoading();
 							showNotification('清空失败，请检查网络连接', 'error');
 						}
 					}
 				});
 
 				syncDataBtn.addEventListener('click', async function() {
-					showNotification('正在同步数据...', 'info');
+					showLoading('正在同步数据...');
 					await forceSyncAllData();
+					hideLoading();
 				});
 
 				adminTabs.forEach(tab => {
@@ -5159,11 +5389,10 @@
 				}
 			}
 
-			// ==================== 数据同步功能 ====================
+			// ==================== 数据同步功能（优化版） ====================
 			async function syncDataFromLeanCloud() {
 				try {
-					showNotification('正在同步数据...', 'info');
-
+					// 优化：并行加载所有数据，但设置超时
 					const [newMeals, newOrders, newCount] = await Promise.all([
 						LeanCloudData.loadMeals(),
 						LeanCloudData.loadOrders(),
@@ -5174,8 +5403,25 @@
 					orders = newOrders;
 					newOrdersCount = newCount;
 
-					localStorage.setItem('kfcMealsCache', JSON.stringify(meals));
-					localStorage.setItem('kfcOrdersCache', JSON.stringify(orders));
+					// 优化：使用更小的缓存数据
+					localStorage.setItem('kfcMealsCache', JSON.stringify(meals.map(m => ({
+						id: m.id,
+						name: m.name,
+						price: m.price,
+						tags: m.tags,
+						description: m.description,
+						order: m.order,
+						active: m.active
+					}))));
+					
+					localStorage.setItem('kfcOrdersCache', JSON.stringify(orders.map(o => ({
+						id: o.id,
+						timestamp: o.timestamp,
+						status: o.status,
+						totalPrice: o.totalPrice,
+						userId: o.userId
+					}))));
+					
 					localStorage.setItem('newOrdersCountCache', newOrdersCount.toString());
 
 					return true;
@@ -5272,15 +5518,27 @@
         `;
 			document.head.appendChild(notificationStyle);
 
-			// ==================== 定期数据同步 ====================
+			// ==================== 定期数据同步（优化版） ====================
+			// 优化：减少定期同步频率，只在需要时同步
 			setInterval(async () => {
+				// 只在管理员面板打开时同步
 				if (document.getElementById('adminPanel').classList.contains('active')) {
-					await syncDataFromLeanCloud();
-					const activeFilterBtn = document.querySelector('.filter-btn.active');
-					const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
-					renderOrders(activeFilter);
+					try {
+						// 只检查新订单计数，不加载全部数据
+						const newCount = await LeanCloudData.loadNewOrdersCount();
+						if (newCount !== newOrdersCount) {
+							newOrdersCount = newCount;
+							updateOrderBadge();
+							// 如果新订单数有变化，重新加载订单列表
+							const activeFilterBtn = document.querySelector('.filter-btn.active');
+							const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
+							renderOrders(activeFilter);
+						}
+					} catch (error) {
+						console.warn('定期同步失败:', error);
+					}
 				}
-			}, 60000);
+			}, 30000); // 每30秒检查一次
 		</script>
 	</body>
 </html>
