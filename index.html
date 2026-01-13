@@ -2294,6 +2294,7 @@
         
         // 实时更新相关变量
         let adminPollingInterval = null;
+        let globalPollingInterval = null; // 新增：全局轮询间隔
         let isAdminPanelOpen = false;
         let lastOrderUpdateTime = 0;
 
@@ -2675,6 +2676,9 @@
                 hideLoading();
 
                 console.log('页面初始化完成，数据已从LeanCloud加载');
+                
+                // 新增：启动全局轮询，检查新订单
+                startGlobalPolling();
             } catch (error) {
                 console.error('页面初始化失败:', error);
                 showNotification('页面初始化失败，使用本地缓存数据', 'error');
@@ -2693,8 +2697,49 @@
                 initMyOrdersPage();
                 initHeaderButtons();
                 initSearchFunction();
+                
+                // 新增：启动全局轮询，检查新订单
+                startGlobalPolling();
             }
         });
+
+        // ==================== 全局轮询函数 ====================
+        // 新增：启动全局轮询，检查新订单
+        function startGlobalPolling() {
+            // 清除现有的全局轮询
+            if (globalPollingInterval) {
+                clearInterval(globalPollingInterval);
+            }
+            
+            // 每10秒检查一次新订单计数
+            globalPollingInterval = setInterval(async () => {
+                if (!isAdminPanelOpen) {
+                    try {
+                        // 检查新订单计数
+                        const newCount = await LeanCloudData.loadNewOrdersCount();
+                        if (newCount !== newOrdersCount) {
+                            newOrdersCount = newCount;
+                            updateOrderBadge();
+                            
+                            // 显示实时更新指示器
+                            showRealtimeIndicator();
+                            
+                            console.log('全局轮询检测到新订单，数量：', newOrdersCount);
+                        }
+                    } catch (error) {
+                        console.warn('全局轮询检查新订单失败:', error);
+                    }
+                }
+            }, 10000); // 每10秒检查一次
+        }
+        
+        // 新增：停止全局轮询
+        function stopGlobalPolling() {
+            if (globalPollingInterval) {
+                clearInterval(globalPollingInterval);
+                globalPollingInterval = null;
+            }
+        }
 
         // ==================== 搜索功能初始化 ====================
         function initSearchFunction() {
@@ -4177,6 +4222,9 @@
             // 设置管理员面板打开状态
             isAdminPanelOpen = true;
             
+            // 停止全局轮询，因为管理面板有更频繁的轮询
+            stopGlobalPolling();
+            
             // 记录最后更新时间
             lastOrderUpdateTime = Date.now();
 
@@ -4194,7 +4242,7 @@
             renderOrders('all');
             updateMealList('all');
             
-            // 启动实时轮询
+            // 启动管理员面板的实时轮询（更频繁）
             startAdminPolling();
         }
         
@@ -4370,11 +4418,14 @@
             // 设置管理员面板关闭状态
             isAdminPanelOpen = false;
             
-            // 停止轮询
+            // 停止管理面板轮询
             if (adminPollingInterval) {
                 clearInterval(adminPollingInterval);
                 adminPollingInterval = null;
             }
+            
+            // 重新启动全局轮询
+            startGlobalPolling();
         }
 
         function renderOrders(filter = 'all') {
