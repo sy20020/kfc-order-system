@@ -4165,16 +4165,12 @@
                     // 立即显示实时更新指示器
                     showRealtimeIndicator('订单已提交！');
 
-                    // 立即通知管理员面板有新订单（如果管理员面板是打开的）
+                    // 如果管理员面板打开，立即更新订单列表
                     if (isAdminPanelOpen) {
-                        // 重新加载订单数据
-                        await forceSyncAllData();
-                        // 更新订单列表显示
-                        const orderFilterBtn = document.querySelector('#ordersTab .filter-btn.active');
-                        const activeFilter = orderFilterBtn ? orderFilterBtn.dataset.filter : 'all';
+                        const activeFilterBtn = document.querySelector('.filter-btn.active');
+                        const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
                         renderOrders(activeFilter);
-                        // 显示更明显的提示
-                        showRealtimeIndicator('有新订单到达！请查看');
+                        showRealtimeIndicator('有新订单到达！');
                     }
 
                     const orderSubmitted = confirm(`订单提交成功！\n订单号：${orderId}\n\n点击"确定"查看您的订单详情，或点击"取消"返回首页。`);
@@ -4570,18 +4566,18 @@
             renderOrders('all');
             updateMealList('all');
             
-            // 启动管理员面板的实时轮询（2秒一次，更频繁）
+            // 启动管理员面板的实时轮询（3秒一次）
             startAdminPolling();
         }
         
-        // 改进的实时轮询函数 - 更频繁地检查新订单
+        // 改进的实时轮询函数
         function startAdminPolling() {
             // 清除现有的轮询
             if (adminPollingInterval) {
                 clearInterval(adminPollingInterval);
             }
             
-            // 每2秒检查一次新订单（从3秒改为2秒）
+            // 每3秒检查一次新订单
             adminPollingInterval = setInterval(async () => {
                 if (isAdminPanelOpen) {
                     try {
@@ -4595,14 +4591,13 @@
                             showRealtimeIndicator('检测到新订单！');
                             
                             // 重新加载订单列表
-                            const orderFilterBtn = document.querySelector('#ordersTab .filter-btn.active');
-                            const activeFilter = orderFilterBtn ? orderFilterBtn.dataset.filter : 'all';
-                            await forceSyncAllData();
-                            renderOrders(activeFilter);
+                            const activeFilterBtn = document.querySelector('.filter-btn.active');
+                            const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
+                            await renderOrders(activeFilter);
                         }
                         
                         // 同时检查是否有新的订单数据（基于时间）
-                        const newOrders = await LeanCloudData.checkForNewOrders(lastOrderUpdateTime - 2000); // 2秒前的更新
+                        const newOrders = await LeanCloudData.checkForNewOrders(lastOrderUpdateTime - 3000); // 3秒前的更新
                         if (newOrders.length > 0) {
                             // 更新最后更新时间
                             lastOrderUpdateTime = Date.now();
@@ -4621,8 +4616,8 @@
                             showRealtimeIndicator(`有${newOrders.length}个新订单`);
                             
                             // 重新渲染订单列表
-                            const orderFilterBtn = document.querySelector('#ordersTab .filter-btn.active');
-                            const activeFilter = orderFilterBtn ? orderFilterBtn.dataset.filter : 'all';
+                            const activeFilterBtn = document.querySelector('.filter-btn.active');
+                            const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
                             renderOrders(activeFilter);
                         }
                     } catch (error) {
@@ -4633,7 +4628,7 @@
                     clearInterval(adminPollingInterval);
                     adminPollingInterval = null;
                 }
-            }, 2000); // 每2秒检查一次（之前是3秒）
+            }, 3000); // 每3秒检查一次
         }
 
         function initAdminPanel() {
@@ -4936,8 +4931,8 @@
 
                     localStorage.setItem('kfcOrdersCache', JSON.stringify(orders));
 
-                    const orderFilterBtn = document.querySelector('#ordersTab .filter-btn.active');
-                    const activeFilter = orderFilterBtn ? orderFilterBtn.dataset.filter : 'all';
+                    const activeFilterBtn = document.querySelector('.filter-btn.active');
+                    const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
 
                     renderOrders(activeFilter);
 
@@ -5875,8 +5870,8 @@
                     }
 
                     if (document.getElementById('adminPanel').classList.contains('active')) {
-                        const orderFilterBtn = document.querySelector('#ordersTab .filter-btn.active');
-                        const activeFilter = orderFilterBtn ? orderFilterBtn.dataset.filter : 'all';
+                        const activeFilterBtn = document.querySelector('.filter-btn.active');
+                        const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
                         renderOrders(activeFilter);
 
                         const activeMealFilterBtn = document.querySelector('.meal-filter-btn.active');
