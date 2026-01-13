@@ -8,7 +8,7 @@
     <!-- LeanCloud SDK -->
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
     <style>
-        /* 所有CSS样式保持不变 */
+        /* 所有CSS样式保持不变，只做必要的优化 */
         * {
             margin: 0;
             padding: 0;
@@ -1792,7 +1792,7 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* 新增：实时更新指示器 */
+        /* 实时更新指示器 */
         .realtime-indicator {
             position: fixed;
             top: 80px;
@@ -1817,24 +1817,7 @@
             100% { opacity: 0; }
         }
         
-        /* 新增：提交进度条 */
-        .progress-container {
-            width: 100%;
-            height: 4px;
-            background-color: #f0f0f0;
-            border-radius: 2px;
-            margin-top: 10px;
-            overflow: hidden;
-            display: none;
-        }
-        
-        .progress-bar {
-            height: 100%;
-            background-color: #4CAF50;
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-        
+        /* 提交状态 */
         .submit-status {
             text-align: center;
             margin-top: 10px;
@@ -1842,7 +1825,7 @@
             color: #666;
         }
         
-        /* 新增：压缩进度指示器 */
+        /* 压缩进度指示器 */
         .compress-progress {
             margin-top: 10px;
             padding: 8px;
@@ -1862,7 +1845,7 @@
             color: #e31837;
         }
         
-        /* 新增：优化图片预览 */
+        /* 优化图片预览 */
         .screenshot-preview-container {
             display: flex;
             flex-direction: column;
@@ -3119,6 +3102,7 @@
 
             const mealDetailPage = document.getElementById('mealDetailPage');
 
+            // 移除进度条相关的HTML
             mealDetailPage.innerHTML = `
                 <a href="#" class="back-btn" onclick="showPage('homePage')">
                     <i class="fas fa-arrow-left"></i>
@@ -3165,9 +3149,6 @@
                             <span class="total-price" id="totalPrice">¥0.00</span>
                         </div>
                         
-                        <div class="progress-container" id="submitProgress" style="display: none;">
-                            <div class="progress-bar" id="progressBar"></div>
-                        </div>
                         <div class="submit-status" id="submitStatus"></div>
                         
                         <button class="checkout-btn" id="checkoutBtn" disabled>
@@ -3976,15 +3957,6 @@
                                 return;
                             }
 
-                            // 显示进度条
-                            const progressContainer = document.getElementById('submitProgress');
-                            const progressBar = document.getElementById('progressBar');
-                            const submitStatus = document.getElementById('submitStatus');
-                            
-                            progressContainer.style.display = 'block';
-                            progressBar.style.width = '10%';
-                            submitStatus.textContent = '正在处理图片...';
-
                             try {
                                 const file = screenshotInput.files[0];
                                 const reader = new FileReader();
@@ -3995,25 +3967,18 @@
 
                                     deliveryInfo = `配送方式：到店自提\n自提方式：${pickupType}\n信息提供：截图上传`;
 
-                                    // 更新进度
-                                    progressBar.style.width = '30%';
-                                    submitStatus.textContent = '图片处理完成，准备提交订单...';
-
                                     // 继续提交订单
                                     setTimeout(() => {
                                         completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container, pickupType);
-                                    }, 500);
+                                    }, 100);
                                 };
 
                                 reader.onerror = function() {
-                                    submitStatus.textContent = '图片读取失败，请重试';
-                                    progressContainer.style.display = 'none';
                                     showNotification('图片读取失败，请重试', 'error');
                                 };
 
                                 reader.readAsDataURL(file);
                             } catch (error) {
-                                progressContainer.style.display = 'none';
                                 showNotification('图片处理失败: ' + error.message, 'error');
                             }
                             return;
@@ -4029,18 +3994,16 @@
             const checkoutBtn = container.querySelector('.checkout-btn');
             if (checkoutBtn.disabled) return;
             
-            // 显示进度条
-            const progressContainer = document.getElementById('submitProgress');
-            const progressBar = document.getElementById('progressBar');
-            const submitStatus = document.getElementById('submitStatus');
+            // 设置按钮状态为"提交中"
+            const originalText = checkoutBtn.innerHTML;
+            checkoutBtn.disabled = true;
+            checkoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 提交中...';
             
-            if (!progressContainer.style.display || progressContainer.style.display === 'none') {
-                progressContainer.style.display = 'block';
-                progressBar.style.width = '10%';
-                submitStatus.textContent = '正在准备订单数据...';
-            } else {
-                progressBar.style.width = '40%';
-                submitStatus.textContent = '正在验证订单信息...';
+            // 显示简单的提交状态
+            const submitStatus = document.getElementById('submitStatus');
+            if (submitStatus) {
+                submitStatus.textContent = '正在提交订单...';
+                submitStatus.style.color = '#e31837';
             }
 
             let totalPrice = 0;
@@ -4070,28 +4033,16 @@
                 orderSummary += `备注：${orderNote}\n`;
             }
 
-            // 更新进度
-            progressBar.style.width = '60%';
-            submitStatus.textContent = '请确认订单信息...';
-
-            const confirmed = await new Promise((resolve) => {
-                // 使用setTimeout让UI有机会更新
-                setTimeout(() => {
-                    resolve(confirm(`请确认订单信息：\n\n${orderSummary}\n\n确认提交订单吗？`));
-                }, 100);
-            });
-
+            // 确认订单
+            const confirmed = confirm(`请确认订单信息：\n\n${orderSummary}\n\n确认提交订单吗？`);
+            
             if (!confirmed) {
-                progressContainer.style.display = 'none';
-                submitStatus.textContent = '';
+                // 恢复按钮状态
+                checkoutBtn.disabled = false;
+                checkoutBtn.innerHTML = originalText;
+                if (submitStatus) submitStatus.textContent = '';
                 return;
             }
-
-            checkoutBtn.disabled = true;
-            checkoutBtn.textContent = '提交中...';
-            
-            progressBar.style.width = '70%';
-            submitStatus.textContent = '正在提交订单到服务器...';
 
             const orderId = 'KFC' + Date.now().toString().slice(-6) + Math.floor(Math.random() * 100);
             const timestamp = new Date().toLocaleString('zh-CN');
@@ -4112,8 +4063,10 @@
             };
 
             try {
-                progressBar.style.width = '80%';
-                submitStatus.textContent = '正在保存订单数据...';
+                // 更新提交状态
+                if (submitStatus) {
+                    submitStatus.textContent = '正在保存订单...';
+                }
 
                 const savedOrder = await LeanCloudData.saveOrder(orderData);
                 console.log('订单保存成功:', savedOrder);
@@ -4121,20 +4074,29 @@
                 savedOrder.objectId = savedOrder.objectId;
                 orders.unshift(savedOrder);
 
+                // 重要修改：立即更新新订单计数，即使管理员未登录
                 newOrdersCount++;
                 
-                progressBar.style.width = '90%';
-                submitStatus.textContent = '正在更新订单计数...';
-
-                // 更新新订单计数（异步，不阻塞主流程）
+                // 异步更新新订单计数（不阻塞主流程）
                 setTimeout(async () => {
                     try {
                         await LeanCloudData.updateNewOrdersCount(newOrdersCount);
-                        console.log('新订单计数更新成功');
+                        console.log('新订单计数更新成功:', newOrdersCount);
+                        
+                        // 更新徽章
+                        updateOrderBadge();
+                        
+                        // 如果管理员面板是打开的，立即更新订单列表
+                        if (isAdminPanelOpen) {
+                            const activeFilterBtn = document.querySelector('.filter-btn.active');
+                            const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
+                            renderOrders(activeFilter);
+                            showRealtimeIndicator('有新订单到达！');
+                        }
                     } catch (countError) {
                         console.warn('更新新订单计数失败，但不影响订单提交:', countError);
                     }
-                }, 1000);
+                }, 100);
 
                 // 更新本地缓存
                 localStorage.setItem('kfcOrdersCache', JSON.stringify(orders.map(o => ({
@@ -4146,74 +4108,77 @@
                 }))));
                 localStorage.setItem('newOrdersCountCache', newOrdersCount.toString());
 
+                // 清空购物车
                 cart = [];
                 updateCartDisplay();
 
                 resetForm(container);
 
-                updateOrderBadge();
+                // 更新提交状态
+                if (submitStatus) {
+                    submitStatus.textContent = '订单提交成功！';
+                    submitStatus.style.color = '#4CAF50';
+                }
 
-                progressBar.style.width = '100%';
-                submitStatus.textContent = '订单提交成功！';
+                // 恢复按钮状态
+                checkoutBtn.disabled = false;
+                checkoutBtn.innerHTML = originalText;
 
+                showNotification('订单提交成功！', 'success');
+
+                // 显示实时更新指示器
+                showRealtimeIndicator('订单已提交！');
+
+                // 询问用户是否查看订单
+                const orderSubmitted = confirm(`订单提交成功！\n订单号：${orderId}\n\n点击"确定"查看您的订单详情，或点击"取消"返回首页。`);
+
+                if (orderSubmitted) {
+                    showMyOrdersPage();
+
+                    const url = new URL(window.location);
+                    url.searchParams.set('order', orderId);
+                    window.history.pushState({}, '', url);
+
+                    setTimeout(() => {
+                        document.getElementById('orderSearchInput').value = orderId;
+                        searchUserOrder(orderId);
+
+                        const orderElements = document.querySelectorAll('.user-order-item');
+                        orderElements.forEach(el => {
+                            const orderIdElement = el.querySelector('.user-order-id');
+                            if (orderIdElement && orderIdElement.textContent.includes(orderId)) {
+                                el.style.animation = 'highlightOrder 2s';
+                                el.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'center'
+                                });
+                            }
+                        });
+                    }, 100);
+                } else {
+                    showPage('homePage');
+                }
+
+                // 3秒后清除提交状态
                 setTimeout(() => {
-                    progressContainer.style.display = 'none';
-                    submitStatus.textContent = '';
-                    
-                    showNotification('订单提交成功！', 'success');
-
-                    // 立即显示实时更新指示器
-                    showRealtimeIndicator('订单已提交！');
-
-                    // 如果管理员面板打开，立即更新订单列表
-                    if (isAdminPanelOpen) {
-                        const activeFilterBtn = document.querySelector('.filter-btn.active');
-                        const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
-                        renderOrders(activeFilter);
-                        showRealtimeIndicator('有新订单到达！');
-                    }
-
-                    const orderSubmitted = confirm(`订单提交成功！\n订单号：${orderId}\n\n点击"确定"查看您的订单详情，或点击"取消"返回首页。`);
-
-                    if (orderSubmitted) {
-                        showMyOrdersPage();
-
-                        const url = new URL(window.location);
-                        url.searchParams.set('order', orderId);
-                        window.history.pushState({}, '', url);
-
-                        setTimeout(() => {
-                            document.getElementById('orderSearchInput').value = orderId;
-                            searchUserOrder(orderId);
-
-                            const orderElements = document.querySelectorAll('.user-order-item');
-                            orderElements.forEach(el => {
-                                const orderIdElement = el.querySelector('.user-order-id');
-                                if (orderIdElement && orderIdElement.textContent.includes(orderId)) {
-                                    el.style.animation = 'highlightOrder 2s';
-                                    el.scrollIntoView({
-                                        behavior: 'smooth',
-                                        block: 'center'
-                                    });
-                                }
-                            });
-                        }, 100);
-                    } else {
-                        showPage('homePage');
-                    }
-                }, 1000);
+                    if (submitStatus) submitStatus.textContent = '';
+                }, 3000);
 
             } catch (error) {
                 console.error('提交订单失败:', error);
-                progressContainer.style.display = 'none';
-                submitStatus.textContent = '';
+                
+                // 恢复按钮状态
+                checkoutBtn.disabled = false;
+                checkoutBtn.innerHTML = originalText;
+                
+                // 更新提交状态
+                if (submitStatus) {
+                    submitStatus.textContent = '提交失败，请重试';
+                    submitStatus.style.color = '#e31837';
+                }
+                
                 showNotification('订单提交失败：' + (error.message || '请检查网络连接'), 'error');
-                checkoutBtn.disabled = false;
-                checkoutBtn.textContent = '提交订单';
                 return;
-            } finally {
-                checkoutBtn.disabled = false;
-                checkoutBtn.innerHTML = '<i class="fas fa-credit-card"></i> 提交订单';
             }
         }
 
