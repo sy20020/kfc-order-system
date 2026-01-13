@@ -8,7 +8,7 @@
     <!-- LeanCloud SDK -->
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
     <style>
-        /* 所有CSS样式保持不变，只删除进度条相关样式 */
+        /* 所有CSS样式保持不变 */
         * {
             margin: 0;
             padding: 0;
@@ -1817,12 +1817,30 @@
             100% { opacity: 0; }
         }
         
-        /* 修改：删除提交进度条相关样式 */
-        /* 这些样式已被删除：
-        .progress-container
-        .progress-bar
-        .submit-status
-        */
+        /* 新增：提交进度条 */
+        .progress-container {
+            width: 100%;
+            height: 4px;
+            background-color: #f0f0f0;
+            border-radius: 2px;
+            margin-top: 10px;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .submit-status {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #666;
+        }
         
         /* 新增：压缩进度指示器 */
         .compress-progress {
@@ -1858,6 +1876,25 @@
             padding: 5px 10px;
             border-radius: 4px;
             border-left: 3px solid #4CAF50;
+        }
+        
+        /* 新增：编辑表单容器 */
+        .edit-form-container {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .edit-form-container.active {
+            display: block;
+        }
+        
+        /* 新增：显示/隐藏控制 */
+        .show {
+            display: block !important;
+        }
+        
+        .hide {
+            display: none !important;
         }
         
         @media (max-width: 768px) {
@@ -2201,12 +2238,111 @@
                     <button class="meal-filter-btn" data-meal-filter="inactive">已下架</button>
                 </div>
 
-                <div class="meal-list" id="mealList">
+                <!-- 套餐列表区域 -->
+                <div id="mealListSection">
+                    <div class="meal-list" id="mealList">
+                    </div>
+                    <div class="no-meals-message" id="noMealsAdminMessage">
+                        <i class="fas fa-utensils"></i>
+                        <h3>暂无套餐</h3>
+                        <p>点击"添加套餐"标签创建新套餐</p>
+                    </div>
                 </div>
-                <div class="no-meals-message" id="noMealsAdminMessage">
-                    <i class="fas fa-utensils"></i>
-                    <h3>暂无套餐</h3>
-                    <p>点击"添加套餐"标签创建新套餐</p>
+
+                <!-- 编辑套餐表单区域 -->
+                <div class="edit-form-container" id="editMealFormContainer">
+                    <h3 class="section-title" id="editMealTitle">
+                        <i class="fas fa-edit"></i>
+                        编辑套餐
+                    </h3>
+
+                    <div class="meal-form">
+                        <input type="hidden" id="currentMealId" value="">
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">套餐名称 <span class="required">*</span></label>
+                                <input type="text" class="form-input" id="mealName" placeholder="例如：【12-8】自提/宅急送12件套89.9元" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">套餐价格 <span class="required">*</span></label>
+                                <input type="number" class="form-input" id="mealPrice" placeholder="例如：89.9" min="0" step="0.01" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">排序顺序 <span class="required">*</span></label>
+                                <input type="number" class="form-input" id="mealOrder" placeholder="数字越小越靠前，例如：1" min="0" step="1" value="9999">
+                                <div class="form-hint">
+                                    <i class="fas fa-lightbulb"></i> 数字越小显示越靠前，默认9999（最后）
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">套餐标签 <span class="required">*</span></label>
+                                <input type="text" class="form-input" id="mealTags" placeholder="用逗号分隔，例如：自提/宅急送,3人餐,12件套" required>
+                                <div class="form-hint">
+                                    <i class="fas fa-lightbulb"></i> 标签将显示在套餐卡片上，用逗号分隔多个标签
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">套餐描述 <span class="required">*</span></label>
+                                <input type="text" class="form-input" id="mealDescription" placeholder="例如：适合3人享用，自提/宅急送都可用" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">套餐状态</label>
+                                <div class="status-label">
+                                    <label class="status-toggle">
+                                        <input type="checkbox" id="mealActive" checked>
+                                        <span class="status-slider"></span>
+                                    </label>
+                                    <span id="statusText" class="status-active">上架</span>
+                                </div>
+                                <div class="form-hint">
+                                    <i class="fas fa-lightbulb"></i> 上架的套餐会在用户端显示，下架的套餐不会显示
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="section-title" style="margin-top: 30px; font-size: 1.4rem;">
+                            <i class="fas fa-list"></i>
+                            选项组管理
+                        </h4>
+
+                        <div class="option-groups-management" id="optionGroupsManagement">
+                        </div>
+
+                        <button class="add-btn action-btn" id="addOptionGroupBtn">
+                            <i class="fas fa-plus"></i> 添加选项组
+                        </button>
+
+                        <h4 class="section-title" style="margin-top: 30px; font-size: 1.4rem;">
+                            <i class="fas fa-th-list"></i>
+                            固定搭配管理（可选）
+                        </h4>
+
+                        <div class="fixed-items-management" id="fixedItemsManagement">
+                        </div>
+
+                        <button class="add-btn action-btn" id="addFixedItemBtn">
+                            <i class="fas fa-plus"></i> 添加固定搭配项
+                        </button>
+
+                        <div style="margin-top: 30px; display: flex; gap: 15px;">
+                            <button class="add-btn action-btn" id="saveMealBtn" style="padding: 12px 30px;">
+                                <i class="fas fa-save"></i> 保存套餐
+                            </button>
+                            <button class="filter-btn" id="cancelEditBtn" style="padding: 12px 30px;">
+                                <i class="fas fa-arrow-left"></i> 返回列表
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -2216,25 +2352,23 @@
                     添加新套餐
                 </h3>
 
-                <div class="meal-form">
-                    <input type="hidden" id="currentMealId" value="">
-
+                <div class="meal-form" id="addMealForm">
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">套餐名称 <span class="required">*</span></label>
-                            <input type="text" class="form-input" id="mealName" placeholder="例如：【12-8】自提/宅急送12件套89.9元" required>
+                            <input type="text" class="form-input" id="newMealName" placeholder="例如：【12-8】自提/宅急送12件套89.9元" required>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label">套餐价格 <span class="required">*</span></label>
-                            <input type="number" class="form-input" id="mealPrice" placeholder="例如：89.9" min="0" step="0.01" required>
+                            <input type="number" class="form-input" id="newMealPrice" placeholder="例如：89.9" min="0" step="0.01" required>
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">排序顺序 <span class="required">*</span></label>
-                            <input type="number" class="form-input" id="mealOrder" placeholder="数字越小越靠前，例如：1" min="0" step="1" value="9999">
+                            <input type="number" class="form-input" id="newMealOrder" placeholder="数字越小越靠前，例如：1" min="0" step="1" value="9999">
                             <div class="form-hint">
                                 <i class="fas fa-lightbulb"></i> 数字越小显示越靠前，默认9999（最后）
                             </div>
@@ -2242,7 +2376,7 @@
                         
                         <div class="form-group">
                             <label class="form-label">套餐标签 <span class="required">*</span></label>
-                            <input type="text" class="form-input" id="mealTags" placeholder="用逗号分隔，例如：自提/宅急送,3人餐,12件套" required>
+                            <input type="text" class="form-input" id="newMealTags" placeholder="用逗号分隔，例如：自提/宅急送,3人餐,12件套" required>
                             <div class="form-hint">
                                 <i class="fas fa-lightbulb"></i> 标签将显示在套餐卡片上，用逗号分隔多个标签
                             </div>
@@ -2252,17 +2386,17 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">套餐描述 <span class="required">*</span></label>
-                            <input type="text" class="form-input" id="mealDescription" placeholder="例如：适合3人享用，自提/宅急送都可用" required>
+                            <input type="text" class="form-input" id="newMealDescription" placeholder="例如：适合3人享用，自提/宅急送都可用" required>
                         </div>
                         
                         <div class="form-group">
                             <label class="form-label">套餐状态</label>
                             <div class="status-label">
                                 <label class="status-toggle">
-                                    <input type="checkbox" id="mealActive" checked>
+                                    <input type="checkbox" id="newMealActive" checked>
                                     <span class="status-slider"></span>
                                 </label>
-                                <span id="statusText" class="status-active">上架</span>
+                                <span id="newStatusText" class="status-active">上架</span>
                             </div>
                             <div class="form-hint">
                                 <i class="fas fa-lightbulb"></i> 上架的套餐会在用户端显示，下架的套餐不会显示
@@ -2275,10 +2409,10 @@
                         选项组管理
                     </h4>
 
-                    <div class="option-groups-management" id="optionGroupsManagement">
+                    <div class="option-groups-management" id="newOptionGroupsManagement">
                     </div>
 
-                    <button class="add-btn action-btn" id="addOptionGroupBtn">
+                    <button class="add-btn action-btn" id="newAddOptionGroupBtn">
                         <i class="fas fa-plus"></i> 添加选项组
                     </button>
 
@@ -2287,19 +2421,16 @@
                         固定搭配管理（可选）
                     </h4>
 
-                    <div class="fixed-items-management" id="fixedItemsManagement">
+                    <div class="fixed-items-management" id="newFixedItemsManagement">
                     </div>
 
-                    <button class="add-btn action-btn" id="addFixedItemBtn">
+                    <button class="add-btn action-btn" id="newAddFixedItemBtn">
                         <i class="fas fa-plus"></i> 添加固定搭配项
                     </button>
 
-                    <div style="margin-top: 30px; display: flex; gap: 15px;">
-                        <button class="add-btn action-btn" id="saveMealBtn" style="padding: 12px 30px;">
-                            <i class="fas fa-save"></i> 保存套餐
-                        </button>
-                        <button class="filter-btn" id="cancelEditBtn" style="padding: 12px 30px; display: none;">
-                            <i class="fas fa-times"></i> 取消编辑
+                    <div style="margin-top: 30px;">
+                        <button class="add-btn action-btn" id="saveNewMealBtn" style="padding: 12px 30px; width: 100%;">
+                            <i class="fas fa-plus-circle"></i> 添加新套餐
                         </button>
                     </div>
                 </div>
@@ -2341,6 +2472,7 @@
         let isAdminPanelOpen = false;
         let lastOrderUpdateTime = 0;
         let lastUserOrderUpdateTime = Date.now(); // 用户订单检查时间
+        let lastGlobalCheckTime = Date.now(); // 全局检查时间
 
         // 用户标识符
         let currentUserId = localStorage.getItem('kfcUserId');
@@ -2538,7 +2670,6 @@
                     
                     if (order.hasScreenshot && order.screenshotData) {
                         orderObj.set('hasScreenshot', true);
-                        // 这里不再限制截图大小，因为我们已经在前端压缩了
                         orderObj.set('screenshotData', order.screenshotData);
                     } else {
                         orderObj.set('hasScreenshot', false);
@@ -2691,50 +2822,20 @@
                 }
             }
             
-            // 新增：批量保存订单（优化性能）
-            static async saveOrdersBatch(ordersArray) {
+            // 检查新订单计数（不检查具体订单）
+            static async checkNewOrdersCountOnly() {
                 try {
-                    const Order = AV.Object.extend('Orders');
-                    const savePromises = [];
-                    
-                    for (const order of ordersArray) {
-                        let orderObj;
-                        
-                        if (order.objectId) {
-                            orderObj = AV.Object.createWithoutData('Orders', order.objectId);
-                        } else {
-                            orderObj = new Order();
-                        }
-                        
-                        orderObj.set('id', order.id);
-                        orderObj.set('timestamp', order.timestamp);
-                        orderObj.set('status', order.status || 'new');
-                        orderObj.set('cart', order.cart);
-                        orderObj.set('deliveryInfo', order.deliveryInfo);
-                        orderObj.set('orderNote', order.orderNote || '');
-                        orderObj.set('deliveryType', order.deliveryType);
-                        orderObj.set('totalPrice', order.totalPrice);
-                        orderObj.set('userId', order.userId);
-                        
-                        if (order.hasScreenshot && order.screenshotData) {
-                            orderObj.set('hasScreenshot', true);
-                            orderObj.set('screenshotData', order.screenshotData);
-                        } else {
-                            orderObj.set('hasScreenshot', false);
-                        }
-                        
-                        savePromises.push(orderObj.save());
+                    const query = new AV.Query('Counter');
+                    query.equalTo('type', 'newOrdersCount');
+                    const result = await query.first();
+
+                    if (result) {
+                        return result.get('count') || 0;
                     }
-                    
-                    const results = await Promise.all(savePromises);
-                    return results.map((result, index) => ({
-                        ...ordersArray[index],
-                        objectId: result.id,
-                        updatedAt: result.updatedAt ? result.updatedAt.getTime() : Date.now()
-                    }));
+                    return 0;
                 } catch (error) {
-                    console.error('批量保存订单失败:', error);
-                    throw error;
+                    console.error('检查新订单计数失败:', error);
+                    return 0;
                 }
             }
         }
@@ -2756,6 +2857,7 @@
                 initHomePage();
                 initAdminPanel();
                 initMealManagement();
+                initNewMealManagement();
                 updateCartDisplay();
                 updateOrderBadge();
                 initImagePreview();
@@ -2774,7 +2876,7 @@
 
                 console.log('页面初始化完成，数据已从LeanCloud加载');
                 
-                // 启动全局轮询，检查新订单
+                // 启动全局轮询，检查新订单（无论是否登录管理员页面）
                 startGlobalPolling();
             } catch (error) {
                 console.error('页面初始化失败:', error);
@@ -2786,6 +2888,7 @@
                 initHomePage();
                 initAdminPanel();
                 initMealManagement();
+                initNewMealManagement();
                 updateCartDisplay();
                 updateOrderBadge();
                 initImagePreview();
@@ -2801,60 +2904,68 @@
         });
 
         // ==================== 全局轮询函数 ====================
-        // 启动全局轮询，检查新订单
+        // 启动全局轮询，检查新订单（无论管理员面板是否打开）
         function startGlobalPolling() {
             // 清除现有的全局轮询
             if (globalPollingInterval) {
                 clearInterval(globalPollingInterval);
             }
             
-            // 每3秒检查一次新订单计数
+            // 每5秒检查一次新订单计数
             globalPollingInterval = setInterval(async () => {
-                if (!isAdminPanelOpen) {
-                    try {
-                        // 检查新订单计数
-                        const newCount = await LeanCloudData.loadNewOrdersCount();
-                        if (newCount !== newOrdersCount) {
-                            newOrdersCount = newCount;
-                            updateOrderBadge();
+                try {
+                    // 检查新订单计数
+                    const newCount = await LeanCloudData.checkNewOrdersCountOnly();
+                    if (newCount !== newOrdersCount) {
+                        newOrdersCount = newCount;
+                        updateOrderBadge();
+                        
+                        // 显示实时更新指示器
+                        showRealtimeIndicator('检测到新订单！');
+                        
+                        console.log('全局轮询检测到新订单，数量：', newOrdersCount);
+                        
+                        // 如果管理员面板打开，立即更新订单列表
+                        if (isAdminPanelOpen) {
+                            const activeFilterBtn = document.querySelector('.filter-btn.active');
+                            const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
+                            await renderOrders(activeFilter);
+                        }
+                    }
+                    
+                    // 如果当前页面是"我的订单"页面，检查当前用户的新订单
+                    if (document.getElementById('myOrdersPage').classList.contains('active')) {
+                        const newUserOrders = await LeanCloudData.checkForNewOrders(lastUserOrderUpdateTime - 5000, currentUserId);
+                        if (newUserOrders.length > 0) {
+                            // 更新最后检查时间
+                            lastUserOrderUpdateTime = Date.now();
+                            
+                            // 将新订单添加到本地数组，注意去重
+                            newUserOrders.forEach(newOrder => {
+                                const existingIndex = orders.findIndex(o => o.id === newOrder.id);
+                                if (existingIndex === -1) {
+                                    orders.unshift(newOrder);
+                                } else {
+                                    orders[existingIndex] = newOrder;
+                                }
+                            });
                             
                             // 显示实时更新指示器
-                            showRealtimeIndicator('检测到新订单！');
+                            showRealtimeIndicator(`您有${newUserOrders.length}个新订单`);
                             
-                            console.log('全局轮询检测到新订单，数量：', newOrdersCount);
+                            // 重新渲染"我的订单"页面
+                            const activeFilterTab = document.querySelector('.order-filter-tab.active');
+                            const activeFilter = activeFilterTab ? activeFilterTab.dataset.orderFilter : 'all';
+                            renderUserOrders(activeFilter);
                         }
-                        
-                        // 如果当前页面是"我的订单"页面，检查当前用户的新订单
-                        if (document.getElementById('myOrdersPage').classList.contains('active')) {
-                            const newUserOrders = await LeanCloudData.checkForNewOrders(lastUserOrderUpdateTime - 3000, currentUserId);
-                            if (newUserOrders.length > 0) {
-                                // 更新最后检查时间
-                                lastUserOrderUpdateTime = Date.now();
-                                
-                                // 将新订单添加到本地数组，注意去重
-                                newUserOrders.forEach(newOrder => {
-                                    const existingIndex = orders.findIndex(o => o.id === newOrder.id);
-                                    if (existingIndex === -1) {
-                                        orders.unshift(newOrder);
-                                    } else {
-                                        orders[existingIndex] = newOrder;
-                                    }
-                                });
-                                
-                                // 显示实时更新指示器
-                                showRealtimeIndicator(`您有${newUserOrders.length}个新订单`);
-                                
-                                // 重新渲染"我的订单"页面
-                                const activeFilterTab = document.querySelector('.order-filter-tab.active');
-                                const activeFilter = activeFilterTab ? activeFilterTab.dataset.orderFilter : 'all';
-                                renderUserOrders(activeFilter);
-                            }
-                        }
-                    } catch (error) {
-                        console.warn('全局轮询检查新订单失败:', error);
                     }
+                    
+                    // 更新全局检查时间
+                    lastGlobalCheckTime = Date.now();
+                } catch (error) {
+                    console.warn('全局轮询检查新订单失败:', error);
                 }
-            }, 3000); // 每3秒检查一次
+            }, 5000); // 每5秒检查一次
         }
         
         // 停止全局轮询
@@ -3147,7 +3258,10 @@
                             <span class="total-price" id="totalPrice">¥0.00</span>
                         </div>
                         
-                        <!-- 修改：删除进度条HTML元素 -->
+                        <div class="progress-container" id="submitProgress" style="display: none;">
+                            <div class="progress-bar" id="progressBar"></div>
+                        </div>
+                        <div class="submit-status" id="submitStatus"></div>
                         
                         <button class="checkout-btn" id="checkoutBtn" disabled>
                             <i class="fas fa-credit-card"></i>
@@ -3955,7 +4069,15 @@
                                 return;
                             }
 
-                            // 修改：删除进度条显示代码
+                            // 显示进度条
+                            const progressContainer = document.getElementById('submitProgress');
+                            const progressBar = document.getElementById('progressBar');
+                            const submitStatus = document.getElementById('submitStatus');
+                            
+                            progressContainer.style.display = 'block';
+                            progressBar.style.width = '10%';
+                            submitStatus.textContent = '正在处理图片...';
+
                             try {
                                 const file = screenshotInput.files[0];
                                 const reader = new FileReader();
@@ -3966,16 +4088,25 @@
 
                                     deliveryInfo = `配送方式：到店自提\n自提方式：${pickupType}\n信息提供：截图上传`;
 
+                                    // 更新进度
+                                    progressBar.style.width = '30%';
+                                    submitStatus.textContent = '图片处理完成，准备提交订单...';
+
                                     // 继续提交订单
-                                    completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container, pickupType);
+                                    setTimeout(() => {
+                                        completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container, pickupType);
+                                    }, 500);
                                 };
 
                                 reader.onerror = function() {
+                                    submitStatus.textContent = '图片读取失败，请重试';
+                                    progressContainer.style.display = 'none';
                                     showNotification('图片读取失败，请重试', 'error');
                                 };
 
                                 reader.readAsDataURL(file);
                             } catch (error) {
+                                progressContainer.style.display = 'none';
                                 showNotification('图片处理失败: ' + error.message, 'error');
                             }
                             return;
@@ -3991,7 +4122,20 @@
             const checkoutBtn = container.querySelector('.checkout-btn');
             if (checkoutBtn.disabled) return;
             
-            // 修改：删除所有进度条相关代码
+            // 显示进度条
+            const progressContainer = document.getElementById('submitProgress');
+            const progressBar = document.getElementById('progressBar');
+            const submitStatus = document.getElementById('submitStatus');
+            
+            if (!progressContainer.style.display || progressContainer.style.display === 'none') {
+                progressContainer.style.display = 'block';
+                progressBar.style.width = '10%';
+                submitStatus.textContent = '正在准备订单数据...';
+            } else {
+                progressBar.style.width = '40%';
+                submitStatus.textContent = '正在验证订单信息...';
+            }
+
             let totalPrice = 0;
             cart.forEach(item => {
                 totalPrice += item.totalPrice;
@@ -4019,6 +4163,10 @@
                 orderSummary += `备注：${orderNote}\n`;
             }
 
+            // 更新进度
+            progressBar.style.width = '60%';
+            submitStatus.textContent = '请确认订单信息...';
+
             const confirmed = await new Promise((resolve) => {
                 // 使用setTimeout让UI有机会更新
                 setTimeout(() => {
@@ -4027,11 +4175,16 @@
             });
 
             if (!confirmed) {
+                progressContainer.style.display = 'none';
+                submitStatus.textContent = '';
                 return;
             }
 
             checkoutBtn.disabled = true;
             checkoutBtn.textContent = '提交中...';
+            
+            progressBar.style.width = '70%';
+            submitStatus.textContent = '正在提交订单到服务器...';
 
             const orderId = 'KFC' + Date.now().toString().slice(-6) + Math.floor(Math.random() * 100);
             const timestamp = new Date().toLocaleString('zh-CN');
@@ -4052,15 +4205,21 @@
             };
 
             try {
-                // 修改：删除进度条更新代码
+                progressBar.style.width = '80%';
+                submitStatus.textContent = '正在保存订单数据...';
+
                 const savedOrder = await LeanCloudData.saveOrder(orderData);
                 console.log('订单保存成功:', savedOrder);
 
                 savedOrder.objectId = savedOrder.objectId;
                 orders.unshift(savedOrder);
 
+                // 更新新订单计数
                 newOrdersCount++;
                 
+                progressBar.style.width = '90%';
+                submitStatus.textContent = '正在更新订单计数...';
+
                 // 更新新订单计数（异步，不阻塞主流程）
                 setTimeout(async () => {
                     try {
@@ -4088,51 +4247,52 @@
 
                 updateOrderBadge();
 
-                showNotification('订单提交成功！', 'success');
+                progressBar.style.width = '100%';
+                submitStatus.textContent = '订单提交成功！';
 
-                // 立即显示实时更新指示器
-                showRealtimeIndicator('订单已提交！');
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                    submitStatus.textContent = '';
+                    
+                    showNotification('订单提交成功！', 'success');
 
-                // 重要修改：无论管理员面板是否打开，都立即更新订单列表
-                // 这样确保管理员实时看到新订单
-                if (isAdminPanelOpen) {
-                    const activeFilterBtn = document.querySelector('.filter-btn.active');
-                    const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
-                    renderOrders(activeFilter);
-                    showRealtimeIndicator('有新订单到达！');
-                }
+                    // 立即显示实时更新指示器
+                    showRealtimeIndicator('订单已提交！');
 
-                const orderSubmitted = confirm(`订单提交成功！\n订单号：${orderId}\n\n点击"确定"查看您的订单详情，或点击"取消"返回首页。`);
+                    const orderSubmitted = confirm(`订单提交成功！\n订单号：${orderId}\n\n点击"确定"查看您的订单详情，或点击"取消"返回首页。`);
 
-                if (orderSubmitted) {
-                    showMyOrdersPage();
+                    if (orderSubmitted) {
+                        showMyOrdersPage();
 
-                    const url = new URL(window.location);
-                    url.searchParams.set('order', orderId);
-                    window.history.pushState({}, '', url);
+                        const url = new URL(window.location);
+                        url.searchParams.set('order', orderId);
+                        window.history.pushState({}, '', url);
 
-                    setTimeout(() => {
-                        document.getElementById('orderSearchInput').value = orderId;
-                        searchUserOrder(orderId);
+                        setTimeout(() => {
+                            document.getElementById('orderSearchInput').value = orderId;
+                            searchUserOrder(orderId);
 
-                        const orderElements = document.querySelectorAll('.user-order-item');
-                        orderElements.forEach(el => {
-                            const orderIdElement = el.querySelector('.user-order-id');
-                            if (orderIdElement && orderIdElement.textContent.includes(orderId)) {
-                                el.style.animation = 'highlightOrder 2s';
-                                el.scrollIntoView({
-                                    behavior: 'smooth',
-                                    block: 'center'
-                                });
-                            }
-                        });
-                    }, 100);
-                } else {
-                    showPage('homePage');
-                }
+                            const orderElements = document.querySelectorAll('.user-order-item');
+                            orderElements.forEach(el => {
+                                const orderIdElement = el.querySelector('.user-order-id');
+                                if (orderIdElement && orderIdElement.textContent.includes(orderId)) {
+                                    el.style.animation = 'highlightOrder 2s';
+                                    el.scrollIntoView({
+                                        behavior: 'smooth',
+                                        block: 'center'
+                                    });
+                                }
+                            });
+                        }, 100);
+                    } else {
+                        showPage('homePage');
+                    }
+                }, 1000);
 
             } catch (error) {
                 console.error('提交订单失败:', error);
+                progressContainer.style.display = 'none';
+                submitStatus.textContent = '';
                 showNotification('订单提交失败：' + (error.message || '请检查网络连接'), 'error');
                 checkoutBtn.disabled = false;
                 checkoutBtn.textContent = '提交订单';
@@ -4472,27 +4632,16 @@
             // 设置管理员面板打开状态
             isAdminPanelOpen = true;
             
-            // 停止全局轮询，因为管理面板有更频繁的轮询
-            stopGlobalPolling();
-            
+            // 不要停止全局轮询，因为我们需要实时更新新订单计数
             // 记录最后更新时间
             lastOrderUpdateTime = Date.now();
-
-            // 重置新订单计数
-            newOrdersCount = 0;
-            localStorage.setItem('newOrdersCountCache', '0');
-
-            // 异步更新新订单计数
-            setTimeout(() => {
-                LeanCloudData.updateNewOrdersCount(0).catch(console.error);
-            }, 1000);
 
             updateOrderBadge();
 
             renderOrders('all');
             updateMealList('all');
             
-            // 启动管理员面板的实时轮询（3秒一次）
+            // 启动管理员面板的实时轮询（3秒一次），只检查新订单并更新订单列表
             startAdminPolling();
         }
         
@@ -4507,22 +4656,7 @@
             adminPollingInterval = setInterval(async () => {
                 if (isAdminPanelOpen) {
                     try {
-                        // 检查新订单计数
-                        const newCount = await LeanCloudData.loadNewOrdersCount();
-                        if (newCount !== newOrdersCount) {
-                            newOrdersCount = newCount;
-                            updateOrderBadge();
-                            
-                            // 显示实时更新指示器
-                            showRealtimeIndicator('检测到新订单！');
-                            
-                            // 重新加载订单列表
-                            const activeFilterBtn = document.querySelector('.filter-btn.active');
-                            const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
-                            await renderOrders(activeFilter);
-                        }
-                        
-                        // 同时检查是否有新的订单数据（基于时间）
+                        // 只检查新订单，不检查新订单计数
                         const newOrders = await LeanCloudData.checkForNewOrders(lastOrderUpdateTime - 3000); // 3秒前的更新
                         if (newOrders.length > 0) {
                             // 更新最后更新时间
@@ -4632,9 +4766,7 @@
                     document.getElementById(`${tabId}Tab`).classList.add('active');
 
                     if (tabId === 'meals') {
-                        updateMealList('all');
-                    } else if (tabId === 'addMeal') {
-                        resetMealForm();
+                        showMealList();
                     }
                 });
             });
@@ -4674,8 +4806,7 @@
                 adminPollingInterval = null;
             }
             
-            // 重新启动全局轮询（3秒一次）
-            startGlobalPolling();
+            // 全局轮询一直在运行，所以不需要重新启动
         }
 
         function renderOrders(filter = 'all') {
@@ -4900,6 +5031,7 @@
                     this.classList.add('active');
 
                     const filter = this.dataset.mealFilter;
+                    showMealList();
                     updateMealList(filter);
                 });
             });
@@ -4917,27 +5049,18 @@
             });
 
             document.getElementById('cancelEditBtn').addEventListener('click', function() {
-                cancelEdit();
-            });
-
-            document.querySelectorAll('.admin-tab').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    const tabId = this.dataset.tab;
-                    if (tabId === 'addMeal') {
-                        resetMealForm();
-                    }
-                });
+                showMealList();
             });
 
             document.addEventListener('keydown', function(e) {
                 if ((e.ctrlKey || e.metaKey) && e.key === 's' &&
-                    document.getElementById('addMealTab').classList.contains('active')) {
+                    document.getElementById('editMealFormContainer').classList.contains('active')) {
                     e.preventDefault();
                     saveMeal();
                 }
 
-                if (e.key === 'Escape' && document.getElementById('cancelEditBtn').style.display !== 'none') {
-                    cancelEdit();
+                if (e.key === 'Escape' && document.getElementById('editMealFormContainer').classList.contains('active')) {
+                    showMealList();
                 }
             });
 
@@ -4958,6 +5081,25 @@
             if (document.querySelectorAll('.option-group-item').length === 0) {
                 addOptionGroup();
             }
+        }
+
+        // 显示套餐列表
+        function showMealList() {
+            document.getElementById('mealListSection').classList.remove('hide');
+            document.getElementById('mealListSection').classList.add('show');
+            document.getElementById('editMealFormContainer').classList.remove('active');
+            document.getElementById('editMealFormContainer').classList.add('hide');
+            
+            const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
+            updateMealList(activeFilter);
+        }
+
+        // 显示编辑表单
+        function showEditForm() {
+            document.getElementById('mealListSection').classList.remove('show');
+            document.getElementById('mealListSection').classList.add('hide');
+            document.getElementById('editMealFormContainer').classList.remove('hide');
+            document.getElementById('editMealFormContainer').classList.add('active');
         }
 
         // 更新套餐列表
@@ -5220,9 +5362,7 @@
                 statusText.className = 'status-inactive';
             }
 
-            document.getElementById('addMealTitle').innerHTML = `<i class="fas fa-edit"></i> 编辑套餐：${meal.name.substring(0, 20)}${meal.name.length > 20 ? '...' : ''}`;
-
-            document.getElementById('cancelEditBtn').style.display = 'block';
+            document.getElementById('editMealTitle').innerHTML = `<i class="fas fa-edit"></i> 编辑套餐：${meal.name.substring(0, 20)}${meal.name.length > 20 ? '...' : ''}`;
 
             document.getElementById('optionGroupsManagement').innerHTML = '';
             document.getElementById('fixedItemsManagement').innerHTML = '';
@@ -5312,9 +5452,9 @@
                 });
             }
 
-            document.querySelector('.admin-tab[data-tab="addMeal"]').click();
+            showEditForm();
 
-            document.getElementById('addMealTab').scrollIntoView({
+            document.getElementById('editMealFormContainer').scrollIntoView({
                 behavior: 'smooth'
             });
         }
@@ -5667,9 +5807,7 @@
                 const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
                 updateMealList(activeFilter);
 
-                resetMealForm();
-
-                document.querySelector('.admin-tab[data-tab="meals"]').click();
+                showMealList();
 
                 showNotification(mealId ? '套餐已更新' : '套餐已添加', 'success');
             } catch (error) {
@@ -5678,32 +5816,342 @@
             }
         }
 
-        // 取消编辑
-        function cancelEdit() {
-            resetMealForm();
-            document.querySelector('.admin-tab[data-tab="meals"]').click();
+        // ==================== 添加新套餐管理 ====================
+        function initNewMealManagement() {
+            const statusToggle = document.getElementById('newMealActive');
+            const statusText = document.getElementById('newStatusText');
+
+            if (statusToggle && statusText) {
+                statusToggle.addEventListener('change', function() {
+                    if (this.checked) {
+                        statusText.textContent = '上架';
+                        statusText.className = 'status-active';
+                    } else {
+                        statusText.textContent = '下架';
+                        statusText.className = 'status-inactive';
+                    }
+                });
+            }
+
+            document.getElementById('newAddOptionGroupBtn').addEventListener('click', function() {
+                addNewOptionGroup();
+            });
+
+            document.getElementById('newAddFixedItemBtn').addEventListener('click', function() {
+                addNewFixedItem();
+            });
+
+            document.getElementById('saveNewMealBtn').addEventListener('click', async function() {
+                await saveNewMeal();
+            });
+
+            if (document.querySelectorAll('#newOptionGroupsManagement .option-group-item').length === 0) {
+                addNewOptionGroup();
+            }
         }
 
-        // 重置套餐表单
-        function resetMealForm() {
-            document.getElementById('currentMealId').value = '';
-            document.getElementById('mealName').value = '';
-            document.getElementById('mealPrice').value = '';
-            document.getElementById('mealOrder').value = '9999';
-            document.getElementById('mealTags').value = '';
-            document.getElementById('mealDescription').value = '';
-            document.getElementById('mealActive').checked = true;
+        // 添加新选项组
+        function addNewOptionGroup() {
+            const optionGroupsManagement = document.getElementById('newOptionGroupsManagement');
+            const groupId = 'new-group-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
 
-            const statusText = document.getElementById('statusText');
-            statusText.textContent = '上架';
-            statusText.className = 'status-active';
+            const optionGroup = document.createElement('div');
+            optionGroup.className = 'option-group-item';
+            optionGroup.innerHTML = `
+                <div class="option-group-header">
+                    <div class="option-group-title">选项组 ${optionGroupsManagement.children.length + 1}</div>
+                    <div>
+                        <button class="action-btn add-btn new-add-option-item-btn" data-group-id="${groupId}">
+                            <i class="fas fa-plus"></i> 添加选项
+                        </button>
+                        <button class="action-btn delete-btn new-delete-option-group-btn" data-group-id="${groupId}">
+                            <i class="fas fa-trash"></i> 删除组
+                        </button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">组标题 <span class="required">*</span></label>
+                        <input type="text" class="form-input new-option-group-title-input" data-group-id="${groupId}" placeholder="例如：① 任选3份（可以重复选）" value="选项组 ${optionGroupsManagement.children.length + 1}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">规则描述 <span class="required">*</span></label>
+                        <input type="text" class="form-input new-option-group-rules-input" data-group-id="${groupId}" placeholder="例如：需要选择3份，可以重复选择相同选项" value="请选择选项">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">最少选择数量 <span class="required">*</span></label>
+                        <input type="number" class="form-input new-option-group-min-input" data-group-id="${groupId}" placeholder="例如：3" min="0" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">最多选择数量 <span class="required">*</span></label>
+                        <input type="number" class="form-input new-option-group-max-input" data-group-id="${groupId}" placeholder="例如：3" min="1" value="1">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">是否可以重复选择</label>
+                        <div style="margin-top: 8px;">
+                            <label style="display: flex; align-items: center; gap: 8px;">
+                                <input type="checkbox" class="new-option-group-repeat-input" data-group-id="${groupId}" checked>
+                                <span>可以重复选择相同选项</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">每个选项最多选择几份</label>
+                        <input type="number" class="form-input new-option-group-max-per-item-input" data-group-id="${groupId}" placeholder="例如：2" min="1" value="999">
+                    </div>
+                </div>
+                <div class="option-items-list" id="new-option-items-${groupId}">
+                </div>
+            `;
 
-            document.getElementById('optionGroupsManagement').innerHTML = '';
-            document.getElementById('fixedItemsManagement').innerHTML = '';
-            document.getElementById('addMealTitle').innerHTML = `<i class="fas fa-plus-circle"></i> 添加新套餐`;
-            document.getElementById('cancelEditBtn').style.display = 'none';
+            optionGroupsManagement.appendChild(optionGroup);
 
-            addOptionGroup();
+            optionGroup.querySelector('.new-add-option-item-btn').addEventListener('click', function() {
+                addNewOptionItem(groupId);
+            });
+
+            optionGroup.querySelector('.new-delete-option-group-btn').addEventListener('click', function() {
+                deleteNewOptionGroup(groupId);
+            });
+
+            addNewOptionItemToGroup(groupId, '选项1', 0);
+        }
+
+        // 添加新选项项
+        function addNewOptionItem(groupId) {
+            addNewOptionItemToGroup(groupId, '新选项', 0);
+        }
+
+        // 辅助函数：添加新选项项到指定组
+        function addNewOptionItemToGroup(groupId, name, price) {
+            const optionItemsList = document.getElementById(`new-option-items-${groupId}`);
+            if (!optionItemsList) return;
+
+            const itemId = Date.now() + Math.random();
+
+            const optionItem = document.createElement('div');
+            optionItem.className = 'option-item-list-item';
+            optionItem.innerHTML = `
+                <div style="display: flex; gap: 10px; width: 100%;">
+                    <input type="text" class="form-input new-option-item-name-input" style="flex: 3;" placeholder="选项名称，例如：香辣鸡腿堡" value="${name || '选项'}">
+                    <input type="number" class="form-input new-option-item-price-input" style="flex: 1;" placeholder="附加价格" min="0" step="0.01" value="${price || 0}">
+                </div>
+                <button class="action-btn delete-btn new-delete-option-item-btn" data-item-id="${itemId}">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+
+            optionItemsList.appendChild(optionItem);
+
+            optionItem.querySelector('.new-delete-option-item-btn').addEventListener('click', function() {
+                deleteNewOptionItem(itemId);
+            });
+        }
+
+        // 删除新选项组
+        function deleteNewOptionGroup(groupId) {
+            const groupElement = document.querySelector(`.option-group-item [data-group-id="${groupId}"]`).closest('.option-group-item');
+            if (groupElement) {
+                groupElement.remove();
+            }
+        }
+
+        // 删除新选项项
+        function deleteNewOptionItem(itemId) {
+            const itemElement = document.querySelector(`[data-item-id="${itemId}"]`).closest('.option-item-list-item');
+            if (itemElement) {
+                itemElement.remove();
+            }
+        }
+
+        // 添加新固定搭配项
+        function addNewFixedItem() {
+            addNewFixedItemWithData('固定搭配项', 1);
+        }
+
+        // 辅助函数：添加带数据的新固定搭配项
+        function addNewFixedItemWithData(name, quantity) {
+            const fixedItemsManagement = document.getElementById('newFixedItemsManagement');
+            if (!fixedItemsManagement) return;
+
+            const fixedItem = document.createElement('div');
+            fixedItem.className = 'fixed-item-list-item';
+            fixedItem.innerHTML = `
+                <div style="display: flex; gap: 10px; width: 100%;">
+                    <input type="text" class="form-input new-fixed-item-name-input" style="flex: 3;" placeholder="固定搭配项名称，例如：可乐" value="${name || '固定搭配项'}">
+                    <input type="number" class="form-input new-fixed-item-quantity-input" style="flex: 1;" placeholder="数量" min="1" value="${quantity || 1}">
+                </div>
+                <button class="action-btn delete-btn new-delete-fixed-item-btn">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+
+            fixedItemsManagement.appendChild(fixedItem);
+
+            fixedItem.querySelector('.new-delete-fixed-item-btn').addEventListener('click', function() {
+                fixedItem.remove();
+            });
+        }
+
+        // 保存新套餐
+        async function saveNewMeal() {
+            const mealName = document.getElementById('newMealName').value.trim();
+            const mealPrice = parseFloat(document.getElementById('newMealPrice').value);
+            const mealOrder = parseInt(document.getElementById('newMealOrder').value) || 9999;
+            const mealTags = document.getElementById('newMealTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
+            const mealDescription = document.getElementById('newMealDescription').value.trim();
+            const mealActive = document.getElementById('newMealActive').checked;
+
+            if (!mealName) {
+                showNotification('请填写套餐名称', 'error');
+                document.getElementById('newMealName').focus();
+                return;
+            }
+
+            if (isNaN(mealPrice) || mealPrice <= 0) {
+                showNotification('请填写有效的套餐价格', 'error');
+                document.getElementById('newMealPrice').focus();
+                return;
+            }
+
+            if (mealTags.length === 0) {
+                showNotification('请至少填写一个套餐标签', 'error');
+                document.getElementById('newMealTags').focus();
+                return;
+            }
+
+            if (!mealDescription) {
+                showNotification('请填写套餐描述', 'error');
+                document.getElementById('newMealDescription').focus();
+                return;
+            }
+
+            const optionGroups = [];
+            document.querySelectorAll('#newOptionGroupsManagement .option-group-item').forEach((groupElement, index) => {
+                const title = groupElement.querySelector('.new-option-group-title-input').value.trim();
+                const rules = groupElement.querySelector('.new-option-group-rules-input').value.trim();
+                const minSelect = parseInt(groupElement.querySelector('.new-option-group-min-input').value) || 1;
+                const maxSelect = parseInt(groupElement.querySelector('.new-option-group-max-input').value) || 1;
+                const repeat = groupElement.querySelector('.new-option-group-repeat-input').checked;
+                const maxPerItem = parseInt(groupElement.querySelector('.new-option-group-max-per-item-input').value) || (repeat ? 999 : 1);
+
+                if (!title) {
+                    showNotification(`选项组 ${index + 1} 的标题不能为空`, 'error');
+                    groupElement.querySelector('.new-option-group-title-input').focus();
+                    throw new Error('选项组标题为空');
+                }
+
+                if (!rules) {
+                    showNotification(`选项组 ${index + 1} 的规则描述不能为空`, 'error');
+                    groupElement.querySelector('.new-option-group-rules-input').focus();
+                    throw new Error('选项组规则为空');
+                }
+
+                if (minSelect < 0) {
+                    showNotification(`选项组 ${index + 1} 的最少选择数量不能小于0`, 'error');
+                    groupElement.querySelector('.new-option-group-min-input').focus();
+                    throw new Error('最小选择数量无效');
+                }
+
+                if (maxSelect < minSelect) {
+                    showNotification(`选项组 ${index + 1} 的最多选择数量不能小于最少选择数量`, 'error');
+                    groupElement.querySelector('.new-option-group-max-input').focus();
+                    throw new Error('最大选择数量无效');
+                }
+
+                const items = [];
+                groupElement.querySelectorAll('.option-item-list-item').forEach(itemElement => {
+                    const name = itemElement.querySelector('.new-option-item-name-input').value.trim();
+                    const addPrice = parseFloat(itemElement.querySelector('.new-option-item-price-input').value) || 0;
+
+                    if (name) {
+                        items.push({
+                            name,
+                            addPrice
+                        });
+                    }
+                });
+
+                if (items.length === 0) {
+                    showNotification(`选项组 ${index + 1} 至少需要一个选项项`, 'error');
+                    throw new Error('选项组没有选项项');
+                }
+
+                optionGroups.push({
+                    title,
+                    rules,
+                    minSelect,
+                    maxSelect,
+                    repeat,
+                    maxPerItem,
+                    items
+                });
+            });
+
+            const fixedItems = [];
+            document.querySelectorAll('#newFixedItemsManagement .fixed-item-list-item').forEach((itemElement, index) => {
+                const name = itemElement.querySelector('.new-fixed-item-name-input').value.trim();
+                const quantity = parseInt(itemElement.querySelector('.new-fixed-item-quantity-input').value) || 1;
+
+                if (name) {
+                    fixedItems.push({
+                        name,
+                        quantity
+                    });
+                }
+            });
+
+            const now = Date.now();
+            const meal = {
+                id: 'meal-' + now + '-' + Math.random().toString(36).substr(2, 9),
+                name: mealName,
+                price: mealPrice,
+                order: mealOrder,
+                tags: mealTags,
+                description: mealDescription,
+                active: mealActive,
+                optionGroups: optionGroups,
+                fixedItems: fixedItems
+            };
+
+            try {
+                const savedMeal = await LeanCloudData.saveMeal(meal);
+                meals.push(savedMeal);
+
+                localStorage.setItem('kfcMealsCache', JSON.stringify(meals));
+
+                updateHomePage();
+
+                const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
+                updateMealList(activeFilter);
+
+                // 重置表单
+                document.getElementById('newMealName').value = '';
+                document.getElementById('newMealPrice').value = '';
+                document.getElementById('newMealOrder').value = '9999';
+                document.getElementById('newMealTags').value = '';
+                document.getElementById('newMealDescription').value = '';
+                document.getElementById('newMealActive').checked = true;
+                
+                const statusText = document.getElementById('newStatusText');
+                statusText.textContent = '上架';
+                statusText.className = 'status-active';
+
+                document.getElementById('newOptionGroupsManagement').innerHTML = '';
+                document.getElementById('newFixedItemsManagement').innerHTML = '';
+
+                // 切换到套餐管理标签页
+                document.querySelector('.admin-tab[data-tab="meals"]').click();
+
+                showNotification('套餐已添加', 'success');
+            } catch (error) {
+                console.error('添加套餐失败:', error);
+                showNotification('添加失败，请检查网络连接', 'error');
+            }
         }
 
         // ==================== 图片预览功能 ====================
