@@ -1817,6 +1817,31 @@
             100% { opacity: 0; }
         }
         
+        /* 新增：提交进度条 */
+        .progress-container {
+            width: 100%;
+            height: 4px;
+            background-color: #f0f0f0;
+            border-radius: 2px;
+            margin-top: 10px;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .submit-status {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
         @media (max-width: 768px) {
             .main-content {
                 flex-direction: column;
@@ -2492,6 +2517,7 @@
                     
                     if (order.hasScreenshot && order.screenshotData) {
                         orderObj.set('hasScreenshot', true);
+                        // 这里不再限制截图大小，因为我们已经在前端压缩了
                         orderObj.set('screenshotData', order.screenshotData);
                     } else {
                         orderObj.set('hasScreenshot', false);
@@ -3023,6 +3049,11 @@
                             <span class="total-price" id="totalPrice">¥0.00</span>
                         </div>
                         
+                        <div class="progress-container" id="submitProgress" style="display: none;">
+                            <div class="progress-bar" id="progressBar"></div>
+                        </div>
+                        <div class="submit-status" id="submitStatus"></div>
+                        
                         <button class="checkout-btn" id="checkoutBtn" disabled>
                             <i class="fas fa-credit-card"></i>
                             提交订单
@@ -3111,7 +3142,7 @@
                                         <div class="screenshot-upload-area" id="screenshotUploadArea">
                                             <i class="fas fa-cloud-upload-alt"></i>
                                             <p>点击或拖拽上传截图</p>
-                                            <p class="upload-hint">支持 JPG、PNG 格式，大小不超过 5MB</p>
+                                            <p class="upload-hint">支持 JPG、PNG 格式，大小不超过 2MB，建议压缩后上传</p>
                                             <input type="file" id="storeScreenshot" accept="image/*" style="display: none;">
                                         </div>
                                         <div class="screenshot-preview hidden" id="screenshotPreview">
@@ -3121,7 +3152,7 @@
                                             </button>
                                         </div>
                                         <div class="form-hint">
-                                            <i class="fas fa-lightbulb"></i> 您可以截图包含门店地址的聊天记录、地图或订单页面
+                                            <i class="fas fa-lightbulb"></i> 建议压缩图片到1MB以下，上传速度更快
                                         </div>
                                     </div>
                                 </div>
@@ -3472,24 +3503,87 @@
                 }
             }
 
-            function handleFileSelect(file, fileInput, previewContainer, previewImage, uploadArea) {
+            async function handleFileSelect(file, fileInput, previewContainer, previewImage, uploadArea) {
                 if (!file.type.match('image.*')) {
                     showNotification('请选择图片文件', 'error');
                     return;
                 }
 
-                if (file.size > 5 * 1024 * 1024) {
-                    showNotification('图片大小不能超过5MB', 'error');
+                if (file.size > 2 * 1024 * 1024) {
+                    showNotification('图片大小不能超过2MB，请压缩后上传', 'error');
                     return;
                 }
 
+                // 压缩图片
+                const compressedImage = await compressImage(file);
+                
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     previewImage.src = e.target.result;
                     previewContainer.classList.remove('hidden');
                     uploadArea.style.display = 'none';
+                    
+                    // 替换原始文件
+                    fileInput.files = dataURLtoBlob(e.target.result);
                 };
-                reader.readAsDataURL(file);
+                reader.readAsDataURL(compressedImage);
+            }
+
+            // 压缩图片函数
+            async function compressImage(file, maxWidth = 800, quality = 0.7) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = function(event) {
+                        const img = new Image();
+                        img.src = event.target.result;
+                        img.onload = function() {
+                            const canvas = document.createElement('canvas');
+                            let width = img.width;
+                            let height = img.height;
+                            
+                            // 如果图片宽度超过最大宽度，等比例缩小
+                            if (width > maxWidth) {
+                                height = Math.round((height * maxWidth) / width);
+                                width = maxWidth;
+                            }
+                            
+                            canvas.width = width;
+                            canvas.height = height;
+                            
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            
+                            // 转换为压缩后的图片
+                            canvas.toBlob(function(blob) {
+                                resolve(blob);
+                            }, file.type, quality);
+                        };
+                        img.onerror = reject;
+                    };
+                    reader.onerror = reject;
+                });
+            }
+
+            // 将dataURL转换为Blob对象
+            function dataURLtoBlob(dataURL) {
+                const arr = dataURL.split(',');
+                const mime = arr[0].match(/:(.*?);/)[1];
+                const bstr = atob(arr[1]);
+                let n = bstr.length;
+                const u8arr = new Uint8Array(n);
+                while (n--) {
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+                const blob = new Blob([u8arr], {type: mime});
+                
+                // 创建一个File对象
+                const file = new File([blob], "compressed_image.jpg", {type: mime});
+                
+                // 创建FileList对象
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                return dataTransfer.files;
             }
         }
 
@@ -3711,26 +3805,46 @@
                                 return;
                             }
 
-                            const file = screenshotInput.files[0];
+                            // 显示进度条
+                            const progressContainer = document.getElementById('submitProgress');
+                            const progressBar = document.getElementById('progressBar');
+                            const submitStatus = document.getElementById('submitStatus');
                             
-                            if (file.size > 2 * 1024 * 1024) {
-                                if (!confirm('图片文件较大，上传可能需要较长时间，是否继续？')) {
-                                    return;
-                                }
+                            progressContainer.style.display = 'block';
+                            progressBar.style.width = '10%';
+                            submitStatus.textContent = '正在读取图片...';
+
+                            try {
+                                const file = screenshotInput.files[0];
+                                const reader = new FileReader();
+
+                                reader.onload = function(e) {
+                                    screenshotData = e.target.result;
+                                    hasScreenshot = true;
+
+                                    deliveryInfo = `配送方式：到店自提\n自提方式：${pickupType}\n信息提供：截图上传`;
+
+                                    // 更新进度
+                                    progressBar.style.width = '30%';
+                                    submitStatus.textContent = '图片处理完成，准备提交订单...';
+
+                                    // 继续提交订单
+                                    setTimeout(() => {
+                                        completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container, pickupType);
+                                    }, 500);
+                                };
+
+                                reader.onerror = function() {
+                                    submitStatus.textContent = '图片读取失败，请重试';
+                                    progressContainer.style.display = 'none';
+                                    showNotification('图片读取失败，请重试', 'error');
+                                };
+
+                                reader.readAsDataURL(file);
+                            } catch (error) {
+                                progressContainer.style.display = 'none';
+                                showNotification('图片处理失败: ' + error.message, 'error');
                             }
-
-                            const reader = new FileReader();
-
-                            reader.onload = function(e) {
-                                screenshotData = e.target.result;
-                                hasScreenshot = true;
-
-                                deliveryInfo = `配送方式：到店自提\n自提方式：${pickupType}\n信息提供：截图上传`;
-
-                                completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container, pickupType);
-                            };
-
-                            reader.readAsDataURL(file);
                             return;
                         }
                     }
@@ -3744,6 +3858,20 @@
             const checkoutBtn = container.querySelector('.checkout-btn');
             if (checkoutBtn.disabled) return;
             
+            // 显示进度条
+            const progressContainer = document.getElementById('submitProgress');
+            const progressBar = document.getElementById('progressBar');
+            const submitStatus = document.getElementById('submitStatus');
+            
+            if (!progressContainer.style.display || progressContainer.style.display === 'none') {
+                progressContainer.style.display = 'block';
+                progressBar.style.width = '10%';
+                submitStatus.textContent = '正在准备订单数据...';
+            } else {
+                progressBar.style.width = '40%';
+                submitStatus.textContent = '正在验证订单信息...';
+            }
+
             let totalPrice = 0;
             cart.forEach(item => {
                 totalPrice += item.totalPrice;
@@ -3771,69 +3899,96 @@
                 orderSummary += `备注：${orderNote}\n`;
             }
 
-            const confirmed = confirm(`请确认订单信息：\n\n${orderSummary}\n\n确认提交订单吗？`);
+            // 更新进度
+            progressBar.style.width = '60%';
+            submitStatus.textContent = '请确认订单信息...';
 
-            if (confirmed) {
-                checkoutBtn.disabled = true;
-                checkoutBtn.textContent = '提交中...';
+            const confirmed = await new Promise((resolve) => {
+                // 使用setTimeout让UI有机会更新
+                setTimeout(() => {
+                    resolve(confirm(`请确认订单信息：\n\n${orderSummary}\n\n确认提交订单吗？`));
+                }, 100);
+            });
+
+            if (!confirmed) {
+                progressContainer.style.display = 'none';
+                submitStatus.textContent = '';
+                return;
+            }
+
+            checkoutBtn.disabled = true;
+            checkoutBtn.textContent = '提交中...';
+            
+            progressBar.style.width = '70%';
+            submitStatus.textContent = '正在提交订单到服务器...';
+
+            const orderId = 'KFC' + Date.now().toString().slice(-6) + Math.floor(Math.random() * 100);
+            const timestamp = new Date().toLocaleString('zh-CN');
+
+            const orderData = {
+                id: orderId,
+                timestamp: timestamp,
+                status: 'new',
+                cart: JSON.parse(JSON.stringify(cart)),
+                deliveryInfo: deliveryInfo,
+                orderNote: orderNote,
+                deliveryType: deliveryType,
+                pickupType: pickupType || '',
+                totalPrice: totalPrice,
+                hasScreenshot: hasScreenshot,
+                screenshotData: screenshotData,
+                userId: currentUserId
+            };
+
+            try {
+                progressBar.style.width = '80%';
+                submitStatus.textContent = '正在保存订单数据...';
+
+                const savedOrder = await LeanCloudData.saveOrder(orderData);
+                console.log('订单保存成功:', savedOrder);
+
+                savedOrder.objectId = savedOrder.objectId;
+                orders.unshift(savedOrder);
+
+                newOrdersCount++;
                 
-                showLoading('正在提交订单...');
-                
-                const orderId = 'KFC' + Date.now().toString().slice(-6) + Math.floor(Math.random() * 100);
-                const timestamp = new Date().toLocaleString('zh-CN');
+                progressBar.style.width = '90%';
+                submitStatus.textContent = '正在更新订单计数...';
 
-                const orderData = {
-                    id: orderId,
-                    timestamp: timestamp,
-                    status: 'new',
-                    cart: JSON.parse(JSON.stringify(cart)),
-                    deliveryInfo: deliveryInfo,
-                    orderNote: orderNote,
-                    deliveryType: deliveryType,
-                    pickupType: pickupType || '',
-                    totalPrice: totalPrice,
-                    hasScreenshot: hasScreenshot,
-                    screenshotData: screenshotData,
-                    userId: currentUserId
-                };
+                // 更新新订单计数（异步）
+                setTimeout(async () => {
+                    try {
+                        await LeanCloudData.updateNewOrdersCount(newOrdersCount);
+                        console.log('新订单计数更新成功');
+                    } catch (countError) {
+                        console.warn('更新新订单计数失败，但不影响订单提交:', countError);
+                    }
+                }, 1000);
 
-                try {
-                    const savedOrder = await LeanCloudData.saveOrder(orderData);
-                    console.log('订单保存成功:', savedOrder);
+                // 更新本地缓存
+                localStorage.setItem('kfcOrdersCache', JSON.stringify(orders.map(o => ({
+                    id: o.id,
+                    timestamp: o.timestamp,
+                    status: o.status,
+                    totalPrice: o.totalPrice,
+                    userId: o.userId
+                }))));
+                localStorage.setItem('newOrdersCountCache', newOrdersCount.toString());
 
-                    savedOrder.objectId = savedOrder.objectId;
-                    orders.unshift(savedOrder);
+                cart = [];
+                updateCartDisplay();
 
-                    newOrdersCount++;
+                resetForm(container);
+
+                updateOrderBadge();
+
+                progressBar.style.width = '100%';
+                submitStatus.textContent = '订单提交成功！';
+
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                    submitStatus.textContent = '';
                     
-                    // 更新新订单计数（异步）
-                    setTimeout(async () => {
-                        try {
-                            await LeanCloudData.updateNewOrdersCount(newOrdersCount);
-                            console.log('新订单计数更新成功');
-                        } catch (countError) {
-                            console.warn('更新新订单计数失败，但不影响订单提交:', countError);
-                        }
-                    }, 1000);
-
-                    // 更新本地缓存
-                    localStorage.setItem('kfcOrdersCache', JSON.stringify(orders.map(o => ({
-                        id: o.id,
-                        timestamp: o.timestamp,
-                        status: o.status,
-                        totalPrice: o.totalPrice,
-                        userId: o.userId
-                    }))));
-                    localStorage.setItem('newOrdersCountCache', newOrdersCount.toString());
-
-                    cart = [];
-                    updateCartDisplay();
-
-                    resetForm(container);
-
-                    updateOrderBadge();
-
-                    hideLoading();
                     showNotification('订单提交成功！', 'success');
 
                     // 关键改进：立即通知管理员面板更新
@@ -3878,18 +4033,19 @@
                     } else {
                         showPage('homePage');
                     }
+                }, 1000);
 
-                } catch (error) {
-                    console.error('提交订单失败:', error);
-                    hideLoading();
-                    showNotification('订单提交失败：' + (error.message || '请检查网络连接'), 'error');
-                    checkoutBtn.disabled = false;
-                    checkoutBtn.textContent = '提交订单';
-                    return;
-                } finally {
-                    checkoutBtn.disabled = false;
-                    checkoutBtn.innerHTML = '<i class="fas fa-credit-card"></i> 提交订单';
-                }
+            } catch (error) {
+                console.error('提交订单失败:', error);
+                progressContainer.style.display = 'none';
+                submitStatus.textContent = '';
+                showNotification('订单提交失败：' + (error.message || '请检查网络连接'), 'error');
+                checkoutBtn.disabled = false;
+                checkoutBtn.textContent = '提交订单';
+                return;
+            } finally {
+                checkoutBtn.disabled = false;
+                checkoutBtn.innerHTML = '<i class="fas fa-credit-card"></i> 提交订单';
             }
         }
 
