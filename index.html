@@ -4689,7 +4689,7 @@
         }
 
         // ==================== 优化后的管理员面板实时更新 ====================
-        function openAdminPanel() {
+        async function openAdminPanel() {
             const adminPanel = document.getElementById('adminPanel');
             const panelOverlay = document.getElementById('panelOverlay');
 
@@ -4705,11 +4705,19 @@
 
             updateOrderBadge();
 
+            // 先加载本地数据渲染
             renderOrders('all');
             updateMealList('all');
             
             // 启动管理员面板的实时轮询（2秒一次），只检查新订单并更新订单列表
             startAdminPolling();
+            
+            // 立即同步一次数据，确保数据最新
+            try {
+                await forceSyncAllData();
+            } catch (error) {
+                console.error('打开管理员面板时同步数据失败:', error);
+            }
         }
         
         // 改进的实时轮询函数
