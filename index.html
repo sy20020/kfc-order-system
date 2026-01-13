@@ -1842,6 +1842,42 @@
             color: #666;
         }
         
+        /* 新增：压缩进度指示器 */
+        .compress-progress {
+            margin-top: 10px;
+            padding: 8px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #666;
+            display: none;
+        }
+        
+        .compress-progress.active {
+            display: block;
+        }
+        
+        .compress-progress span {
+            font-weight: bold;
+            color: #e31837;
+        }
+        
+        /* 新增：优化图片预览 */
+        .screenshot-preview-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .image-info {
+            font-size: 0.85rem;
+            color: #666;
+            background-color: #f5f5f5;
+            padding: 5px 10px;
+            border-radius: 4px;
+            border-left: 3px solid #4CAF50;
+        }
+        
         @media (max-width: 768px) {
             .main-content {
                 flex-direction: column;
@@ -2319,7 +2355,7 @@
         
         // 实时更新相关变量
         let adminPollingInterval = null;
-        let globalPollingInterval = null; // 新增：全局轮询间隔
+        let globalPollingInterval = null;
         let isAdminPanelOpen = false;
         let lastOrderUpdateTime = 0;
 
@@ -2357,8 +2393,10 @@
         }
         
         // 显示实时更新指示器
-        function showRealtimeIndicator() {
+        function showRealtimeIndicator(message = '实时更新中...') {
             const indicator = document.getElementById('realtimeIndicator');
+            const indicatorSpan = indicator.querySelector('span');
+            indicatorSpan.textContent = message;
             indicator.style.display = 'flex';
             
             // 3秒后自动隐藏
@@ -2632,7 +2670,7 @@
                 }
             }
             
-            // 新增：实时检查新订单
+            // 实时检查新订单
             static async checkForNewOrders(sinceTime) {
                 try {
                     const query = new AV.Query('Orders');
@@ -2664,6 +2702,53 @@
                 } catch (error) {
                     console.error('检查新订单失败:', error);
                     return [];
+                }
+            }
+            
+            // 新增：批量保存订单（优化性能）
+            static async saveOrdersBatch(ordersArray) {
+                try {
+                    const Order = AV.Object.extend('Orders');
+                    const savePromises = [];
+                    
+                    for (const order of ordersArray) {
+                        let orderObj;
+                        
+                        if (order.objectId) {
+                            orderObj = AV.Object.createWithoutData('Orders', order.objectId);
+                        } else {
+                            orderObj = new Order();
+                        }
+                        
+                        orderObj.set('id', order.id);
+                        orderObj.set('timestamp', order.timestamp);
+                        orderObj.set('status', order.status || 'new');
+                        orderObj.set('cart', order.cart);
+                        orderObj.set('deliveryInfo', order.deliveryInfo);
+                        orderObj.set('orderNote', order.orderNote || '');
+                        orderObj.set('deliveryType', order.deliveryType);
+                        orderObj.set('totalPrice', order.totalPrice);
+                        orderObj.set('userId', order.userId);
+                        
+                        if (order.hasScreenshot && order.screenshotData) {
+                            orderObj.set('hasScreenshot', true);
+                            orderObj.set('screenshotData', order.screenshotData);
+                        } else {
+                            orderObj.set('hasScreenshot', false);
+                        }
+                        
+                        savePromises.push(orderObj.save());
+                    }
+                    
+                    const results = await Promise.all(savePromises);
+                    return results.map((result, index) => ({
+                        ...ordersArray[index],
+                        objectId: result.id,
+                        updatedAt: result.updatedAt ? result.updatedAt.getTime() : Date.now()
+                    }));
+                } catch (error) {
+                    console.error('批量保存订单失败:', error);
+                    throw error;
                 }
             }
         }
@@ -2703,7 +2788,7 @@
 
                 console.log('页面初始化完成，数据已从LeanCloud加载');
                 
-                // 新增：启动全局轮询，检查新订单
+                // 启动全局轮询，检查新订单
                 startGlobalPolling();
             } catch (error) {
                 console.error('页面初始化失败:', error);
@@ -2724,20 +2809,20 @@
                 initHeaderButtons();
                 initSearchFunction();
                 
-                // 新增：启动全局轮询，检查新订单
+                // 启动全局轮询，检查新订单
                 startGlobalPolling();
             }
         });
 
         // ==================== 全局轮询函数 ====================
-        // 新增：启动全局轮询，检查新订单
+        // 启动全局轮询，检查新订单
         function startGlobalPolling() {
             // 清除现有的全局轮询
             if (globalPollingInterval) {
                 clearInterval(globalPollingInterval);
             }
             
-            // 每10秒检查一次新订单计数
+            // 每15秒检查一次新订单计数
             globalPollingInterval = setInterval(async () => {
                 if (!isAdminPanelOpen) {
                     try {
@@ -2748,7 +2833,7 @@
                             updateOrderBadge();
                             
                             // 显示实时更新指示器
-                            showRealtimeIndicator();
+                            showRealtimeIndicator('检测到新订单！');
                             
                             console.log('全局轮询检测到新订单，数量：', newOrdersCount);
                         }
@@ -2756,10 +2841,10 @@
                         console.warn('全局轮询检查新订单失败:', error);
                     }
                 }
-            }, 10000); // 每10秒检查一次
+            }, 15000); // 每15秒检查一次
         }
         
-        // 新增：停止全局轮询
+        // 停止全局轮询
         function stopGlobalPolling() {
             if (globalPollingInterval) {
                 clearInterval(globalPollingInterval);
@@ -3146,13 +3231,19 @@
                                             <input type="file" id="storeScreenshot" accept="image/*" style="display: none;">
                                         </div>
                                         <div class="screenshot-preview hidden" id="screenshotPreview">
-                                            <img id="previewImage" src="" alt="截图预览">
+                                            <div class="screenshot-preview-container">
+                                                <img id="previewImage" src="" alt="截图预览">
+                                                <div class="image-info" id="imageInfo"></div>
+                                            </div>
                                             <button type="button" class="remove-screenshot" id="removeScreenshot">
                                                 <i class="fas fa-times"></i>
                                             </button>
                                         </div>
+                                        <div class="compress-progress" id="compressProgress">
+                                            <i class="fas fa-compress-alt"></i> 正在压缩图片... <span id="compressPercent">0%</span>
+                                        </div>
                                         <div class="form-hint">
-                                            <i class="fas fa-lightbulb"></i> 建议压缩图片到1MB以下，上传速度更快
+                                            <i class="fas fa-lightbulb"></i> 系统会自动压缩图片到合适大小，确保上传速度
                                         </div>
                                     </div>
                                 </div>
@@ -3461,6 +3552,9 @@
                 const previewContainer = uploadArea.parentElement.querySelector('.screenshot-preview');
                 const previewImage = previewContainer ? previewContainer.querySelector('img') : null;
                 const removeBtn = previewContainer ? previewContainer.querySelector('.remove-screenshot') : null;
+                const compressProgress = container.querySelector('.compress-progress');
+                const compressPercent = compressProgress ? compressProgress.querySelector('#compressPercent') : null;
+                const imageInfo = container.querySelector('#imageInfo');
 
                 if (uploadArea && fileInput && previewContainer && previewImage && removeBtn) {
                     uploadArea.addEventListener('click', function() {
@@ -3485,13 +3579,13 @@
                         this.style.backgroundColor = '#f9f9f9';
 
                         if (e.dataTransfer.files.length) {
-                            handleFileSelect(e.dataTransfer.files[0], fileInput, previewContainer, previewImage, uploadArea);
+                            handleFileSelect(e.dataTransfer.files[0], fileInput, previewContainer, previewImage, uploadArea, compressProgress, compressPercent, imageInfo);
                         }
                     });
 
                     fileInput.addEventListener('change', function(e) {
                         if (e.target.files.length) {
-                            handleFileSelect(e.target.files[0], fileInput, previewContainer, previewImage, uploadArea);
+                            handleFileSelect(e.target.files[0], fileInput, previewContainer, previewImage, uploadArea, compressProgress, compressPercent, imageInfo);
                         }
                     });
 
@@ -3499,23 +3593,25 @@
                         fileInput.value = '';
                         previewContainer.classList.add('hidden');
                         uploadArea.style.display = 'block';
+                        if (compressProgress) compressProgress.classList.remove('active');
                     });
                 }
             }
 
-            async function handleFileSelect(file, fileInput, previewContainer, previewImage, uploadArea) {
+            async function handleFileSelect(file, fileInput, previewContainer, previewImage, uploadArea, compressProgress, compressPercent, imageInfo) {
                 if (!file.type.match('image.*')) {
                     showNotification('请选择图片文件', 'error');
                     return;
                 }
 
-                if (file.size > 2 * 1024 * 1024) {
-                    showNotification('图片大小不能超过2MB，请压缩后上传', 'error');
-                    return;
+                // 显示压缩进度
+                if (compressProgress) {
+                    compressProgress.classList.add('active');
+                    if (compressPercent) compressPercent.textContent = '0%';
                 }
 
-                // 压缩图片
-                const compressedImage = await compressImage(file);
+                // 优化压缩算法，根据文件大小动态调整压缩参数
+                const compressedImage = await compressImageOptimized(file, compressPercent);
                 
                 const reader = new FileReader();
                 reader.onload = function(e) {
@@ -3523,14 +3619,31 @@
                     previewContainer.classList.remove('hidden');
                     uploadArea.style.display = 'none';
                     
+                    // 显示图片信息
+                    if (imageInfo) {
+                        const originalSize = (file.size / 1024).toFixed(2);
+                        const compressedSize = (compressedImage.size / 1024).toFixed(2);
+                        const compressionRatio = ((1 - compressedImage.size / file.size) * 100).toFixed(1);
+                        imageInfo.innerHTML = `
+                            原始大小: ${originalSize}KB<br>
+                            压缩后: ${compressedSize}KB<br>
+                            压缩率: ${compressionRatio}%
+                        `;
+                    }
+                    
+                    // 隐藏压缩进度
+                    if (compressProgress) {
+                        compressProgress.classList.remove('active');
+                    }
+                    
                     // 替换原始文件
                     fileInput.files = dataURLtoBlob(e.target.result);
                 };
                 reader.readAsDataURL(compressedImage);
             }
 
-            // 压缩图片函数
-            async function compressImage(file, maxWidth = 800, quality = 0.7) {
+            // 优化压缩图片函数
+            async function compressImageOptimized(file, progressElement = null) {
                 return new Promise((resolve, reject) => {
                     const reader = new FileReader();
                     reader.readAsDataURL(file);
@@ -3542,10 +3655,28 @@
                             let width = img.width;
                             let height = img.height;
                             
+                            // 根据原始图片大小动态调整压缩参数
+                            let maxWidth = 800;
+                            let quality = 0.7;
+                            
+                            // 大图片使用更激进的压缩
+                            if (file.size > 2 * 1024 * 1024) { // 大于2MB
+                                maxWidth = 600;
+                                quality = 0.5;
+                            } else if (file.size > 1 * 1024 * 1024) { // 大于1MB
+                                maxWidth = 700;
+                                quality = 0.6;
+                            }
+                            
                             // 如果图片宽度超过最大宽度，等比例缩小
                             if (width > maxWidth) {
                                 height = Math.round((height * maxWidth) / width);
                                 width = maxWidth;
+                                
+                                // 更新压缩进度
+                                if (progressElement) {
+                                    progressElement.textContent = '50%';
+                                }
                             }
                             
                             canvas.width = width;
@@ -3554,8 +3685,17 @@
                             const ctx = canvas.getContext('2d');
                             ctx.drawImage(img, 0, 0, width, height);
                             
+                            // 更新压缩进度
+                            if (progressElement) {
+                                progressElement.textContent = '75%';
+                            }
+                            
                             // 转换为压缩后的图片
                             canvas.toBlob(function(blob) {
+                                // 最终进度
+                                if (progressElement) {
+                                    progressElement.textContent = '100%';
+                                }
                                 resolve(blob);
                             }, file.type, quality);
                         };
@@ -3812,7 +3952,7 @@
                             
                             progressContainer.style.display = 'block';
                             progressBar.style.width = '10%';
-                            submitStatus.textContent = '正在读取图片...';
+                            submitStatus.textContent = '正在处理图片...';
 
                             try {
                                 const file = screenshotInput.files[0];
@@ -3955,7 +4095,7 @@
                 progressBar.style.width = '90%';
                 submitStatus.textContent = '正在更新订单计数...';
 
-                // 更新新订单计数（异步）
+                // 更新新订单计数（异步，不阻塞主流程）
                 setTimeout(async () => {
                     try {
                         await LeanCloudData.updateNewOrdersCount(newOrdersCount);
@@ -3991,18 +4131,22 @@
                     
                     showNotification('订单提交成功！', 'success');
 
-                    // 关键改进：立即通知管理员面板更新
-                    if (isAdminPanelOpen) {
-                        // 显示实时更新指示器
-                        showRealtimeIndicator();
-                        
-                        // 立即更新管理员面板
+                    // 立即显示实时更新指示器
+                    showRealtimeIndicator('订单已提交！');
+
+                    // 立即通知全局轮询有更新
+                    if (!isAdminPanelOpen) {
+                        // 如果是全局轮询，立即触发一次检查
+                        if (globalPollingInterval) {
+                            clearInterval(globalPollingInterval);
+                            startGlobalPolling();
+                        }
+                    } else {
+                        // 如果管理员面板打开，立即更新
                         const activeFilterBtn = document.querySelector('.filter-btn.active');
                         const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
                         renderOrders(activeFilter);
-                        
-                        // 强制刷新新订单计数
-                        updateOrderBadge();
+                        showRealtimeIndicator('新订单到达！');
                     }
 
                     const orderSubmitted = confirm(`订单提交成功！\n订单号：${orderId}\n\n点击"确定"查看您的订单详情，或点击"取消"返回首页。`);
@@ -4409,7 +4553,7 @@
                 clearInterval(adminPollingInterval);
             }
             
-            // 每3秒检查一次新订单（更频繁）
+            // 每5秒检查一次新订单（更频繁）
             adminPollingInterval = setInterval(async () => {
                 if (isAdminPanelOpen) {
                     try {
@@ -4420,7 +4564,7 @@
                             updateOrderBadge();
                             
                             // 显示实时更新指示器
-                            showRealtimeIndicator();
+                            showRealtimeIndicator('检测到新订单！');
                             
                             // 重新加载订单列表
                             const activeFilterBtn = document.querySelector('.filter-btn.active');
@@ -4429,7 +4573,7 @@
                         }
                         
                         // 同时检查是否有新的订单数据（基于时间）
-                        const newOrders = await LeanCloudData.checkForNewOrders(lastOrderUpdateTime);
+                        const newOrders = await LeanCloudData.checkForNewOrders(lastOrderUpdateTime - 5000); // 5秒前的更新
                         if (newOrders.length > 0) {
                             // 更新最后更新时间
                             lastOrderUpdateTime = Date.now();
@@ -4445,7 +4589,7 @@
                             });
                             
                             // 显示实时更新指示器
-                            showRealtimeIndicator();
+                            showRealtimeIndicator(`有${newOrders.length}个新订单`);
                             
                             // 重新渲染订单列表
                             const activeFilterBtn = document.querySelector('.filter-btn.active');
@@ -4460,7 +4604,7 @@
                     clearInterval(adminPollingInterval);
                     adminPollingInterval = null;
                 }
-            }, 3000); // 每3秒检查一次
+            }, 5000); // 每5秒检查一次
         }
 
         function initAdminPanel() {
