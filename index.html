@@ -2358,6 +2358,7 @@
         let globalPollingInterval = null;
         let isAdminPanelOpen = false;
         let lastOrderUpdateTime = 0;
+        let lastUserOrderUpdateTime = Date.now(); // 用户订单检查时间
 
         // 用户标识符
         let currentUserId = localStorage.getItem('kfcUserId');
@@ -2671,10 +2672,13 @@
             }
             
             // 实时检查新订单
-            static async checkForNewOrders(sinceTime) {
+            static async checkForNewOrders(sinceTime, userId = null) {
                 try {
                     const query = new AV.Query('Orders');
                     query.greaterThan('createdAt', new Date(sinceTime));
+                    if (userId) {
+                        query.equalTo('userId', userId);
+                    }
                     query.descending('createdAt');
                     const results = await query.find();
                     
@@ -2822,7 +2826,7 @@
                 clearInterval(globalPollingInterval);
             }
             
-            // 每15秒检查一次新订单计数
+            // 每3秒检查一次新订单计数
             globalPollingInterval = setInterval(async () => {
                 if (!isAdminPanelOpen) {
                     try {
@@ -2837,11 +2841,38 @@
                             
                             console.log('全局轮询检测到新订单，数量：', newOrdersCount);
                         }
+                        
+                        // 如果当前页面是"我的订单"页面，检查当前用户的新订单
+                        if (document.getElementById('myOrdersPage').classList.contains('active')) {
+                            const newUserOrders = await LeanCloudData.checkForNewOrders(lastUserOrderUpdateTime - 3000, currentUserId);
+                            if (newUserOrders.length > 0) {
+                                // 更新最后检查时间
+                                lastUserOrderUpdateTime = Date.now();
+                                
+                                // 将新订单添加到本地数组，注意去重
+                                newUserOrders.forEach(newOrder => {
+                                    const existingIndex = orders.findIndex(o => o.id === newOrder.id);
+                                    if (existingIndex === -1) {
+                                        orders.unshift(newOrder);
+                                    } else {
+                                        orders[existingIndex] = newOrder;
+                                    }
+                                });
+                                
+                                // 显示实时更新指示器
+                                showRealtimeIndicator(`您有${newUserOrders.length}个新订单`);
+                                
+                                // 重新渲染"我的订单"页面
+                                const activeFilterTab = document.querySelector('.order-filter-tab.active');
+                                const activeFilter = activeFilterTab ? activeFilterTab.dataset.orderFilter : 'all';
+                                renderUserOrders(activeFilter);
+                            }
+                        }
                     } catch (error) {
                         console.warn('全局轮询检查新订单失败:', error);
                     }
                 }
-            }, 15000); // 每15秒检查一次
+            }, 3000); // 每3秒检查一次
         }
         
         // 停止全局轮询
@@ -4542,7 +4573,7 @@
             renderOrders('all');
             updateMealList('all');
             
-            // 启动管理员面板的实时轮询（更频繁）
+            // 启动管理员面板的实时轮询（3秒一次）
             startAdminPolling();
         }
         
@@ -4553,7 +4584,7 @@
                 clearInterval(adminPollingInterval);
             }
             
-            // 每5秒检查一次新订单（更频繁）
+            // 每3秒检查一次新订单
             adminPollingInterval = setInterval(async () => {
                 if (isAdminPanelOpen) {
                     try {
@@ -4573,7 +4604,7 @@
                         }
                         
                         // 同时检查是否有新的订单数据（基于时间）
-                        const newOrders = await LeanCloudData.checkForNewOrders(lastOrderUpdateTime - 5000); // 5秒前的更新
+                        const newOrders = await LeanCloudData.checkForNewOrders(lastOrderUpdateTime - 3000); // 3秒前的更新
                         if (newOrders.length > 0) {
                             // 更新最后更新时间
                             lastOrderUpdateTime = Date.now();
@@ -4604,7 +4635,7 @@
                     clearInterval(adminPollingInterval);
                     adminPollingInterval = null;
                 }
-            }, 5000); // 每5秒检查一次
+            }, 3000); // 每3秒检查一次
         }
 
         function initAdminPanel() {
@@ -4724,7 +4755,7 @@
                 adminPollingInterval = null;
             }
             
-            // 重新启动全局轮询
+            // 重新启动全局轮询（3秒一次）
             startGlobalPolling();
         }
 
