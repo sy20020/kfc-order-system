@@ -233,6 +233,30 @@
             margin-bottom: 5px;
         }
         
+        .delivery-tag {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-right: 8px;
+            margin-bottom: 5px;
+        }
+        
+        .pickup-only-tag {
+            display: inline-block;
+            background-color: #2196F3;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-right: 8px;
+            margin-bottom: 5px;
+        }
+        
         .back-btn {
             background-color: #e31837;
             color: white;
@@ -2318,6 +2342,21 @@
                             </div>
                             
                             <div class="form-group">
+                                <label class="form-label">是否支持宅急送</label>
+                                <div style="margin-top: 8px;">
+                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                        <input type="checkbox" id="mealDeliverable" checked>
+                                        <span>支持宅急送配送</span>
+                                    </label>
+                                </div>
+                                <div class="form-hint">
+                                    <i class="fas fa-lightbulb"></i> 如果不支持宅急送，用户只能选择到店自提
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
                                 <label class="form-label">套餐状态</label>
                                 <div class="status-label">
                                     <label class="status-toggle">
@@ -2411,6 +2450,21 @@
                             <input type="text" class="form-input" id="newMealDescription" placeholder="例如：适合3人享用，自提/宅急送都可用" required>
                         </div>
                         
+                        <div class="form-group">
+                            <label class="form-label">是否支持宅急送</label>
+                            <div style="margin-top: 8px;">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" id="newMealDeliverable" checked>
+                                    <span>支持宅急送配送</span>
+                                </label>
+                            </div>
+                            <div class="form-hint">
+                                <i class="fas fa-lightbulb"></i> 如果不支持宅急送，用户只能选择到店自提
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">套餐状态</label>
                             <div class="status-label">
@@ -2561,6 +2615,7 @@
                             description: data.description,
                             order: data.order || 9999,
                             active: data.active !== false,
+                            deliverable: data.deliverable !== false, // 新增：是否可以宅急送
                             optionGroups: data.optionGroups || [],
                             fixedItems: data.fixedItems || [],
                             createdAt: createdAt,
@@ -2592,6 +2647,7 @@
                     mealObj.set('description', meal.description);
                     mealObj.set('order', meal.order || 9999);
                     mealObj.set('active', meal.active !== false);
+                    mealObj.set('deliverable', meal.deliverable !== false); // 新增：是否可以宅急送
                     mealObj.set('optionGroups', meal.optionGroups || []);
                     mealObj.set('fixedItems', meal.fixedItems || []);
 
@@ -2608,6 +2664,7 @@
                         description: meal.description,
                         order: meal.order || 9999,
                         active: meal.active !== false,
+                        deliverable: meal.deliverable !== false, // 新增：是否可以宅急送
                         optionGroups: meal.optionGroups || [],
                         fixedItems: meal.fixedItems || [],
                         createdAt: createdAt,
@@ -3149,12 +3206,18 @@
                     showMealDetail(meal.id);
                 };
 
+                // 添加宅急送标签
+                const deliveryTag = meal.deliverable !== false ? 
+                    `<span class="delivery-tag">宅急送</span>` : 
+                    `<span class="pickup-only-tag">仅自提</span>`;
+
                 mealCard.innerHTML = `
                     <div class="meal-header">
                         <h4 class="meal-name">${meal.name}</h4>
                         <div class="meal-price">¥${meal.price}</div>
                     </div>
                     <div class="meal-description">
+                        ${deliveryTag}
                         ${meal.tags.map(tag => `<span class="meal-tag">${tag}</span>`).join('')}
                         <p style="margin-top: 10px;">${meal.description}</p>
                     </div>
@@ -3184,7 +3247,8 @@
                     tags: m.tags,
                     description: m.description,
                     order: m.order,
-                    active: m.active
+                    active: m.active,
+                    deliverable: m.deliverable // 保存宅急送状态
                 }))));
                 
                 localStorage.setItem('kfcOrdersCache', JSON.stringify(orders.map(o => ({
@@ -3283,12 +3347,18 @@
                     showMealDetail(meal.id);
                 };
 
+                // 添加宅急送标签
+                const deliveryTag = meal.deliverable !== false ? 
+                    `<span class="delivery-tag">宅急送</span>` : 
+                    `<span class="pickup-only-tag">仅自提</span>`;
+
                 mealCard.innerHTML = `
                     <div class="meal-header">
                         <h4 class="meal-name">${meal.name}</h4>
                         <div class="meal-price">¥${meal.price}</div>
                     </div>
                     <div class="meal-description">
+                        ${deliveryTag}
                         ${meal.tags.map(tag => `<span class="meal-tag">${tag}</span>`).join('')}
                         <p style="margin-top: 10px;">${meal.description}</p>
                     </div>
@@ -3322,6 +3392,7 @@
                             <p><strong>套餐详情：</strong></p>
                             <ul>
                                 <li>${meal.description}</li>
+                                <li>${meal.deliverable !== false ? '支持宅急送和到店自提' : '仅支持到店自提'}</li>
                                 <li>请按照要求选择选项</li>
                                 <li>提交订单后可在右上角"查看我的订单"查看订单状态</li>
                             </ul>
@@ -3366,17 +3437,19 @@
                             </h3>
                             
                             <div class="order-type">
+                                ${meal.deliverable !== false ? `
                                 <label>
                                     <input type="radio" name="deliveryType" value="delivery" checked>
                                     <span>宅急送（免配送费）</span>
                                 </label>
+                                ` : ''}
                                 <label>
-                                    <input type="radio" name="deliveryType" value="pickup">
+                                    <input type="radio" name="deliveryType" value="pickup" ${meal.deliverable === false ? 'checked' : ''}>
                                     <span>到店自提</span>
                                 </label>
                             </div>
                             
-                            <div class="delivery-fields" id="deliveryFields">
+                            <div class="delivery-fields" id="deliveryFields" ${meal.deliverable === false ? 'style="display:none;"' : ''}>
                                 <div class="form-group">
                                     <label class="form-label">收货人姓名 <span class="required">*</span></label>
                                     <input type="text" class="form-input" id="customerName" placeholder="请输入姓名" required>
@@ -3393,7 +3466,7 @@
                                 </div>
                             </div>
                             
-                            <div class="pickup-fields hidden" id="pickupFields">
+                            <div class="pickup-fields hidden" id="pickupFields" ${meal.deliverable === false ? 'style="display:block;"' : ''}>
                                 <div class="form-group">
                                     <label class="form-label">自提方式 <span class="required">*</span></label>
                                     <div class="pickup-type">
@@ -4002,7 +4075,8 @@
                         basePrice: mealPrice,
                         additionalPrice: additionalPrice,
                         totalPrice: totalPrice,
-                        options: [...selectedOptions]
+                        options: [...selectedOptions],
+                        deliverable: meal.deliverable // 保存宅急送状态
                     };
 
                     cart.push(mealItem);
@@ -4094,7 +4168,24 @@
                 checkoutBtn.addEventListener('click', async function() {
                     if (checkoutBtn.disabled) return;
                     
-                    const deliveryType = container.querySelector('input[name="deliveryType"]:checked').value;
+                    // 检查购物车中是否有不支持宅急送的套餐
+                    const hasNonDeliverableMeal = cart.some(item => item.deliverable === false);
+                    
+                    let deliveryType;
+                    
+                    if (hasNonDeliverableMeal) {
+                        // 如果购物车中有不支持宅急送的套餐，强制选择到店自提
+                        deliveryType = 'pickup';
+                        // 设置radio为pickup
+                        const pickupRadio = container.querySelector('input[name="deliveryType"][value="pickup"]');
+                        if (pickupRadio) {
+                            pickupRadio.checked = true;
+                            pickupRadio.dispatchEvent(new Event('change'));
+                        }
+                    } else {
+                        deliveryType = container.querySelector('input[name="deliveryType"]:checked').value;
+                    }
+                    
                     const orderNote = container.querySelector('#orderNote') ? container.querySelector('#orderNote').value.trim() : '';
 
                     let deliveryInfo = '';
@@ -4689,7 +4780,7 @@
         }
 
         // ==================== 优化后的管理员面板实时更新 ====================
-        async function openAdminPanel() {
+        function openAdminPanel() {
             const adminPanel = document.getElementById('adminPanel');
             const panelOverlay = document.getElementById('panelOverlay');
 
@@ -4705,19 +4796,11 @@
 
             updateOrderBadge();
 
-            // 先加载本地数据渲染
             renderOrders('all');
             updateMealList('all');
             
             // 启动管理员面板的实时轮询（2秒一次），只检查新订单并更新订单列表
             startAdminPolling();
-            
-            // 立即同步一次数据，确保数据最新
-            try {
-                await forceSyncAllData();
-            } catch (error) {
-                console.error('打开管理员面板时同步数据失败:', error);
-            }
         }
         
         // 改进的实时轮询函数
@@ -5228,6 +5311,7 @@
                 }
 
                 const createdAt = meal.createdAt ? new Date(meal.createdAt).toLocaleString('zh-CN') : '未知时间';
+                const deliverableText = meal.deliverable !== false ? '<span class="status-active">支持宅急送</span>' : '<span class="status-inactive">仅自提</span>';
 
                 const sortControls = `
                     <div class="sort-order-container">
@@ -5247,6 +5331,7 @@
                         <p><strong>价格:</strong> ¥${meal.price} | <strong>标签:</strong> ${meal.tags.join(', ')}</p>
                         <p><strong>描述:</strong> ${meal.description}</p>
                         <p><strong>创建时间:</strong> ${createdAt} | <strong>排序值:</strong> <span class="order-display">${meal.order || 9999}</span></p>
+                        <p><strong>配送方式:</strong> ${deliverableText}</p>
                         <p><strong>选项组:</strong> ${meal.optionGroups ? meal.optionGroups.length : 0} 个 | 
                            <strong>选项项:</strong> ${totalOptions} 个 | 
                            <strong>固定搭配:</strong> ${totalFixed} 项</p>
@@ -5428,6 +5513,7 @@
             document.getElementById('mealTags').value = meal.tags.join(', ');
             document.getElementById('mealDescription').value = meal.description;
             document.getElementById('mealActive').checked = meal.active !== false;
+            document.getElementById('mealDeliverable').checked = meal.deliverable !== false; // 设置宅急送状态
 
             const statusText = document.getElementById('statusText');
             if (meal.active !== false) {
@@ -5689,7 +5775,7 @@
 
             const meal = meals[mealIndex];
 
-            if (!confirm(`确定要删除套餐 "${meal.name}" 吗？\n\n价格：¥${meal.price}\n标签：${meal.tags.join(', ')}\n\n此操作不可恢复！`)) {
+            if (!confirm(`确定要删除套餐 "${meal.name}" 吗？\n\n价格：¥${meal.price}\n标签：${meal.tags.join(', ')}\n配送：${meal.deliverable !== false ? '支持宅急送' : '仅自提'}\n\n此操作不可恢复！`)) {
                 return;
             }
 
@@ -5736,6 +5822,7 @@
             const mealTags = document.getElementById('mealTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
             const mealDescription = document.getElementById('mealDescription').value.trim();
             const mealActive = document.getElementById('mealActive').checked;
+            const mealDeliverable = document.getElementById('mealDeliverable').checked; // 获取宅急送状态
 
             if (!mealName) {
                 showNotification('请填写套餐名称', 'error');
@@ -5849,6 +5936,7 @@
                         meal.tags = mealTags;
                         meal.description = mealDescription;
                         meal.active = mealActive;
+                        meal.deliverable = mealDeliverable; // 设置宅急送状态
                         meal.optionGroups = optionGroups;
                         meal.fixedItems = fixedItems;
 
@@ -5868,6 +5956,7 @@
                         tags: mealTags,
                         description: mealDescription,
                         active: mealActive,
+                        deliverable: mealDeliverable, // 设置宅急送状态
                         optionGroups: optionGroups,
                         fixedItems: fixedItems
                     };
@@ -6081,6 +6170,7 @@
             const mealTags = document.getElementById('newMealTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
             const mealDescription = document.getElementById('newMealDescription').value.trim();
             const mealActive = document.getElementById('newMealActive').checked;
+            const mealDeliverable = document.getElementById('newMealDeliverable').checked; // 获取宅急送状态
 
             if (!mealName) {
                 showNotification('请填写套餐名称', 'error');
@@ -6190,6 +6280,7 @@
                 tags: mealTags,
                 description: mealDescription,
                 active: mealActive,
+                deliverable: mealDeliverable, // 设置宅急送状态
                 optionGroups: optionGroups,
                 fixedItems: fixedItems
             };
@@ -6212,6 +6303,7 @@
                 document.getElementById('newMealTags').value = '';
                 document.getElementById('newMealDescription').value = '';
                 document.getElementById('newMealActive').checked = true;
+                document.getElementById('newMealDeliverable').checked = true; // 重置宅急送状态
                 
                 const statusText = document.getElementById('newStatusText');
                 statusText.textContent = '上架';
@@ -6286,7 +6378,8 @@
                     tags: m.tags,
                     description: m.description,
                     order: m.order,
-                    active: m.active
+                    active: m.active,
+                    deliverable: m.deliverable // 保存宅急送状态
                 }))));
                 
                 localStorage.setItem('kfcOrdersCache', JSON.stringify(orders.map(o => ({
