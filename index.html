@@ -8,7 +8,7 @@
     <!-- LeanCloud SDK -->
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
     <style>
-        /* 所有CSS样式保持不变，只修改必要的部分 */
+        /* 所有CSS样式保持不变 */
         * {
             margin: 0;
             padding: 0;
@@ -233,6 +233,7 @@
             margin-bottom: 5px;
         }
         
+        /* ====== 修复：调整标签显示样式 ====== */
         .delivery-tag {
             display: inline-block;
             background-color: #4CAF50;
@@ -2396,10 +2397,12 @@
                         </button>
 
                         <div style="margin-top: 30px; display: flex; gap: 15px;">
-                            <button class="add-btn action-btn" id="saveMealBtn" style="padding: 12px 30px;">
+                            <!-- ====== 修复：为保存按钮添加onclick事件 ====== -->
+                            <button class="add-btn action-btn" id="saveMealBtn" onclick="saveMeal()" style="padding: 12px 30px;">
                                 <i class="fas fa-save"></i> 保存套餐
                             </button>
-                            <button class="filter-btn" id="cancelEditBtn" style="padding: 12px 30px;">
+                            <!-- ====== 修复：为取消按钮添加onclick事件 ====== -->
+                            <button class="filter-btn" id="cancelEditBtn" onclick="showMealList()" style="padding: 12px 30px;">
                                 <i class="fas fa-arrow-left"></i> 返回列表
                             </button>
                         </div>
@@ -3206,10 +3209,10 @@
                     showMealDetail(meal.id);
                 };
 
-                // 添加宅急送标签
+                // ====== 修复：根据deliverable属性显示正确的标签 ======
                 const deliveryTag = meal.deliverable !== false ? 
-                    `<span class="delivery-tag">宅急送</span>` : 
-                    `<span class="pickup-only-tag">仅自提</span>`;
+                    `<span class="delivery-tag">到店/宅急送</span>` : 
+                    `<span class="pickup-only-tag">堂食/打包</span>`;
 
                 mealCard.innerHTML = `
                     <div class="meal-header">
@@ -3347,10 +3350,10 @@
                     showMealDetail(meal.id);
                 };
 
-                // 添加宅急送标签
+                // ====== 修复：根据deliverable属性显示正确的标签 ======
                 const deliveryTag = meal.deliverable !== false ? 
-                    `<span class="delivery-tag">宅急送</span>` : 
-                    `<span class="pickup-only-tag">仅自提</span>`;
+                    `<span class="delivery-tag">到店/宅急送</span>` : 
+                    `<span class="pickup-only-tag">堂食/打包</span>`;
 
                 mealCard.innerHTML = `
                     <div class="meal-header">
@@ -5195,21 +5198,37 @@
                 });
             });
 
-            document.getElementById('addOptionGroupBtn').addEventListener('click', function() {
-                addOptionGroup();
-            });
+            // ====== 修复：重新绑定添加选项组按钮事件 ======
+            const addOptionGroupBtn = document.getElementById('addOptionGroupBtn');
+            if (addOptionGroupBtn) {
+                addOptionGroupBtn.addEventListener('click', function() {
+                    addOptionGroup();
+                });
+            }
 
-            document.getElementById('addFixedItemBtn').addEventListener('click', function() {
-                addFixedItem();
-            });
+            // ====== 修复：重新绑定添加固定搭配项按钮事件 ======
+            const addFixedItemBtn = document.getElementById('addFixedItemBtn');
+            if (addFixedItemBtn) {
+                addFixedItemBtn.addEventListener('click', function() {
+                    addFixedItem();
+                });
+            }
 
-            document.getElementById('saveMealBtn').addEventListener('click', async function() {
-                await saveMeal();
-            });
+            // ====== 修复：重新绑定保存套餐按钮事件 ======
+            const saveMealBtn = document.getElementById('saveMealBtn');
+            if (saveMealBtn) {
+                saveMealBtn.addEventListener('click', function() {
+                    saveMeal();
+                });
+            }
 
-            document.getElementById('cancelEditBtn').addEventListener('click', function() {
-                showMealList();
-            });
+            // ====== 修复：重新绑定取消按钮事件 ======
+            const cancelEditBtn = document.getElementById('cancelEditBtn');
+            if (cancelEditBtn) {
+                cancelEditBtn.addEventListener('click', function() {
+                    showMealList();
+                });
+            }
 
             document.addEventListener('keydown', function(e) {
                 if ((e.ctrlKey || e.metaKey) && e.key === 's' &&
@@ -5513,7 +5532,8 @@
             document.getElementById('mealTags').value = meal.tags.join(', ');
             document.getElementById('mealDescription').value = meal.description;
             document.getElementById('mealActive').checked = meal.active !== false;
-            document.getElementById('mealDeliverable').checked = meal.deliverable !== false; // 设置宅急送状态
+            // ====== 修复：设置宅急送复选框的值 ======
+            document.getElementById('mealDeliverable').checked = meal.deliverable !== false;
 
             const statusText = document.getElementById('statusText');
             if (meal.active !== false) {
@@ -5588,6 +5608,7 @@
 
                     document.getElementById('optionGroupsManagement').appendChild(optionGroup);
 
+                    // ====== 修复：重新绑定选项组按钮事件 ======
                     optionGroup.querySelector('.add-option-item-btn').addEventListener('click', function() {
                         addOptionItem(groupId);
                     });
@@ -5681,6 +5702,7 @@
 
             optionGroupsManagement.appendChild(optionGroup);
 
+            // ====== 修复：重新绑定选项组按钮事件 ======
             optionGroup.querySelector('.add-option-item-btn').addEventListener('click', function() {
                 addOptionItem(groupId);
             });
@@ -5813,7 +5835,7 @@
             }
         }
 
-        // 保存套餐
+        // ====== 修复：保存套餐函数 ======
         async function saveMeal() {
             const mealId = document.getElementById('currentMealId').value;
             const mealName = document.getElementById('mealName').value.trim();
@@ -5939,6 +5961,7 @@
                         meal.deliverable = mealDeliverable; // 设置宅急送状态
                         meal.optionGroups = optionGroups;
                         meal.fixedItems = fixedItems;
+                        meal.updatedAt = Date.now();
 
                         const savedMeal = await LeanCloudData.saveMeal(meal);
 
@@ -5958,7 +5981,9 @@
                         active: mealActive,
                         deliverable: mealDeliverable, // 设置宅急送状态
                         optionGroups: optionGroups,
-                        fixedItems: fixedItems
+                        fixedItems: fixedItems,
+                        createdAt: now,
+                        updatedAt: now
                     };
 
                     const savedMeal = await LeanCloudData.saveMeal(meal);
@@ -6282,7 +6307,9 @@
                 active: mealActive,
                 deliverable: mealDeliverable, // 设置宅急送状态
                 optionGroups: optionGroups,
-                fixedItems: fixedItems
+                fixedItems: fixedItems,
+                createdAt: now,
+                updatedAt: now
             };
 
             try {
