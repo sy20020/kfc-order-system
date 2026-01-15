@@ -2279,6 +2279,16 @@
             </div>
 
             <div id="mealsTab" class="admin-tab-content">
+                <!-- 新增：管理员搜索框 -->
+                <div class="search-container" style="margin-bottom: 20px;">
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="adminMealSearchInput" placeholder="搜索套餐：输入套餐编号、名称、标签或描述...">
+                        <button class="search-btn" id="adminMealSearchBtn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+
                 <div class="meal-filters">
                     <button class="meal-filter-btn active" data-meal-filter="all">全部套餐</button>
                     <button class="meal-filter-btn" data-meal-filter="active">已上架</button>
@@ -2397,12 +2407,10 @@
                         </button>
 
                         <div style="margin-top: 30px; display: flex; gap: 15px;">
-                            <!-- ====== 修复：为保存按钮添加onclick事件 ====== -->
-                            <button class="add-btn action-btn" id="saveMealBtn" onclick="saveMeal()" style="padding: 12px 30px;">
+                            <button class="add-btn action-btn" id="saveMealBtn" style="padding: 12px 30px;">
                                 <i class="fas fa-save"></i> 保存套餐
                             </button>
-                            <!-- ====== 修复：为取消按钮添加onclick事件 ====== -->
-                            <button class="filter-btn" id="cancelEditBtn" onclick="showMealList()" style="padding: 12px 30px;">
+                            <button class="filter-btn" id="cancelEditBtn" style="padding: 12px 30px;">
                                 <i class="fas fa-arrow-left"></i> 返回列表
                             </button>
                         </div>
@@ -3019,6 +3027,7 @@
                 initMyOrdersPage();
                 initHeaderButtons();
                 initSearchFunction();
+                initAdminMealSearch(); // 新增：初始化管理员搜索
 
                 document.getElementById('currentUserIdDisplay').textContent = currentUserId.substring(0, 12) + '...';
 
@@ -3050,6 +3059,7 @@
                 initMyOrdersPage();
                 initHeaderButtons();
                 initSearchFunction();
+                initAdminMealSearch(); // 新增：初始化管理员搜索
                 
                 // 启动全局轮询，检查新订单
                 startGlobalPolling();
@@ -3147,6 +3157,24 @@
             }
         }
 
+        // ==================== 新增：管理员套餐搜索功能 ====================
+        function initAdminMealSearch() {
+            const adminMealSearchInput = document.getElementById('adminMealSearchInput');
+            const adminMealSearchBtn = document.getElementById('adminMealSearchBtn');
+            
+            if (adminMealSearchInput && adminMealSearchBtn) {
+                adminMealSearchBtn.addEventListener('click', function() {
+                    searchAdminMeals(adminMealSearchInput.value.trim());
+                });
+                
+                adminMealSearchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        searchAdminMeals(this.value.trim());
+                    }
+                });
+            }
+        }
+
         // ==================== 搜索套餐功能 ====================
         function searchMeals(searchTerm) {
             const mealGrid = document.getElementById('mealGrid');
@@ -3227,6 +3255,158 @@
                 `;
 
                 mealGrid.appendChild(mealCard);
+            });
+        }
+
+        // ==================== 新增：管理员搜索套餐功能 ====================
+        function searchAdminMeals(searchTerm) {
+            const mealList = document.getElementById('mealList');
+            const noMealsAdminMessage = document.getElementById('noMealsAdminMessage');
+            
+            if (!searchTerm) {
+                const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
+                updateMealList(activeFilter);
+                return;
+            }
+
+            const searchTermLower = searchTerm.toLowerCase();
+            
+            const filteredMeals = meals.filter(meal => {
+                if (meal.id.toLowerCase().includes(searchTermLower)) return true;
+                if (meal.name.toLowerCase().includes(searchTermLower)) return true;
+                if (meal.price.toString().includes(searchTerm)) return true;
+                if (meal.tags && meal.tags.some(tag => tag.toLowerCase().includes(searchTermLower))) return true;
+                if (meal.description && meal.description.toLowerCase().includes(searchTermLower)) return true;
+                return false;
+            });
+
+            if (filteredMeals.length === 0) {
+                mealList.innerHTML = '';
+                noMealsAdminMessage.style.display = 'block';
+                noMealsAdminMessage.innerHTML = `
+                    <i class="fas fa-search"></i>
+                    <h3>未找到相关套餐</h3>
+                    <p>没有找到与"${searchTerm}"相关的套餐</p>
+                `;
+                return;
+            }
+
+            noMealsAdminMessage.style.display = 'none';
+
+            filteredMeals.sort((a, b) => {
+                const orderDiff = (a.order || 9999) - (b.order || 9999);
+                if (orderDiff !== 0) return orderDiff;
+                return (b.createdAt || 0) - (a.createdAt || 0);
+            });
+
+            mealList.innerHTML = '';
+
+            filteredMeals.forEach(meal => {
+                const mealItem = document.createElement('div');
+                mealItem.className = 'meal-list-item';
+
+                let totalOptions = 0;
+                if (meal.optionGroups && meal.optionGroups.length > 0) {
+                    meal.optionGroups.forEach(group => {
+                        if (group.items) {
+                            totalOptions += group.items.length;
+                        }
+                    });
+                }
+
+                let totalFixed = 0;
+                if (meal.fixedItems && meal.fixedItems.length > 0) {
+                    meal.fixedItems.forEach(item => {
+                        totalFixed += item.quantity || 1;
+                    });
+                }
+
+                const createdAt = meal.createdAt ? new Date(meal.createdAt).toLocaleString('zh-CN') : '未知时间';
+                const deliverableText = meal.deliverable !== false ? '<span class="status-active">支持宅急送</span>' : '<span class="status-inactive">仅自提</span>';
+
+                const sortControls = `
+                    <div class="sort-order-container">
+                        <label>排序:</label>
+                        <input type="number" class="sort-order-input" data-meal-id="${meal.id}" value="${meal.order || 9999}" min="0" step="1">
+                        <div class="sort-order-buttons">
+                            <button class="sort-order-btn" data-action="move-up" data-meal-id="${meal.id}" title="上移"><i class="fas fa-arrow-up"></i></button>
+                            <button class="sort-order-btn" data-action="move-down" data-meal-id="${meal.id}" title="下移"><i class="fas fa-arrow-down"></i></button>
+                            <button class="sort-order-btn" data-action="apply-order" data-meal-id="${meal.id}" title="应用排序"><i class="fas fa-check"></i></button>
+                        </div>
+                    </div>
+                `;
+
+                mealItem.innerHTML = `
+                    <div class="meal-list-item-info">
+                        <h4>${meal.name} ${meal.active === false ? '<span class="status-inactive">(已下架)</span>' : '<span class="status-active">(已上架)</span>'}</h4>
+                        <p><strong>价格:</strong> ¥${meal.price} | <strong>标签:</strong> ${meal.tags.join(', ')}</p>
+                        <p><strong>描述:</strong> ${meal.description}</p>
+                        <p><strong>创建时间:</strong> ${createdAt} | <strong>排序值:</strong> <span class="order-display">${meal.order || 9999}</span></p>
+                        <p><strong>配送方式:</strong> ${deliverableText}</p>
+                        <p><strong>选项组:</strong> ${meal.optionGroups ? meal.optionGroups.length : 0} 个 | 
+                           <strong>选项项:</strong> ${totalOptions} 个 | 
+                           <strong>固定搭配:</strong> ${totalFixed} 项</p>
+                    </div>
+                    <div class="meal-list-item-actions">
+                        <div class="status-label">
+                            <label class="status-toggle">
+                                <input type="checkbox" class="status-toggle-input" data-meal-id="${meal.id}" ${meal.active !== false ? 'checked' : ''}>
+                                <span class="status-slider"></span>
+                            </label>
+                            <span class="${meal.active !== false ? 'status-active' : 'status-inactive'}">${meal.active !== false ? '上架' : '下架'}</span>
+                        </div>
+                        ${sortControls}
+                        <div style="display: flex; gap: 10px;">
+                            <button class="action-btn edit-btn" data-meal-id="${meal.id}">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                            <button class="action-btn delete-btn" data-meal-id="${meal.id}">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                mealList.appendChild(mealItem);
+            });
+
+            // 重新绑定事件
+            document.querySelectorAll('.status-toggle-input').forEach(toggle => {
+                toggle.addEventListener('change', async function() {
+                    const mealId = this.dataset.mealId;
+                    const isActive = this.checked;
+                    await toggleMealStatus(mealId, isActive);
+                });
+            });
+
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const mealId = this.dataset.mealId;
+                    editMeal(mealId);
+                });
+            });
+
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const mealId = this.dataset.mealId;
+                    await deleteMeal(mealId);
+                });
+            });
+
+            document.querySelectorAll('.sort-order-btn').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const mealId = this.dataset.mealId;
+                    const action = this.dataset.action;
+                    await handleSortAction(action, mealId);
+                });
+            });
+
+            document.querySelectorAll('.sort-order-input').forEach(input => {
+                input.addEventListener('change', async function() {
+                    const mealId = this.dataset.mealId;
+                    const newOrder = parseInt(this.value) || 9999;
+                    await updateMealOrder(mealId, newOrder);
+                });
             });
         }
 
@@ -5268,6 +5448,12 @@
             document.getElementById('editMealFormContainer').classList.remove('active');
             document.getElementById('editMealFormContainer').classList.add('hide');
             
+            // 清空搜索框
+            const adminMealSearchInput = document.getElementById('adminMealSearchInput');
+            if (adminMealSearchInput) {
+                adminMealSearchInput.value = '';
+            }
+            
             const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
             updateMealList(activeFilter);
         }
@@ -5532,8 +5718,12 @@
             document.getElementById('mealTags').value = meal.tags.join(', ');
             document.getElementById('mealDescription').value = meal.description;
             document.getElementById('mealActive').checked = meal.active !== false;
-            // ====== 修复：设置宅急送复选框的值 ======
-            document.getElementById('mealDeliverable').checked = meal.deliverable !== false;
+            // ====== 修复：正确设置宅急送复选框的值 ======
+            const mealDeliverableCheckbox = document.getElementById('mealDeliverable');
+            if (mealDeliverableCheckbox) {
+                // 确保deliverable属性存在，默认为true
+                mealDeliverableCheckbox.checked = meal.deliverable !== false;
+            }
 
             const statusText = document.getElementById('statusText');
             if (meal.active !== false) {
@@ -5844,7 +6034,8 @@
             const mealTags = document.getElementById('mealTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
             const mealDescription = document.getElementById('mealDescription').value.trim();
             const mealActive = document.getElementById('mealActive').checked;
-            const mealDeliverable = document.getElementById('mealDeliverable').checked; // 获取宅急送状态
+            // ====== 修复：正确获取宅急送状态 ======
+            const mealDeliverable = document.getElementById('mealDeliverable') ? document.getElementById('mealDeliverable').checked : true;
 
             if (!mealName) {
                 showNotification('请填写套餐名称', 'error');
