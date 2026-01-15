@@ -8,7 +8,6 @@
     <!-- LeanCloud SDK -->
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
     <style>
-        /* 所有CSS样式保持不变 */
         * {
             margin: 0;
             padding: 0;
@@ -1792,7 +1791,7 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* 新增：实时更新指示器 */
+        /* 实时更新指示器 */
         .realtime-indicator {
             position: fixed;
             top: 80px;
@@ -1817,7 +1816,6 @@
             100% { opacity: 0; }
         }
         
-        /* 新增：提交状态指示器（替换进度条） */
         .submit-status {
             text-align: center;
             margin-top: 10px;
@@ -1825,7 +1823,6 @@
             color: #666;
         }
         
-        /* 新增：压缩进度指示器 */
         .compress-progress {
             margin-top: 10px;
             padding: 8px;
@@ -1845,7 +1842,6 @@
             color: #e31837;
         }
         
-        /* 新增：优化图片预览 */
         .screenshot-preview-container {
             display: flex;
             flex-direction: column;
@@ -1861,7 +1857,6 @@
             border-left: 3px solid #4CAF50;
         }
         
-        /* 新增：编辑表单容器 */
         .edit-form-container {
             display: none;
             margin-top: 20px;
@@ -1871,7 +1866,6 @@
             display: block;
         }
         
-        /* 新增：显示/隐藏控制 */
         .show {
             display: block !important;
         }
@@ -1880,7 +1874,6 @@
             display: none !important;
         }
         
-        /* 新增：快速提交动画 */
         .quick-submit {
             position: relative;
             overflow: hidden;
@@ -1919,7 +1912,6 @@
             }
         }
         
-        /* 新增：搜索容器样式 */
         .admin-search-container {
             background-color: white;
             border-radius: 10px;
@@ -1978,7 +1970,6 @@
             border-left: 4px solid #4CAF50;
         }
         
-        /* 新增：宅急送标签样式 */
         .delivery-tag {
             display: inline-block;
             background-color: #e31837;
@@ -4539,7 +4530,7 @@
         }
     }
 
-        // ==================== 优化后的订单提交函数（修复同步问题） ====================
+        // ==================== 优化后的订单提交函数（移除进度条，提高响应速度） ====================
         async function completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container, pickupType) {
             const checkoutBtn = container.querySelector('.checkout-btn');
             if (checkoutBtn.disabled) return;
@@ -4611,20 +4602,25 @@
             };
 
             try {
-                // 使用正式的保存订单函数，确保订单保存到LeanCloud
-                showLoading('正在提交订单...');
-                const savedOrder = await LeanCloudData.saveOrder(orderData);
-                console.log('订单提交成功:', savedOrder);
+                // 使用快速保存订单函数，不等待进度条
+                const savedOrder = await LeanCloudData.quickSaveOrder(orderData);
+                console.log('订单快速提交成功:', savedOrder);
 
-                // 将保存的订单添加到本地数组
+                savedOrder.objectId = savedOrder.objectId;
                 orders.unshift(savedOrder);
 
                 // 更新新订单计数
                 newOrdersCount++;
                 
-                // 更新新订单计数到LeanCloud
-                await LeanCloudData.updateNewOrdersCount(newOrdersCount);
-                console.log('新订单计数更新成功:', newOrdersCount);
+                // 更新新订单计数（异步，不阻塞主流程）
+                setTimeout(async () => {
+                    try {
+                        await LeanCloudData.updateNewOrdersCount(newOrdersCount);
+                        console.log('新订单计数更新成功');
+                    } catch (countError) {
+                        console.warn('更新新订单计数失败，但不影响订单提交:', countError);
+                    }
+                }, 1000);
 
                 // 更新本地缓存
                 localStorage.setItem('kfcOrdersCache', JSON.stringify(orders.map(o => ({
@@ -4643,27 +4639,22 @@
 
                 updateOrderBadge();
 
-                hideLoading();
                 submitStatus.textContent = '订单提交成功！';
 
-                // 立即显示实时更新指示器
-                showRealtimeIndicator('订单已提交！');
-
-                // 立即通知管理员（无论是否登录后台）
-                if (isAdminPanelOpen) {
-                    const activeFilterBtn = document.querySelector('.filter-btn.active');
-                    const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
-                    renderOrders(activeFilter);
-                    
-                    // 显示新订单提示
-                    showRealtimeIndicator('有新的订单提交！');
-                }
-
-                // 延迟显示成功消息，确保数据已保存
                 setTimeout(() => {
                     submitStatus.textContent = '';
                     
                     showNotification('订单提交成功！', 'success');
+
+                    // 立即显示实时更新指示器
+                    showRealtimeIndicator('订单已提交！');
+
+                    // 立即通知管理员（无论是否登录后台）
+                    if (isAdminPanelOpen) {
+                        const activeFilterBtn = document.querySelector('.filter-btn.active');
+                        const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
+                        renderOrders(activeFilter);
+                    }
 
                     const orderSubmitted = confirm(`订单提交成功！\n订单号：${orderId}\n\n点击"确定"查看您的订单详情，或点击"取消"返回首页。`);
 
@@ -4697,7 +4688,6 @@
 
             } catch (error) {
                 console.error('提交订单失败:', error);
-                hideLoading();
                 submitStatus.textContent = '';
                 showNotification('订单提交失败：' + (error.message || '请检查网络连接'), 'error');
                 checkoutBtn.disabled = false;
@@ -5047,18 +5037,15 @@
             renderOrders('all');
             updateMealList('all');
             
-            // 立即同步一次数据，确保数据最新
-            try {
-                showLoading('正在同步数据...');
-                await forceSyncAllData();
-                hideLoading();
-            } catch (error) {
-                console.error('打开管理员面板时同步数据失败:', error);
-                hideLoading();
-            }
-            
             // 启动管理员面板的实时轮询（2秒一次），只检查新订单并更新订单列表
             startAdminPolling();
+            
+            // 立即同步一次数据，确保数据最新
+            try {
+                await forceSyncAllData();
+            } catch (error) {
+                console.error('打开管理员面板时同步数据失败:', error);
+            }
         }
         
         // 改进的实时轮询函数
@@ -5236,7 +5223,8 @@
             const ordersContainer = document.getElementById('ordersContainer');
             const noOrdersMessage = document.getElementById('noOrdersMessage');
 
-            ordersContainer.innerHTML = '';
+            const orderElements = ordersContainer.querySelectorAll('.admin-order-item');
+            orderElements.forEach(el => el.remove());
 
             let filteredOrders = orders;
             if (filter !== 'all') {
