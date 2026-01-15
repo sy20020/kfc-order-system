@@ -5397,9 +5397,8 @@
             // ====== 修复：重新绑定保存套餐按钮事件 ======
             const saveMealBtn = document.getElementById('saveMealBtn');
             if (saveMealBtn) {
-                saveMealBtn.addEventListener('click', function() {
-                    saveMeal();
-                });
+                // 使用 onclick 而不是 addEventListener，避免重复绑定
+                saveMealBtn.onclick = saveMeal;
             }
 
             // ====== 修复：重新绑定取消按钮事件 ======
@@ -5464,6 +5463,12 @@
             document.getElementById('mealListSection').classList.add('hide');
             document.getElementById('editMealFormContainer').classList.remove('hide');
             document.getElementById('editMealFormContainer').classList.add('active');
+            
+            // 重新绑定保存按钮
+            const saveMealBtn = document.getElementById('saveMealBtn');
+            if (saveMealBtn) {
+                saveMealBtn.onclick = saveMeal;
+            }
         }
 
         // 更新套餐列表
@@ -6027,6 +6032,8 @@
 
         // ====== 修复：保存套餐函数 ======
         async function saveMeal() {
+            console.log('保存套餐按钮被点击！');
+            
             const mealId = document.getElementById('currentMealId').value;
             const mealName = document.getElementById('mealName').value.trim();
             const mealPrice = parseFloat(document.getElementById('mealPrice').value);
@@ -6037,6 +6044,7 @@
             // ====== 修复：正确获取宅急送状态 ======
             const mealDeliverable = document.getElementById('mealDeliverable') ? document.getElementById('mealDeliverable').checked : true;
 
+            // 验证表单
             if (!mealName) {
                 showNotification('请填写套餐名称', 'error');
                 document.getElementById('mealName').focus();
@@ -6062,7 +6070,10 @@
             }
 
             const optionGroups = [];
-            document.querySelectorAll('.option-group-item').forEach((groupElement, index) => {
+            const optionGroupElements = document.querySelectorAll('.option-group-item');
+            
+            for (let i = 0; i < optionGroupElements.length; i++) {
+                const groupElement = optionGroupElements[i];
                 const title = groupElement.querySelector('.option-group-title-input').value.trim();
                 const rules = groupElement.querySelector('.option-group-rules-input').value.trim();
                 const minSelect = parseInt(groupElement.querySelector('.option-group-min-input').value) || 1;
@@ -6071,31 +6082,34 @@
                 const maxPerItem = parseInt(groupElement.querySelector('.option-group-max-per-item-input').value) || (repeat ? 999 : 1);
 
                 if (!title) {
-                    showNotification(`选项组 ${index + 1} 的标题不能为空`, 'error');
+                    showNotification(`选项组 ${i + 1} 的标题不能为空`, 'error');
                     groupElement.querySelector('.option-group-title-input').focus();
-                    throw new Error('选项组标题为空');
+                    return;
                 }
 
                 if (!rules) {
-                    showNotification(`选项组 ${index + 1} 的规则描述不能为空`, 'error');
+                    showNotification(`选项组 ${i + 1} 的规则描述不能为空`, 'error');
                     groupElement.querySelector('.option-group-rules-input').focus();
-                    throw new Error('选项组规则为空');
+                    return;
                 }
 
                 if (minSelect < 0) {
-                    showNotification(`选项组 ${index + 1} 的最少选择数量不能小于0`, 'error');
+                    showNotification(`选项组 ${i + 1} 的最少选择数量不能小于0`, 'error');
                     groupElement.querySelector('.option-group-min-input').focus();
-                    throw new Error('最小选择数量无效');
+                    return;
                 }
 
                 if (maxSelect < minSelect) {
-                    showNotification(`选项组 ${index + 1} 的最多选择数量不能小于最少选择数量`, 'error');
+                    showNotification(`选项组 ${i + 1} 的最多选择数量不能小于最少选择数量`, 'error');
                     groupElement.querySelector('.option-group-max-input').focus();
-                    throw new Error('最大选择数量无效');
+                    return;
                 }
 
                 const items = [];
-                groupElement.querySelectorAll('.option-item-list-item').forEach(itemElement => {
+                const itemElements = groupElement.querySelectorAll('.option-item-list-item');
+                
+                for (let j = 0; j < itemElements.length; j++) {
+                    const itemElement = itemElements[j];
                     const name = itemElement.querySelector('.option-item-name-input').value.trim();
                     const addPrice = parseFloat(itemElement.querySelector('.option-item-price-input').value) || 0;
 
@@ -6105,11 +6119,11 @@
                             addPrice
                         });
                     }
-                });
+                }
 
                 if (items.length === 0) {
-                    showNotification(`选项组 ${index + 1} 至少需要一个选项项`, 'error');
-                    throw new Error('选项组没有选项项');
+                    showNotification(`选项组 ${i + 1} 至少需要一个选项项`, 'error');
+                    return;
                 }
 
                 optionGroups.push({
@@ -6121,10 +6135,13 @@
                     maxPerItem,
                     items
                 });
-            });
+            }
 
             const fixedItems = [];
-            document.querySelectorAll('.fixed-item-list-item').forEach((itemElement, index) => {
+            const fixedItemElements = document.querySelectorAll('.fixed-item-list-item');
+            
+            for (let i = 0; i < fixedItemElements.length; i++) {
+                const itemElement = fixedItemElements[i];
                 const name = itemElement.querySelector('.fixed-item-name-input').value.trim();
                 const quantity = parseInt(itemElement.querySelector('.fixed-item-quantity-input').value) || 1;
 
@@ -6134,13 +6151,14 @@
                         quantity
                     });
                 }
-            });
+            }
 
             let meal;
             const now = Date.now();
 
             try {
                 if (mealId) {
+                    // 更新现有套餐
                     meal = meals.find(m => m.id === mealId);
                     if (meal) {
                         meal.name = mealName;
@@ -6160,8 +6178,14 @@
                         if (mealIndex !== -1) {
                             meals[mealIndex] = savedMeal;
                         }
+                        
+                        showNotification('套餐已更新', 'success');
+                    } else {
+                        showNotification('未找到要更新的套餐', 'error');
+                        return;
                     }
                 } else {
+                    // 添加新套餐
                     meal = {
                         id: 'meal-' + now + '-' + Math.random().toString(36).substr(2, 9),
                         name: mealName,
@@ -6179,18 +6203,23 @@
 
                     const savedMeal = await LeanCloudData.saveMeal(meal);
                     meals.push(savedMeal);
+                    
+                    showNotification('套餐已添加', 'success');
                 }
 
+                // 保存到本地缓存
                 localStorage.setItem('kfcMealsCache', JSON.stringify(meals));
 
+                // 更新首页显示
                 updateHomePage();
 
+                // 更新管理界面列表
                 const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
                 updateMealList(activeFilter);
 
+                // 返回列表
                 showMealList();
 
-                showNotification(mealId ? '套餐已更新' : '套餐已添加', 'success');
             } catch (error) {
                 console.error('保存套餐失败:', error);
                 showNotification('保存失败，请检查网络连接', 'error');
