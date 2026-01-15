@@ -8,7 +8,7 @@
     <!-- LeanCloud SDK -->
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
     <style>
-        /* 所有CSS样式保持不变 */
+        /* 所有CSS样式保持不变，只修改必要的部分 */
         * {
             margin: 0;
             padding: 0;
@@ -225,31 +225,6 @@
             display: inline-block;
             background-color: #ffcc00;
             color: #333;
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            margin-right: 8px;
-            margin-bottom: 5px;
-        }
-        
-        /* ====== 修复：调整标签显示样式 ====== */
-        .delivery-tag {
-            display: inline-block;
-            background-color: #4CAF50;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            margin-right: 8px;
-            margin-bottom: 5px;
-        }
-        
-        .pickup-only-tag {
-            display: inline-block;
-            background-color: #2196F3;
-            color: white;
             padding: 4px 10px;
             border-radius: 15px;
             font-size: 0.8rem;
@@ -2279,16 +2254,6 @@
             </div>
 
             <div id="mealsTab" class="admin-tab-content">
-                <!-- 新增：管理员搜索框 -->
-                <div class="search-container" style="margin-bottom: 20px;">
-                    <div class="search-box">
-                        <input type="text" class="search-input" id="adminMealSearchInput" placeholder="搜索套餐：输入套餐编号、名称、标签或描述...">
-                        <button class="search-btn" id="adminMealSearchBtn">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
-                </div>
-
                 <div class="meal-filters">
                     <button class="meal-filter-btn active" data-meal-filter="all">全部套餐</button>
                     <button class="meal-filter-btn" data-meal-filter="active">已上架</button>
@@ -2352,21 +2317,6 @@
                                 <input type="text" class="form-input" id="mealDescription" placeholder="例如：适合3人享用，自提/宅急送都可用" required>
                             </div>
                             
-                            <div class="form-group">
-                                <label class="form-label">是否支持宅急送</label>
-                                <div style="margin-top: 8px;">
-                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                        <input type="checkbox" id="mealDeliverable" checked>
-                                        <span>支持宅急送配送</span>
-                                    </label>
-                                </div>
-                                <div class="form-hint">
-                                    <i class="fas fa-lightbulb"></i> 如果不支持宅急送，用户只能选择到店自提
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">套餐状态</label>
                                 <div class="status-label">
@@ -2461,21 +2411,6 @@
                             <input type="text" class="form-input" id="newMealDescription" placeholder="例如：适合3人享用，自提/宅急送都可用" required>
                         </div>
                         
-                        <div class="form-group">
-                            <label class="form-label">是否支持宅急送</label>
-                            <div style="margin-top: 8px;">
-                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                    <input type="checkbox" id="newMealDeliverable" checked>
-                                    <span>支持宅急送配送</span>
-                                </label>
-                            </div>
-                            <div class="form-hint">
-                                <i class="fas fa-lightbulb"></i> 如果不支持宅急送，用户只能选择到店自提
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">套餐状态</label>
                             <div class="status-label">
@@ -2626,7 +2561,6 @@
                             description: data.description,
                             order: data.order || 9999,
                             active: data.active !== false,
-                            deliverable: data.deliverable !== false, // 新增：是否可以宅急送
                             optionGroups: data.optionGroups || [],
                             fixedItems: data.fixedItems || [],
                             createdAt: createdAt,
@@ -2658,7 +2592,6 @@
                     mealObj.set('description', meal.description);
                     mealObj.set('order', meal.order || 9999);
                     mealObj.set('active', meal.active !== false);
-                    mealObj.set('deliverable', meal.deliverable !== false); // 新增：是否可以宅急送
                     mealObj.set('optionGroups', meal.optionGroups || []);
                     mealObj.set('fixedItems', meal.fixedItems || []);
 
@@ -2675,7 +2608,6 @@
                         description: meal.description,
                         order: meal.order || 9999,
                         active: meal.active !== false,
-                        deliverable: meal.deliverable !== false, // 新增：是否可以宅急送
                         optionGroups: meal.optionGroups || [],
                         fixedItems: meal.fixedItems || [],
                         createdAt: createdAt,
@@ -3027,7 +2959,6 @@
                 initMyOrdersPage();
                 initHeaderButtons();
                 initSearchFunction();
-                initAdminMealSearch(); // 新增：初始化管理员搜索
 
                 document.getElementById('currentUserIdDisplay').textContent = currentUserId.substring(0, 12) + '...';
 
@@ -3059,7 +2990,6 @@
                 initMyOrdersPage();
                 initHeaderButtons();
                 initSearchFunction();
-                initAdminMealSearch(); // 新增：初始化管理员搜索
                 
                 // 启动全局轮询，检查新订单
                 startGlobalPolling();
@@ -3157,24 +3087,6 @@
             }
         }
 
-        // ==================== 新增：管理员套餐搜索功能 ====================
-        function initAdminMealSearch() {
-            const adminMealSearchInput = document.getElementById('adminMealSearchInput');
-            const adminMealSearchBtn = document.getElementById('adminMealSearchBtn');
-            
-            if (adminMealSearchInput && adminMealSearchBtn) {
-                adminMealSearchBtn.addEventListener('click', function() {
-                    searchAdminMeals(adminMealSearchInput.value.trim());
-                });
-                
-                adminMealSearchInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        searchAdminMeals(this.value.trim());
-                    }
-                });
-            }
-        }
-
         // ==================== 搜索套餐功能 ====================
         function searchMeals(searchTerm) {
             const mealGrid = document.getElementById('mealGrid');
@@ -3237,176 +3149,18 @@
                     showMealDetail(meal.id);
                 };
 
-                // ====== 修复：根据deliverable属性显示正确的标签 ======
-                const deliveryTag = meal.deliverable !== false ? 
-                    `<span class="delivery-tag">到店/宅急送</span>` : 
-                    `<span class="pickup-only-tag">堂食/打包</span>`;
-
                 mealCard.innerHTML = `
                     <div class="meal-header">
                         <h4 class="meal-name">${meal.name}</h4>
                         <div class="meal-price">¥${meal.price}</div>
                     </div>
                     <div class="meal-description">
-                        ${deliveryTag}
                         ${meal.tags.map(tag => `<span class="meal-tag">${tag}</span>`).join('')}
                         <p style="margin-top: 10px;">${meal.description}</p>
                     </div>
                 `;
 
                 mealGrid.appendChild(mealCard);
-            });
-        }
-
-        // ==================== 新增：管理员搜索套餐功能 ====================
-        function searchAdminMeals(searchTerm) {
-            const mealList = document.getElementById('mealList');
-            const noMealsAdminMessage = document.getElementById('noMealsAdminMessage');
-            
-            if (!searchTerm) {
-                const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
-                updateMealList(activeFilter);
-                return;
-            }
-
-            const searchTermLower = searchTerm.toLowerCase();
-            
-            const filteredMeals = meals.filter(meal => {
-                if (meal.id.toLowerCase().includes(searchTermLower)) return true;
-                if (meal.name.toLowerCase().includes(searchTermLower)) return true;
-                if (meal.price.toString().includes(searchTerm)) return true;
-                if (meal.tags && meal.tags.some(tag => tag.toLowerCase().includes(searchTermLower))) return true;
-                if (meal.description && meal.description.toLowerCase().includes(searchTermLower)) return true;
-                return false;
-            });
-
-            if (filteredMeals.length === 0) {
-                mealList.innerHTML = '';
-                noMealsAdminMessage.style.display = 'block';
-                noMealsAdminMessage.innerHTML = `
-                    <i class="fas fa-search"></i>
-                    <h3>未找到相关套餐</h3>
-                    <p>没有找到与"${searchTerm}"相关的套餐</p>
-                `;
-                return;
-            }
-
-            noMealsAdminMessage.style.display = 'none';
-
-            filteredMeals.sort((a, b) => {
-                const orderDiff = (a.order || 9999) - (b.order || 9999);
-                if (orderDiff !== 0) return orderDiff;
-                return (b.createdAt || 0) - (a.createdAt || 0);
-            });
-
-            mealList.innerHTML = '';
-
-            filteredMeals.forEach(meal => {
-                const mealItem = document.createElement('div');
-                mealItem.className = 'meal-list-item';
-
-                let totalOptions = 0;
-                if (meal.optionGroups && meal.optionGroups.length > 0) {
-                    meal.optionGroups.forEach(group => {
-                        if (group.items) {
-                            totalOptions += group.items.length;
-                        }
-                    });
-                }
-
-                let totalFixed = 0;
-                if (meal.fixedItems && meal.fixedItems.length > 0) {
-                    meal.fixedItems.forEach(item => {
-                        totalFixed += item.quantity || 1;
-                    });
-                }
-
-                const createdAt = meal.createdAt ? new Date(meal.createdAt).toLocaleString('zh-CN') : '未知时间';
-                const deliverableText = meal.deliverable !== false ? '<span class="status-active">支持宅急送</span>' : '<span class="status-inactive">仅自提</span>';
-
-                const sortControls = `
-                    <div class="sort-order-container">
-                        <label>排序:</label>
-                        <input type="number" class="sort-order-input" data-meal-id="${meal.id}" value="${meal.order || 9999}" min="0" step="1">
-                        <div class="sort-order-buttons">
-                            <button class="sort-order-btn" data-action="move-up" data-meal-id="${meal.id}" title="上移"><i class="fas fa-arrow-up"></i></button>
-                            <button class="sort-order-btn" data-action="move-down" data-meal-id="${meal.id}" title="下移"><i class="fas fa-arrow-down"></i></button>
-                            <button class="sort-order-btn" data-action="apply-order" data-meal-id="${meal.id}" title="应用排序"><i class="fas fa-check"></i></button>
-                        </div>
-                    </div>
-                `;
-
-                mealItem.innerHTML = `
-                    <div class="meal-list-item-info">
-                        <h4>${meal.name} ${meal.active === false ? '<span class="status-inactive">(已下架)</span>' : '<span class="status-active">(已上架)</span>'}</h4>
-                        <p><strong>价格:</strong> ¥${meal.price} | <strong>标签:</strong> ${meal.tags.join(', ')}</p>
-                        <p><strong>描述:</strong> ${meal.description}</p>
-                        <p><strong>创建时间:</strong> ${createdAt} | <strong>排序值:</strong> <span class="order-display">${meal.order || 9999}</span></p>
-                        <p><strong>配送方式:</strong> ${deliverableText}</p>
-                        <p><strong>选项组:</strong> ${meal.optionGroups ? meal.optionGroups.length : 0} 个 | 
-                           <strong>选项项:</strong> ${totalOptions} 个 | 
-                           <strong>固定搭配:</strong> ${totalFixed} 项</p>
-                    </div>
-                    <div class="meal-list-item-actions">
-                        <div class="status-label">
-                            <label class="status-toggle">
-                                <input type="checkbox" class="status-toggle-input" data-meal-id="${meal.id}" ${meal.active !== false ? 'checked' : ''}>
-                                <span class="status-slider"></span>
-                            </label>
-                            <span class="${meal.active !== false ? 'status-active' : 'status-inactive'}">${meal.active !== false ? '上架' : '下架'}</span>
-                        </div>
-                        ${sortControls}
-                        <div style="display: flex; gap: 10px;">
-                            <button class="action-btn edit-btn" data-meal-id="${meal.id}">
-                                <i class="fas fa-edit"></i> 编辑
-                            </button>
-                            <button class="action-btn delete-btn" data-meal-id="${meal.id}">
-                                <i class="fas fa-trash"></i> 删除
-                            </button>
-                        </div>
-                    </div>
-                `;
-
-                mealList.appendChild(mealItem);
-            });
-
-            // 重新绑定事件
-            document.querySelectorAll('.status-toggle-input').forEach(toggle => {
-                toggle.addEventListener('change', async function() {
-                    const mealId = this.dataset.mealId;
-                    const isActive = this.checked;
-                    await toggleMealStatus(mealId, isActive);
-                });
-            });
-
-            document.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const mealId = this.dataset.mealId;
-                    editMeal(mealId);
-                });
-            });
-
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', async function() {
-                    const mealId = this.dataset.mealId;
-                    await deleteMeal(mealId);
-                });
-            });
-
-            document.querySelectorAll('.sort-order-btn').forEach(btn => {
-                btn.addEventListener('click', async function() {
-                    const mealId = this.dataset.mealId;
-                    const action = this.dataset.action;
-                    await handleSortAction(action, mealId);
-                });
-            });
-
-            document.querySelectorAll('.sort-order-input').forEach(input => {
-                input.addEventListener('change', async function() {
-                    const mealId = this.dataset.mealId;
-                    const newOrder = parseInt(this.value) || 9999;
-                    await updateMealOrder(mealId, newOrder);
-                });
             });
         }
 
@@ -3430,8 +3184,7 @@
                     tags: m.tags,
                     description: m.description,
                     order: m.order,
-                    active: m.active,
-                    deliverable: m.deliverable // 保存宅急送状态
+                    active: m.active
                 }))));
                 
                 localStorage.setItem('kfcOrdersCache', JSON.stringify(orders.map(o => ({
@@ -3530,18 +3283,12 @@
                     showMealDetail(meal.id);
                 };
 
-                // ====== 修复：根据deliverable属性显示正确的标签 ======
-                const deliveryTag = meal.deliverable !== false ? 
-                    `<span class="delivery-tag">到店/宅急送</span>` : 
-                    `<span class="pickup-only-tag">堂食/打包</span>`;
-
                 mealCard.innerHTML = `
                     <div class="meal-header">
                         <h4 class="meal-name">${meal.name}</h4>
                         <div class="meal-price">¥${meal.price}</div>
                     </div>
                     <div class="meal-description">
-                        ${deliveryTag}
                         ${meal.tags.map(tag => `<span class="meal-tag">${tag}</span>`).join('')}
                         <p style="margin-top: 10px;">${meal.description}</p>
                     </div>
@@ -3575,7 +3322,6 @@
                             <p><strong>套餐详情：</strong></p>
                             <ul>
                                 <li>${meal.description}</li>
-                                <li>${meal.deliverable !== false ? '支持宅急送和到店自提' : '仅支持到店自提'}</li>
                                 <li>请按照要求选择选项</li>
                                 <li>提交订单后可在右上角"查看我的订单"查看订单状态</li>
                             </ul>
@@ -3620,19 +3366,17 @@
                             </h3>
                             
                             <div class="order-type">
-                                ${meal.deliverable !== false ? `
                                 <label>
                                     <input type="radio" name="deliveryType" value="delivery" checked>
                                     <span>宅急送（免配送费）</span>
                                 </label>
-                                ` : ''}
                                 <label>
-                                    <input type="radio" name="deliveryType" value="pickup" ${meal.deliverable === false ? 'checked' : ''}>
+                                    <input type="radio" name="deliveryType" value="pickup">
                                     <span>到店自提</span>
                                 </label>
                             </div>
                             
-                            <div class="delivery-fields" id="deliveryFields" ${meal.deliverable === false ? 'style="display:none;"' : ''}>
+                            <div class="delivery-fields" id="deliveryFields">
                                 <div class="form-group">
                                     <label class="form-label">收货人姓名 <span class="required">*</span></label>
                                     <input type="text" class="form-input" id="customerName" placeholder="请输入姓名" required>
@@ -3649,7 +3393,7 @@
                                 </div>
                             </div>
                             
-                            <div class="pickup-fields hidden" id="pickupFields" ${meal.deliverable === false ? 'style="display:block;"' : ''}>
+                            <div class="pickup-fields hidden" id="pickupFields">
                                 <div class="form-group">
                                     <label class="form-label">自提方式 <span class="required">*</span></label>
                                     <div class="pickup-type">
@@ -4258,8 +4002,7 @@
                         basePrice: mealPrice,
                         additionalPrice: additionalPrice,
                         totalPrice: totalPrice,
-                        options: [...selectedOptions],
-                        deliverable: meal.deliverable // 保存宅急送状态
+                        options: [...selectedOptions]
                     };
 
                     cart.push(mealItem);
@@ -4351,24 +4094,7 @@
                 checkoutBtn.addEventListener('click', async function() {
                     if (checkoutBtn.disabled) return;
                     
-                    // 检查购物车中是否有不支持宅急送的套餐
-                    const hasNonDeliverableMeal = cart.some(item => item.deliverable === false);
-                    
-                    let deliveryType;
-                    
-                    if (hasNonDeliverableMeal) {
-                        // 如果购物车中有不支持宅急送的套餐，强制选择到店自提
-                        deliveryType = 'pickup';
-                        // 设置radio为pickup
-                        const pickupRadio = container.querySelector('input[name="deliveryType"][value="pickup"]');
-                        if (pickupRadio) {
-                            pickupRadio.checked = true;
-                            pickupRadio.dispatchEvent(new Event('change'));
-                        }
-                    } else {
-                        deliveryType = container.querySelector('input[name="deliveryType"]:checked').value;
-                    }
-                    
+                    const deliveryType = container.querySelector('input[name="deliveryType"]:checked').value;
                     const orderNote = container.querySelector('#orderNote') ? container.querySelector('#orderNote').value.trim() : '';
 
                     let deliveryInfo = '';
@@ -4963,7 +4689,7 @@
         }
 
         // ==================== 优化后的管理员面板实时更新 ====================
-        function openAdminPanel() {
+        async function openAdminPanel() {
             const adminPanel = document.getElementById('adminPanel');
             const panelOverlay = document.getElementById('panelOverlay');
 
@@ -4979,11 +4705,19 @@
 
             updateOrderBadge();
 
+            // 先加载本地数据渲染
             renderOrders('all');
             updateMealList('all');
             
             // 启动管理员面板的实时轮询（2秒一次），只检查新订单并更新订单列表
             startAdminPolling();
+            
+            // 立即同步一次数据，确保数据最新
+            try {
+                await forceSyncAllData();
+            } catch (error) {
+                console.error('打开管理员面板时同步数据失败:', error);
+            }
         }
         
         // 改进的实时轮询函数
@@ -5378,36 +5112,21 @@
                 });
             });
 
-            // ====== 修复：重新绑定添加选项组按钮事件 ======
-            const addOptionGroupBtn = document.getElementById('addOptionGroupBtn');
-            if (addOptionGroupBtn) {
-                addOptionGroupBtn.addEventListener('click', function() {
-                    addOptionGroup();
-                });
-            }
+            document.getElementById('addOptionGroupBtn').addEventListener('click', function() {
+                addOptionGroup();
+            });
 
-            // ====== 修复：重新绑定添加固定搭配项按钮事件 ======
-            const addFixedItemBtn = document.getElementById('addFixedItemBtn');
-            if (addFixedItemBtn) {
-                addFixedItemBtn.addEventListener('click', function() {
-                    addFixedItem();
-                });
-            }
+            document.getElementById('addFixedItemBtn').addEventListener('click', function() {
+                addFixedItem();
+            });
 
-            // ====== 修复：重新绑定保存套餐按钮事件 ======
-            const saveMealBtn = document.getElementById('saveMealBtn');
-            if (saveMealBtn) {
-                // 使用 onclick 而不是 addEventListener，避免重复绑定
-                saveMealBtn.onclick = saveMeal;
-            }
+            document.getElementById('saveMealBtn').addEventListener('click', async function() {
+                await saveMeal();
+            });
 
-            // ====== 修复：重新绑定取消按钮事件 ======
-            const cancelEditBtn = document.getElementById('cancelEditBtn');
-            if (cancelEditBtn) {
-                cancelEditBtn.addEventListener('click', function() {
-                    showMealList();
-                });
-            }
+            document.getElementById('cancelEditBtn').addEventListener('click', function() {
+                showMealList();
+            });
 
             document.addEventListener('keydown', function(e) {
                 if ((e.ctrlKey || e.metaKey) && e.key === 's' &&
@@ -5447,12 +5166,6 @@
             document.getElementById('editMealFormContainer').classList.remove('active');
             document.getElementById('editMealFormContainer').classList.add('hide');
             
-            // 清空搜索框
-            const adminMealSearchInput = document.getElementById('adminMealSearchInput');
-            if (adminMealSearchInput) {
-                adminMealSearchInput.value = '';
-            }
-            
             const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
             updateMealList(activeFilter);
         }
@@ -5463,12 +5176,6 @@
             document.getElementById('mealListSection').classList.add('hide');
             document.getElementById('editMealFormContainer').classList.remove('hide');
             document.getElementById('editMealFormContainer').classList.add('active');
-            
-            // 重新绑定保存按钮
-            const saveMealBtn = document.getElementById('saveMealBtn');
-            if (saveMealBtn) {
-                saveMealBtn.onclick = saveMeal;
-            }
         }
 
         // 更新套餐列表
@@ -5521,7 +5228,6 @@
                 }
 
                 const createdAt = meal.createdAt ? new Date(meal.createdAt).toLocaleString('zh-CN') : '未知时间';
-                const deliverableText = meal.deliverable !== false ? '<span class="status-active">支持宅急送</span>' : '<span class="status-inactive">仅自提</span>';
 
                 const sortControls = `
                     <div class="sort-order-container">
@@ -5541,7 +5247,6 @@
                         <p><strong>价格:</strong> ¥${meal.price} | <strong>标签:</strong> ${meal.tags.join(', ')}</p>
                         <p><strong>描述:</strong> ${meal.description}</p>
                         <p><strong>创建时间:</strong> ${createdAt} | <strong>排序值:</strong> <span class="order-display">${meal.order || 9999}</span></p>
-                        <p><strong>配送方式:</strong> ${deliverableText}</p>
                         <p><strong>选项组:</strong> ${meal.optionGroups ? meal.optionGroups.length : 0} 个 | 
                            <strong>选项项:</strong> ${totalOptions} 个 | 
                            <strong>固定搭配:</strong> ${totalFixed} 项</p>
@@ -5723,12 +5428,6 @@
             document.getElementById('mealTags').value = meal.tags.join(', ');
             document.getElementById('mealDescription').value = meal.description;
             document.getElementById('mealActive').checked = meal.active !== false;
-            // ====== 修复：正确设置宅急送复选框的值 ======
-            const mealDeliverableCheckbox = document.getElementById('mealDeliverable');
-            if (mealDeliverableCheckbox) {
-                // 确保deliverable属性存在，默认为true
-                mealDeliverableCheckbox.checked = meal.deliverable !== false;
-            }
 
             const statusText = document.getElementById('statusText');
             if (meal.active !== false) {
@@ -5803,7 +5502,6 @@
 
                     document.getElementById('optionGroupsManagement').appendChild(optionGroup);
 
-                    // ====== 修复：重新绑定选项组按钮事件 ======
                     optionGroup.querySelector('.add-option-item-btn').addEventListener('click', function() {
                         addOptionItem(groupId);
                     });
@@ -5897,7 +5595,6 @@
 
             optionGroupsManagement.appendChild(optionGroup);
 
-            // ====== 修复：重新绑定选项组按钮事件 ======
             optionGroup.querySelector('.add-option-item-btn').addEventListener('click', function() {
                 addOptionItem(groupId);
             });
@@ -5992,7 +5689,7 @@
 
             const meal = meals[mealIndex];
 
-            if (!confirm(`确定要删除套餐 "${meal.name}" 吗？\n\n价格：¥${meal.price}\n标签：${meal.tags.join(', ')}\n配送：${meal.deliverable !== false ? '支持宅急送' : '仅自提'}\n\n此操作不可恢复！`)) {
+            if (!confirm(`确定要删除套餐 "${meal.name}" 吗？\n\n价格：¥${meal.price}\n标签：${meal.tags.join(', ')}\n\n此操作不可恢复！`)) {
                 return;
             }
 
@@ -6030,10 +5727,8 @@
             }
         }
 
-        // ====== 修复：保存套餐函数 ======
+        // 保存套餐
         async function saveMeal() {
-            console.log('保存套餐按钮被点击！');
-            
             const mealId = document.getElementById('currentMealId').value;
             const mealName = document.getElementById('mealName').value.trim();
             const mealPrice = parseFloat(document.getElementById('mealPrice').value);
@@ -6041,10 +5736,7 @@
             const mealTags = document.getElementById('mealTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
             const mealDescription = document.getElementById('mealDescription').value.trim();
             const mealActive = document.getElementById('mealActive').checked;
-            // ====== 修复：正确获取宅急送状态 ======
-            const mealDeliverable = document.getElementById('mealDeliverable') ? document.getElementById('mealDeliverable').checked : true;
 
-            // 验证表单
             if (!mealName) {
                 showNotification('请填写套餐名称', 'error');
                 document.getElementById('mealName').focus();
@@ -6070,10 +5762,7 @@
             }
 
             const optionGroups = [];
-            const optionGroupElements = document.querySelectorAll('.option-group-item');
-            
-            for (let i = 0; i < optionGroupElements.length; i++) {
-                const groupElement = optionGroupElements[i];
+            document.querySelectorAll('.option-group-item').forEach((groupElement, index) => {
                 const title = groupElement.querySelector('.option-group-title-input').value.trim();
                 const rules = groupElement.querySelector('.option-group-rules-input').value.trim();
                 const minSelect = parseInt(groupElement.querySelector('.option-group-min-input').value) || 1;
@@ -6082,34 +5771,31 @@
                 const maxPerItem = parseInt(groupElement.querySelector('.option-group-max-per-item-input').value) || (repeat ? 999 : 1);
 
                 if (!title) {
-                    showNotification(`选项组 ${i + 1} 的标题不能为空`, 'error');
+                    showNotification(`选项组 ${index + 1} 的标题不能为空`, 'error');
                     groupElement.querySelector('.option-group-title-input').focus();
-                    return;
+                    throw new Error('选项组标题为空');
                 }
 
                 if (!rules) {
-                    showNotification(`选项组 ${i + 1} 的规则描述不能为空`, 'error');
+                    showNotification(`选项组 ${index + 1} 的规则描述不能为空`, 'error');
                     groupElement.querySelector('.option-group-rules-input').focus();
-                    return;
+                    throw new Error('选项组规则为空');
                 }
 
                 if (minSelect < 0) {
-                    showNotification(`选项组 ${i + 1} 的最少选择数量不能小于0`, 'error');
+                    showNotification(`选项组 ${index + 1} 的最少选择数量不能小于0`, 'error');
                     groupElement.querySelector('.option-group-min-input').focus();
-                    return;
+                    throw new Error('最小选择数量无效');
                 }
 
                 if (maxSelect < minSelect) {
-                    showNotification(`选项组 ${i + 1} 的最多选择数量不能小于最少选择数量`, 'error');
+                    showNotification(`选项组 ${index + 1} 的最多选择数量不能小于最少选择数量`, 'error');
                     groupElement.querySelector('.option-group-max-input').focus();
-                    return;
+                    throw new Error('最大选择数量无效');
                 }
 
                 const items = [];
-                const itemElements = groupElement.querySelectorAll('.option-item-list-item');
-                
-                for (let j = 0; j < itemElements.length; j++) {
-                    const itemElement = itemElements[j];
+                groupElement.querySelectorAll('.option-item-list-item').forEach(itemElement => {
                     const name = itemElement.querySelector('.option-item-name-input').value.trim();
                     const addPrice = parseFloat(itemElement.querySelector('.option-item-price-input').value) || 0;
 
@@ -6119,11 +5805,11 @@
                             addPrice
                         });
                     }
-                }
+                });
 
                 if (items.length === 0) {
-                    showNotification(`选项组 ${i + 1} 至少需要一个选项项`, 'error');
-                    return;
+                    showNotification(`选项组 ${index + 1} 至少需要一个选项项`, 'error');
+                    throw new Error('选项组没有选项项');
                 }
 
                 optionGroups.push({
@@ -6135,13 +5821,10 @@
                     maxPerItem,
                     items
                 });
-            }
+            });
 
             const fixedItems = [];
-            const fixedItemElements = document.querySelectorAll('.fixed-item-list-item');
-            
-            for (let i = 0; i < fixedItemElements.length; i++) {
-                const itemElement = fixedItemElements[i];
+            document.querySelectorAll('.fixed-item-list-item').forEach((itemElement, index) => {
                 const name = itemElement.querySelector('.fixed-item-name-input').value.trim();
                 const quantity = parseInt(itemElement.querySelector('.fixed-item-quantity-input').value) || 1;
 
@@ -6151,14 +5834,13 @@
                         quantity
                     });
                 }
-            }
+            });
 
             let meal;
             const now = Date.now();
 
             try {
                 if (mealId) {
-                    // 更新现有套餐
                     meal = meals.find(m => m.id === mealId);
                     if (meal) {
                         meal.name = mealName;
@@ -6167,10 +5849,8 @@
                         meal.tags = mealTags;
                         meal.description = mealDescription;
                         meal.active = mealActive;
-                        meal.deliverable = mealDeliverable; // 设置宅急送状态
                         meal.optionGroups = optionGroups;
                         meal.fixedItems = fixedItems;
-                        meal.updatedAt = Date.now();
 
                         const savedMeal = await LeanCloudData.saveMeal(meal);
 
@@ -6178,14 +5858,8 @@
                         if (mealIndex !== -1) {
                             meals[mealIndex] = savedMeal;
                         }
-                        
-                        showNotification('套餐已更新', 'success');
-                    } else {
-                        showNotification('未找到要更新的套餐', 'error');
-                        return;
                     }
                 } else {
-                    // 添加新套餐
                     meal = {
                         id: 'meal-' + now + '-' + Math.random().toString(36).substr(2, 9),
                         name: mealName,
@@ -6194,32 +5868,24 @@
                         tags: mealTags,
                         description: mealDescription,
                         active: mealActive,
-                        deliverable: mealDeliverable, // 设置宅急送状态
                         optionGroups: optionGroups,
-                        fixedItems: fixedItems,
-                        createdAt: now,
-                        updatedAt: now
+                        fixedItems: fixedItems
                     };
 
                     const savedMeal = await LeanCloudData.saveMeal(meal);
                     meals.push(savedMeal);
-                    
-                    showNotification('套餐已添加', 'success');
                 }
 
-                // 保存到本地缓存
                 localStorage.setItem('kfcMealsCache', JSON.stringify(meals));
 
-                // 更新首页显示
                 updateHomePage();
 
-                // 更新管理界面列表
                 const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
                 updateMealList(activeFilter);
 
-                // 返回列表
                 showMealList();
 
+                showNotification(mealId ? '套餐已更新' : '套餐已添加', 'success');
             } catch (error) {
                 console.error('保存套餐失败:', error);
                 showNotification('保存失败，请检查网络连接', 'error');
@@ -6415,7 +6081,6 @@
             const mealTags = document.getElementById('newMealTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
             const mealDescription = document.getElementById('newMealDescription').value.trim();
             const mealActive = document.getElementById('newMealActive').checked;
-            const mealDeliverable = document.getElementById('newMealDeliverable').checked; // 获取宅急送状态
 
             if (!mealName) {
                 showNotification('请填写套餐名称', 'error');
@@ -6525,11 +6190,8 @@
                 tags: mealTags,
                 description: mealDescription,
                 active: mealActive,
-                deliverable: mealDeliverable, // 设置宅急送状态
                 optionGroups: optionGroups,
-                fixedItems: fixedItems,
-                createdAt: now,
-                updatedAt: now
+                fixedItems: fixedItems
             };
 
             try {
@@ -6550,7 +6212,6 @@
                 document.getElementById('newMealTags').value = '';
                 document.getElementById('newMealDescription').value = '';
                 document.getElementById('newMealActive').checked = true;
-                document.getElementById('newMealDeliverable').checked = true; // 重置宅急送状态
                 
                 const statusText = document.getElementById('newStatusText');
                 statusText.textContent = '上架';
@@ -6625,8 +6286,7 @@
                     tags: m.tags,
                     description: m.description,
                     order: m.order,
-                    active: m.active,
-                    deliverable: m.deliverable // 保存宅急送状态
+                    active: m.active
                 }))));
                 
                 localStorage.setItem('kfcOrdersCache', JSON.stringify(orders.map(o => ({
@@ -6733,3 +6393,4 @@
     </script>
 </body>
 </html>
+
