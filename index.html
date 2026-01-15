@@ -4482,62 +4482,62 @@
                             }
 
                             if (!pickupStore) {
-                                showNotification('请输入自提门店', 'error');
-                                const storeInput = container.querySelector('#pickupStoreInput');
-                                if (storeInput) storeInput.focus();
-                                return;
-                            }
-
-                            deliveryInfo = `配送方式：到店自提\n自提方式：${pickupType}\n信息提供：手动填写\n自提城市：${pickupCity}\n自提门店：${pickupStore}`;
-                        } else {
-                            const screenshotInput = container.querySelector('#storeScreenshot');
-
-                            if (!screenshotInput.files || !screenshotInput.files.length) {
-                                showNotification('请上传门店截图', 'error');
-                                return;
-                            }
-
-                            // 移除进度条，改为简单的状态提示
-                            const submitStatus = document.getElementById('submitStatus');
-                            submitStatus.textContent = '正在处理图片...';
-
-                            try {
-                                const file = screenshotInput.files[0];
-                                const reader = new FileReader();
-
-                                reader.onload = function(e) {
-                                    screenshotData = e.target.result;
-                                    hasScreenshot = true;
-
-                                    deliveryInfo = `配送方式：到店自提\n自提方式：${pickupType}\n信息提供：截图上传`;
-
-                                    submitStatus.textContent = '图片处理完成';
-
-                                    // 继续提交订单
-                                    setTimeout(() => {
-                                        submitStatus.textContent = '';
-                                        completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container, pickupType);
-                                    }, 500);
-                                };
-
-                                reader.onerror = function() {
-                                    submitStatus.textContent = '图片读取失败，请重试';
-                                    showNotification('图片读取失败，请重试', 'error');
-                                };
-
-                                reader.readAsDataURL(file);
-                            } catch (error) {
-                                submitStatus.textContent = '图片处理失败';
-                                showNotification('图片处理失败: ' + error.message, 'error');
-                            }
+                            showNotification('请输入自提门店', 'error');
+                            const storeInput = container.querySelector('#pickupStoreInput');
+                            if (storeInput) storeInput.focus();
                             return;
                         }
-                    }
 
-                    await completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container, pickupType);
-                });
-            }
+                        deliveryInfo = `配送方式：到店自提\n自提方式：${pickupType}\n信息提供：手动填写\n自提城市：${pickupCity}\n自提门店：${pickupStore}`;
+                    } else {
+                        const screenshotInput = container.querySelector('#storeScreenshot');
+
+                        if (!screenshotInput.files || !screenshotInput.files.length) {
+                            showNotification('请上传门店截图', 'error');
+                            return;
+                        }
+
+                        // 移除进度条，改为简单的状态提示
+                        const submitStatus = document.getElementById('submitStatus');
+                        submitStatus.textContent = '正在处理图片...';
+
+                        try {
+                            const file = screenshotInput.files[0];
+                            const reader = new FileReader();
+
+                            reader.onload = function(e) {
+                                screenshotData = e.target.result;
+                                hasScreenshot = true;
+
+                                deliveryInfo = `配送方式：到店自提\n自提方式：${pickupType}\n信息提供：截图上传`;
+
+                                submitStatus.textContent = '图片处理完成';
+
+                                // 继续提交订单
+                                setTimeout(() => {
+                                    submitStatus.textContent = '';
+                                    completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container, pickupType);
+                                }, 500);
+                            };
+
+                            reader.onerror = function() {
+                                submitStatus.textContent = '图片读取失败，请重试';
+                                showNotification('图片读取失败，请重试', 'error');
+                            };
+
+                            reader.readAsDataURL(file);
+                        } catch (error) {
+                            submitStatus.textContent = '图片处理失败';
+                            showNotification('图片处理失败: ' + error.message, 'error');
+                        }
+                        return;
+                    }
+                }
+
+                await completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container, pickupType);
+            });
         }
+    }
 
         // ==================== 优化后的订单提交函数（移除进度条，提高响应速度） ====================
         async function completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container, pickupType) {
@@ -6120,7 +6120,7 @@
             }
         }
 
-        // 保存套餐
+        // ==================== 保存套餐函数（已修复） ====================
         async function saveMeal() {
             const mealId = document.getElementById('currentMealId').value;
             const mealName = document.getElementById('mealName').value.trim();
@@ -6156,7 +6156,7 @@
             }
 
             const optionGroups = [];
-            document.querySelectorAll('.option-group-item').forEach((groupElement, index) => {
+            document.querySelectorAll('#optionGroupsManagement .option-group-item').forEach((groupElement, index) => {
                 const title = groupElement.querySelector('.option-group-title-input').value.trim();
                 const rules = groupElement.querySelector('.option-group-rules-input').value.trim();
                 const minSelect = parseInt(groupElement.querySelector('.option-group-min-input').value) || 1;
@@ -6190,14 +6190,20 @@
 
                 const items = [];
                 groupElement.querySelectorAll('.option-item-list-item').forEach(itemElement => {
-                    const name = itemElement.querySelector('.option-item-name-input').value.trim();
-                    const addPrice = parseFloat(itemElement.querySelector('.option-item-price-input').value) || 0;
+                    // 修复：使用正确的选择器获取选项项名称和价格
+                    const nameInput = itemElement.querySelector('.option-item-name-input');
+                    const priceInput = itemElement.querySelector('.option-item-price-input');
+                    
+                    if (nameInput) {
+                        const name = nameInput.value.trim();
+                        const addPrice = priceInput ? parseFloat(priceInput.value) || 0 : 0;
 
-                    if (name) {
-                        items.push({
-                            name,
-                            addPrice
-                        });
+                        if (name) {
+                            items.push({
+                                name,
+                                addPrice
+                            });
+                        }
                     }
                 });
 
@@ -6218,15 +6224,20 @@
             });
 
             const fixedItems = [];
-            document.querySelectorAll('.fixed-item-list-item').forEach((itemElement, index) => {
-                const name = itemElement.querySelector('.fixed-item-name-input').value.trim();
-                const quantity = parseInt(itemElement.querySelector('.fixed-item-quantity-input').value) || 1;
+            document.querySelectorAll('#fixedItemsManagement .fixed-item-list-item').forEach((itemElement, index) => {
+                const nameInput = itemElement.querySelector('.fixed-item-name-input');
+                const quantityInput = itemElement.querySelector('.fixed-item-quantity-input');
+                
+                if (nameInput && quantityInput) {
+                    const name = nameInput.value.trim();
+                    const quantity = parseInt(quantityInput.value) || 1;
 
-                if (name) {
-                    fixedItems.push({
-                        name,
-                        quantity
-                    });
+                    if (name) {
+                        fixedItems.push({
+                            name,
+                            quantity
+                        });
+                    }
                 }
             });
 
@@ -6483,7 +6494,7 @@
             });
         }
 
-        // 保存新套餐
+        // ==================== 保存新套餐函数（已修复） ====================
         async function saveNewMeal() {
             const mealName = document.getElementById('newMealName').value.trim();
             const mealPrice = parseFloat(document.getElementById('newMealPrice').value);
@@ -6552,14 +6563,20 @@
 
                 const items = [];
                 groupElement.querySelectorAll('.option-item-list-item').forEach(itemElement => {
-                    const name = itemElement.querySelector('.new-option-item-name-input').value.trim();
-                    const addPrice = parseFloat(itemElement.querySelector('.new-option-item-price-input').value) || 0;
+                    // 修复：使用正确的选择器获取选项项名称和价格
+                    const nameInput = itemElement.querySelector('.new-option-item-name-input');
+                    const priceInput = itemElement.querySelector('.new-option-item-price-input');
+                    
+                    if (nameInput) {
+                        const name = nameInput.value.trim();
+                        const addPrice = priceInput ? parseFloat(priceInput.value) || 0 : 0;
 
-                    if (name) {
-                        items.push({
-                            name,
-                            addPrice
-                        });
+                        if (name) {
+                            items.push({
+                                name,
+                                addPrice
+                            });
+                        }
                     }
                 });
 
@@ -6581,14 +6598,19 @@
 
             const fixedItems = [];
             document.querySelectorAll('#newFixedItemsManagement .fixed-item-list-item').forEach((itemElement, index) => {
-                const name = itemElement.querySelector('.new-fixed-item-name-input').value.trim();
-                const quantity = parseInt(itemElement.querySelector('.new-fixed-item-quantity-input').value) || 1;
+                const nameInput = itemElement.querySelector('.new-fixed-item-name-input');
+                const quantityInput = itemElement.querySelector('.new-fixed-item-quantity-input');
+                
+                if (nameInput && quantityInput) {
+                    const name = nameInput.value.trim();
+                    const quantity = parseInt(quantityInput.value) || 1;
 
-                if (name) {
-                    fixedItems.push({
-                        name,
-                        quantity
-                    });
+                    if (name) {
+                        fixedItems.push({
+                            name,
+                            quantity
+                        });
+                    }
                 }
             });
 
