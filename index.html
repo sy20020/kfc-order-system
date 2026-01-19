@@ -260,9 +260,15 @@
             gap: 25px;
         }
         
+        /* 修改：交换购物车和菜单的位置 */
         .menu-section {
-            flex: 3;
+            flex: 1;
             min-width: 300px;
+            background-color: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            height: fit-content;
         }
         
         .cart-section {
@@ -273,8 +279,6 @@
             padding: 25px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
             height: fit-content;
-            position: sticky;
-            top: 20px;
         }
         
         .section-title {
@@ -1994,9 +1998,32 @@
             margin-bottom: 3px;
         }
         
+        /* 新增：优化布局，使购物车和配送信息在同一侧 */
+        .order-flow-container {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        /* 新增：购物车和配送信息在同一侧 */
+        .order-sidebar {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        /* 新增：优化移动端布局 */
         @media (max-width: 768px) {
             .main-content {
                 flex-direction: column;
+            }
+            
+            .order-sidebar {
+                width: 100%;
             }
             
             .cart-section {
@@ -2212,7 +2239,7 @@
                         <li>在套餐中选择具体的汉堡、小吃和饮品（点击选项，使用+/-按钮调整数量）</li>
                         <li>确保每个选项组的选择数量符合要求（会有提示）</li>
                         <li>点击"加入购物车"按钮</li>
-                        <li>在右侧购物车确认订单并选择配送方式</li>
+                        <li>在左侧购物车确认订单并选择配送方式</li>
                         <li>提交订单完成购买</li>
                         <li>提交后可以点击上方"查看我的订单"查看订单状态</li>
                     </ol>
@@ -3621,57 +3648,31 @@
                 </a>
                 
                 <div class="main-content">
-                    <div class="menu-section">
-                        <h2 class="section-title">
-                            <i class="fas fa-hamburger"></i>
-                            ${meal.name}
-                        </h2>
-                        
-                        <div class="highlight">
-                            <i class="fas fa-info-circle"></i>
-                            ${meal.supportDelivery === false ? '此套餐仅支持到店自提（堂食/打包）' : '此套餐支持宅急送配送和到店自提'}
+                    <!-- 左侧：购物车和配送信息 -->
+                    <div class="order-sidebar">
+                        <div class="cart-section">
+                            <h2 class="section-title">
+                                <i class="fas fa-shopping-cart"></i>
+                                购物车
+                            </h2>
+                            
+                            <div class="cart-items" id="cartItems">
+                                <div class="empty-cart-message">购物车是空的，请选择套餐</div>
+                            </div>
+                            
+                            <div class="cart-total">
+                                <span>总计：</span>
+                                <span class="total-price" id="totalPrice">¥0.00</span>
+                            </div>
+                            
+                            <!-- 移除进度条，改为简单的状态提示 -->
+                            <div class="submit-status" id="submitStatus"></div>
+                            
+                            <button class="checkout-btn quick-submit" id="checkoutBtn" disabled>
+                                <i class="fas fa-credit-card"></i>
+                                快速提交订单
+                            </button>
                         </div>
-                        
-                        <div class="instructions">
-                            <p><strong>套餐详情：</strong></p>
-                            <ul>
-                                <li>${meal.description}</li>
-                                <li>请按照要求选择选项</li>
-                                <li>提交订单后可在右上角"查看我的订单"查看订单状态</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="meal-options" id="mealOptions">
-                            ${generateOptionsHTML(meal)}
-                        </div>
-                        <button class="add-to-cart" data-meal-id="${meal.id}" data-meal-name="${meal.name}" data-meal-price="${meal.price}" disabled>
-                            <i class="fas fa-cart-plus"></i>
-                            加入购物车
-                        </button>
-                    </div>
-                    
-                    <div class="cart-section">
-                        <h2 class="section-title">
-                            <i class="fas fa-shopping-cart"></i>
-                            购物车
-                        </h2>
-                        
-                        <div class="cart-items" id="cartItems">
-                            <div class="empty-cart-message">购物车是空的，请选择套餐</div>
-                        </div>
-                        
-                        <div class="cart-total">
-                            <span>总计：</span>
-                            <span class="total-price" id="totalPrice">¥0.00</span>
-                        </div>
-                        
-                        <!-- 移除进度条，改为简单的状态提示 -->
-                        <div class="submit-status" id="submitStatus"></div>
-                        
-                        <button class="checkout-btn quick-submit" id="checkoutBtn" disabled>
-                            <i class="fas fa-credit-card"></i>
-                            快速提交订单
-                        </button>
                         
                         <div class="delivery-form">
                             <h3 class="section-title">
@@ -3787,6 +3788,36 @@
                                 <textarea class="form-input" id="orderNote" rows="3" placeholder="如有特殊要求请在此备注（例如：不吃辣，多要番茄酱等）"></textarea>
                             </div>
                         </div>
+                    </div>
+                    
+                    <!-- 右侧：套餐选项 -->
+                    <div class="menu-section">
+                        <h2 class="section-title">
+                            <i class="fas fa-hamburger"></i>
+                            ${meal.name}
+                        </h2>
+                        
+                        <div class="highlight">
+                            <i class="fas fa-info-circle"></i>
+                            ${meal.supportDelivery === false ? '此套餐仅支持到店自提（堂食/打包）' : '此套餐支持宅急送配送和到店自提'}
+                        </div>
+                        
+                        <div class="instructions">
+                            <p><strong>套餐详情：</strong></p>
+                            <ul>
+                                <li>${meal.description}</li>
+                                <li>请按照要求选择选项</li>
+                                <li>提交订单后可在右上角"查看我的订单"查看订单状态</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="meal-options" id="mealOptions">
+                            ${generateOptionsHTML(meal)}
+                        </div>
+                        <button class="add-to-cart" data-meal-id="${meal.id}" data-meal-name="${meal.name}" data-meal-price="${meal.price}" disabled>
+                            <i class="fas fa-cart-plus"></i>
+                            加入购物车
+                        </button>
                     </div>
                 </div>
             `;
