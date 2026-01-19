@@ -265,13 +265,12 @@
             min-width: 300px;
         }
         
-        /* 修改：将配送信息放在上面，购物车放在下面 */
+        /* 修改：将配送信息和购物车放在一起 */
         .right-section {
             flex: 1;
             min-width: 300px;
             display: flex;
             flex-direction: column;
-            gap: 25px;
         }
         
         .delivery-form {
@@ -279,18 +278,14 @@
             border-radius: 15px;
             padding: 25px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            order: 1;
         }
         
         .cart-section {
-            background-color: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            height: fit-content;
-            order: 2;
-            position: sticky;
-            top: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 25px;
+            border: 1px solid #eee;
         }
         
         .section-title {
@@ -2184,12 +2179,6 @@
             .delivery-form {
                 order: 1;
             }
-            
-            .cart-section {
-                order: 2;
-                position: sticky;
-                top: 20px;
-            }
         }
     </style>
 </head>
@@ -2272,7 +2261,7 @@
                         <li>在套餐中选择具体的汉堡、小吃和饮品（点击选项，使用+/-按钮调整数量）</li>
                         <li>确保每个选项组的选择数量符合要求（会有提示）</li>
                         <li>点击"加入购物车"按钮</li>
-                        <li>在右侧购物车确认订单并选择配送方式</li>
+                        <li>在右侧配送信息底部确认订单并选择配送方式</li>
                         <li>提交订单完成购买</li>
                         <li>提交后可以点击上方"查看我的订单"查看订单状态</li>
                     </ol>
@@ -3674,7 +3663,7 @@
 
             const mealDetailPage = document.getElementById('mealDetailPage');
 
-            // 修改：交换购物车和配送信息的位置，配送信息在上，购物车在下
+            // 修改：将购物车部分移动到配送信息表单内部
             mealDetailPage.innerHTML = `
                 <a href="#" class="back-btn" onclick="showPage('homePage')">
                     <i class="fas fa-arrow-left"></i>
@@ -3712,7 +3701,7 @@
                     </div>
                     
                     <div class="right-section">
-                        <!-- 配送信息在上面 -->
+                        <!-- 配送信息和购物车在一起 -->
                         <div class="delivery-form">
                             <h3 class="section-title">
                                 <i class="fas fa-truck"></i>
@@ -3826,31 +3815,31 @@
                                 <label class="form-label">订单备注</label>
                                 <textarea class="form-input" id="orderNote" rows="3" placeholder="如有特殊要求请在此备注（例如：不吃辣，多要番茄酱等）"></textarea>
                             </div>
-                        </div>
-                        
-                        <!-- 购物车在下面 -->
-                        <div class="cart-section">
-                            <h2 class="section-title">
-                                <i class="fas fa-shopping-cart"></i>
-                                购物车
-                            </h2>
                             
-                            <div class="cart-items" id="cartItems">
-                                <div class="empty-cart-message">购物车是空的，请选择套餐</div>
+                            <!-- 购物车在配送信息表单底部 -->
+                            <div class="cart-section">
+                                <h2 class="section-title">
+                                    <i class="fas fa-shopping-cart"></i>
+                                    购物车
+                                </h2>
+                                
+                                <div class="cart-items" id="cartItems">
+                                    <div class="empty-cart-message">购物车是空的，请选择套餐</div>
+                                </div>
+                                
+                                <div class="cart-total">
+                                    <span>总计：</span>
+                                    <span class="total-price" id="totalPrice">¥0.00</span>
+                                </div>
+                                
+                                <!-- 移除进度条，改为简单的状态提示 -->
+                                <div class="submit-status" id="submitStatus"></div>
+                                
+                                <button class="checkout-btn quick-submit" id="checkoutBtn" disabled>
+                                    <i class="fas fa-credit-card"></i>
+                                    快速提交订单
+                                </button>
                             </div>
-                            
-                            <div class="cart-total">
-                                <span>总计：</span>
-                                <span class="total-price" id="totalPrice">¥0.00</span>
-                            </div>
-                            
-                            <!-- 移除进度条，改为简单的状态提示 -->
-                            <div class="submit-status" id="submitStatus"></div>
-                            
-                            <button class="checkout-btn quick-submit" id="checkoutBtn" disabled>
-                                <i class="fas fa-credit-card"></i>
-                                快速提交订单
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -6902,4 +6891,3 @@
     </script>
 </body>
 </html>
-
