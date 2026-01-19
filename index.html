@@ -31,20 +31,20 @@
         header {
             background: linear-gradient(135deg, #e31837 0%, #c8102e 100%);
             color: white;
-            padding: 25px 0;
+            padding: 20px 0;
             text-align: center;
             border-radius: 0 0 15px 15px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         
         .logo {
-            font-size: 2.8rem;
-            margin-bottom: 10px;
+            font-size: 2.2rem;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
+            gap: 10px;
         }
         
         .logo i {
@@ -54,91 +54,93 @@
         .header-info {
             display: flex;
             justify-content: center;
-            gap: 30px;
+            gap: 20px;
             flex-wrap: wrap;
-            margin-top: 15px;
+            margin-top: 10px;
+            font-size: 0.9rem;
         }
         
         .info-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 1.1rem;
+            gap: 6px;
         }
         
         .info-item i {
             color: #ffcc00;
+            font-size: 0.9rem;
         }
         
         .header-buttons {
             display: flex;
             justify-content: center;
-            gap: 20px;
-            margin-top: 15px;
+            gap: 15px;
+            margin-top: 12px;
         }
         
         .header-btn {
             background-color: rgba(255, 255, 255, 0.2);
             color: white;
-            border: 2px solid white;
-            padding: 8px 20px;
-            border-radius: 30px;
-            font-size: 1rem;
+            border: 1px solid white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             transition: all 0.3s;
         }
         
         .header-btn:hover {
             background-color: rgba(255, 255, 255, 0.3);
-            transform: scale(1.05);
+            transform: scale(1.03);
         }
         
         .search-container {
             background-color: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 12px;
             align-items: center;
         }
         
         .search-box {
             flex: 1;
-            min-width: 300px;
+            min-width: 280px;
             position: relative;
         }
         
         .search-input {
             width: 100%;
-            padding: 12px 45px 12px 15px;
-            border: 2px solid #e31837;
-            border-radius: 30px;
-            font-size: 1rem;
+            padding: 10px 40px 10px 12px;
+            border: 1px solid #e31837;
+            border-radius: 20px;
+            font-size: 0.9rem;
             transition: all 0.3s;
         }
         
         .search-input:focus {
             outline: none;
-            box-shadow: 0 0 0 3px rgba(227, 24, 55, 0.2);
+            box-shadow: 0 0 0 2px rgba(227, 24, 55, 0.2);
         }
         
         .search-btn {
             position: absolute;
-            right: 5px;
-            top: 5px;
+            right: 4px;
+            top: 4px;
             background-color: #e31837;
             color: white;
             border: none;
-            padding: 8px 15px;
-            border-radius: 25px;
+            padding: 6px 12px;
+            border-radius: 20px;
             cursor: pointer;
             transition: all 0.3s;
+            font-size: 0.8rem;
         }
         
         .search-btn:hover {
@@ -146,105 +148,105 @@
         }
         
         .search-hint {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #666;
             background-color: #f9f9f9;
-            padding: 8px 12px;
-            border-radius: 8px;
-            border-left: 4px solid #ffcc00;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border-left: 3px solid #ffcc00;
         }
         
         .nav-menu {
             background-color: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
         }
         
         .nav-title {
-            font-size: 1.6rem;
+            font-size: 1.3rem;
             color: #e31837;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
         
         .meal-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
         }
         
         .meal-card {
             background-color: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
-            border-left: 5px solid #ffcc00;
+            border-left: 4px solid #ffcc00;
             display: block;
             text-decoration: none;
             color: inherit;
         }
         
         .meal-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
         }
         
         .meal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         
         .meal-name {
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             font-weight: bold;
             color: #e31837;
         }
         
         .meal-price {
-            font-size: 1.6rem;
+            font-size: 1.3rem;
             font-weight: bold;
             color: #e31837;
         }
         
         .meal-description {
             color: #666;
-            margin-bottom: 15px;
-            font-size: 0.95rem;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
         }
         
         .meal-tag {
             display: inline-block;
             background-color: #ffcc00;
             color: #333;
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
             font-weight: bold;
-            margin-right: 8px;
-            margin-bottom: 5px;
+            margin-right: 5px;
+            margin-bottom: 4px;
         }
         
         .back-btn {
             background-color: #e31837;
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 30px;
-            font-size: 1.1rem;
+            padding: 10px 18px;
+            border-radius: 25px;
+            font-size: 1rem;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             transition: all 0.3s;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             text-decoration: none;
             width: fit-content;
         }
@@ -257,46 +259,136 @@
         .main-content {
             display: flex;
             flex-wrap: wrap;
-            gap: 25px;
+            gap: 20px;
         }
         
         .menu-section {
             flex: 3;
-            min-width: 300px;
+            min-width: 280px;
         }
         
-        /* 修改：将配送信息和购物车放在一起 */
         .right-section {
             flex: 1;
-            min-width: 300px;
+            min-width: 280px;
             display: flex;
             flex-direction: column;
         }
         
         .delivery-form {
             background-color: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
         }
         
+        /* 压缩购物车样式开始 */
         .cart-section {
             background-color: #f9f9f9;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 25px;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
             border: 1px solid #eee;
         }
         
-        .section-title {
-            font-size: 1.8rem;
+        .cart-section .section-title {
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+        }
+        
+        .cart-items {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+        }
+        
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #ddd;
+            font-size: 0.85rem;
+        }
+        
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+        
+        .cart-item-name {
+            flex: 2;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+        
+        .cart-item-price {
+            flex: 1;
+            text-align: right;
+            font-weight: bold;
             color: #e31837;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 3px solid #ffcc00;
+            font-size: 0.9rem;
+        }
+        
+        .cart-item-remove {
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-left: 8px;
+            padding: 2px;
+        }
+        
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 2px solid #eee;
+        }
+        
+        .total-price {
+            color: #e31837;
+        }
+        
+        .checkout-btn {
+            background-color: #ffcc00;
+            color: #333;
+            border: none;
+            padding: 10px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 12px;
+            transition: all 0.3s;
+        }
+        
+        .checkout-btn:hover {
+            background-color: #e6b800;
+            transform: scale(1.02);
+        }
+        
+        .checkout-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        /* 压缩购物车样式结束 */
+        
+        .section-title {
+            font-size: 1.5rem;
+            color: #e31837;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #ffcc00;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
         
         .section-title i {
@@ -304,29 +396,29 @@
         }
         
         .meal-options {
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         
         .option-group {
-            margin-bottom: 15px;
-            padding: 15px;
+            margin-bottom: 12px;
+            padding: 12px;
             background-color: #f9f9f9;
-            border-radius: 8px;
-            border-left: 4px solid #e31837;
+            border-radius: 6px;
+            border-left: 3px solid #e31837;
         }
         
         .option-title {
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             color: #444;
-            font-size: 1.1rem;
+            font-size: 1rem;
         }
         
         .option-rules {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #e31837;
-            margin-bottom: 10px;
-            padding: 5px 10px;
+            margin-bottom: 8px;
+            padding: 4px 8px;
             background-color: #ffe6e6;
             border-radius: 4px;
             display: inline-block;
@@ -335,21 +427,21 @@
         .option-items {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 8px;
         }
         
         .option-item {
             background-color: #f5f5f5;
-            padding: 10px 15px;
-            border-radius: 20px;
-            font-size: 0.95rem;
+            padding: 8px 12px;
+            border-radius: 18px;
+            font-size: 0.85rem;
             transition: all 0.2s;
             cursor: pointer;
             border: 1px solid #ddd;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            min-width: 180px;
+            min-width: 160px;
             position: relative;
         }
         
@@ -366,13 +458,13 @@
         .selection-counter {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-left: 10px;
+            gap: 6px;
+            margin-left: 8px;
         }
         
         .counter-btn {
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             border: none;
             background-color: white;
@@ -382,6 +474,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 0.8rem;
         }
         
         .counter-btn:disabled {
@@ -391,21 +484,22 @@
         
         .counter-value {
             font-weight: bold;
-            min-width: 20px;
+            min-width: 18px;
             text-align: center;
+            font-size: 0.9rem;
         }
         
         .add-to-cart {
             background-color: #e31837;
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 30px;
-            font-size: 1.1rem;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 1rem;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             transition: all 0.3s;
             width: 100%;
             justify-content: center;
@@ -413,7 +507,7 @@
         
         .add-to-cart:hover {
             background-color: #c8102e;
-            transform: scale(1.03);
+            transform: scale(1.02);
         }
         
         .add-to-cart:disabled {
@@ -422,92 +516,15 @@
             transform: none;
         }
         
-        .cart-items {
-            max-height: 300px;
-            overflow-y: auto;
-            margin-bottom: 20px;
-        }
-        
-        .cart-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 0;
-            border-bottom: 1px dashed #ddd;
-        }
-        
-        .cart-item:last-child {
-            border-bottom: none;
-        }
-        
-        .cart-item-name {
-            flex: 2;
-            font-weight: 500;
-        }
-        
-        .cart-item-price {
-            flex: 1;
-            text-align: right;
-            font-weight: bold;
-            color: #e31837;
-        }
-        
-        .cart-item-remove {
-            background: none;
-            border: none;
-            color: #999;
-            cursor: pointer;
-            font-size: 1.2rem;
-            margin-left: 10px;
-        }
-        
-        .cart-total {
-            display: flex;
-            justify-content: space-between;
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 2px solid #eee;
-        }
-        
-        .total-price {
-            color: #e31837;
-        }
-        
-        .checkout-btn {
-            background-color: #ffcc00;
-            color: #333;
-            border: none;
-            padding: 15px;
-            border-radius: 30px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 20px;
-            transition: all 0.3s;
-        }
-        
-        .checkout-btn:hover {
-            background-color: #e6b800;
-            transform: scale(1.03);
-        }
-        
-        .checkout-btn:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         .form-label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-weight: 500;
+            font-size: 0.9rem;
         }
         
         .required {
@@ -516,10 +533,10 @@
         
         .form-input, .form-select {
             width: 100%;
-            padding: 12px 15px;
+            padding: 10px 12px;
             border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
             transition: all 0.3s;
         }
         
@@ -531,20 +548,21 @@
         
         .pickup-type {
             display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
+            gap: 12px;
+            margin-bottom: 15px;
         }
         
         .pickup-type label {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             cursor: pointer;
-            padding: 10px 15px;
-            border-radius: 8px;
-            border: 2px solid #ddd;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
             transition: all 0.3s;
             flex: 1;
+            font-size: 0.9rem;
         }
         
         .pickup-type label:hover {
@@ -558,19 +576,20 @@
         
         .order-type {
             display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
+            gap: 15px;
+            margin-bottom: 15px;
         }
         
         .order-type label {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             cursor: pointer;
-            padding: 10px 15px;
-            border-radius: 8px;
-            border: 2px solid #ddd;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
             transition: all 0.3s;
+            font-size: 0.9rem;
         }
         
         .order-type label:hover {
@@ -592,30 +611,31 @@
         
         .store-selection {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             flex-wrap: wrap;
         }
         
         .store-selection .form-group {
             flex: 1;
-            min-width: 200px;
+            min-width: 180px;
         }
         
         .info-method-selector {
             display: flex;
-            gap: 15px;
-            margin-top: 10px;
+            gap: 12px;
+            margin-top: 8px;
         }
         
         .method-option {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
+            gap: 6px;
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
             cursor: pointer;
             transition: all 0.3s;
+            font-size: 0.9rem;
         }
         
         .method-option:hover {
@@ -634,8 +654,8 @@
         
         .screenshot-upload-area {
             border: 2px dashed #ddd;
-            border-radius: 10px;
-            padding: 30px;
+            border-radius: 8px;
+            padding: 20px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
@@ -648,41 +668,41 @@
         }
         
         .screenshot-upload-area i {
-            font-size: 48px;
+            font-size: 36px;
             color: #e31837;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         
         .upload-hint {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #666;
-            margin-top: 5px;
+            margin-top: 4px;
         }
         
         .screenshot-preview {
             position: relative;
-            margin-top: 15px;
+            margin-top: 12px;
             border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 10px;
+            border-radius: 6px;
+            padding: 8px;
             background-color: #f9f9f9;
-            max-width: 300px;
+            max-width: 250px;
         }
         
         .screenshot-preview img {
             width: 100%;
-            border-radius: 5px;
+            border-radius: 4px;
             display: block;
-            max-height: 200px;
+            max-height: 150px;
             object-fit: contain;
         }
         
         .remove-screenshot {
             position: absolute;
-            top: -10px;
-            right: -10px;
-            width: 30px;
-            height: 30px;
+            top: -8px;
+            right: -8px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             background-color: #e31837;
             color: white;
@@ -691,54 +711,59 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 0.8rem;
         }
         
         .form-hint {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #666;
-            margin-top: 8px;
+            margin-top: 6px;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
         }
         
         .form-hint i {
             color: #ffcc00;
+            font-size: 0.8rem;
         }
         
         .instructions {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: #666;
-            margin-top: 30px;
-            padding: 15px;
+            margin-top: 20px;
+            padding: 12px;
             background-color: #f9f9f9;
-            border-radius: 8px;
-            border-left: 4px solid #ffcc00;
+            border-radius: 6px;
+            border-left: 3px solid #ffcc00;
         }
         
         .instructions li {
-            margin-bottom: 5px;
+            margin-bottom: 4px;
+            font-size: 0.85rem;
         }
         
         .footer {
             text-align: center;
-            margin-top: 40px;
-            padding: 20px;
+            margin-top: 30px;
+            padding: 15px;
             color: #666;
             border-top: 1px solid #eee;
+            font-size: 0.85rem;
         }
         
         .highlight {
             color: #e31837;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             background-color: #fff5f5;
-            padding: 10px;
-            border-radius: 8px;
-            border-left: 4px solid #ffcc00;
+            padding: 8px;
+            border-radius: 6px;
+            border-left: 3px solid #ffcc00;
+            font-size: 0.9rem;
         }
         
         .highlight i {
@@ -746,10 +771,10 @@
         }
         
         .selection-status {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #666;
-            margin-top: 10px;
-            padding: 5px 10px;
+            margin-top: 8px;
+            padding: 4px 8px;
             background-color: #f0f0f0;
             border-radius: 4px;
             display: inline-block;
@@ -766,18 +791,19 @@
         }
         
         .fixed-combo-items {
-            padding: 15px;
+            padding: 12px;
             background-color: #f9f9f9;
-            border-radius: 8px;
-            border-left: 4px solid #4CAF50;
+            border-radius: 6px;
+            border-left: 3px solid #4CAF50;
         }
         
         .fixed-combo-item {
-            padding: 8px 0;
+            padding: 6px 0;
             border-bottom: 1px dashed #ddd;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            font-size: 0.85rem;
         }
         
         .fixed-combo-item:last-child {
@@ -795,37 +821,38 @@
         
         .my-orders-section {
             background-color: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
         }
         
         .orders-search {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         .search-box {
             display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 8px;
+            margin-bottom: 12px;
         }
         
         .search-input {
             flex: 1;
-            padding: 12px 15px;
+            padding: 10px 12px;
             border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
         }
         
         .search-btn {
             background-color: #e31837;
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
+            padding: 10px 18px;
+            border-radius: 6px;
             cursor: pointer;
             transition: all 0.3s;
+            font-size: 0.9rem;
         }
         
         .search-btn:hover {
@@ -834,18 +861,19 @@
         
         .order-filter-tabs {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 8px;
+            margin-bottom: 15px;
             flex-wrap: wrap;
         }
         
         .order-filter-tab {
-            padding: 8px 16px;
+            padding: 6px 12px;
             background-color: #f0f0f0;
             border: none;
-            border-radius: 20px;
+            border-radius: 18px;
             cursor: pointer;
             transition: all 0.3s;
+            font-size: 0.85rem;
         }
         
         .order-filter-tab:hover {
@@ -859,38 +887,38 @@
         
         .user-order-item {
             background-color: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-            border-left: 5px solid #ffcc00;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid #ffcc00;
         }
         
         .user-order-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 8px;
         }
         
         .user-order-id {
             font-weight: bold;
             color: #333;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
         }
         
         .user-order-time {
             color: #666;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
         }
         
         .user-order-status {
             display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.9rem;
+            padding: 3px 10px;
+            border-radius: 18px;
+            font-size: 0.8rem;
             font-weight: bold;
         }
         
@@ -910,17 +938,18 @@
         }
         
         .user-order-items {
-            margin-bottom: 15px;
-            padding-bottom: 15px;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
             border-bottom: 1px solid #eee;
         }
         
         .user-order-item-detail {
-            padding: 8px 0;
+            padding: 6px 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px dashed #eee;
+            font-size: 0.85rem;
         }
         
         .user-order-item-detail:last-child {
@@ -940,43 +969,44 @@
         
         .user-order-info {
             background-color: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 12px;
+            font-size: 0.85rem;
         }
         
         .user-order-info p {
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
         
         .user-order-total {
             font-weight: bold;
             color: #e31837;
-            font-size: 1.2rem;
-            margin-top: 15px;
-            padding-top: 15px;
+            font-size: 1.1rem;
+            margin-top: 12px;
+            padding-top: 10px;
             border-top: 2px solid #eee;
             text-align: right;
         }
         
         .no-user-orders {
             text-align: center;
-            padding: 40px 20px;
+            padding: 30px 15px;
             color: #666;
         }
         
         .no-user-orders i {
-            font-size: 4rem;
+            font-size: 3rem;
             color: #ddd;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         
         .user-id-info {
             background-color: #f0f0f0;
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -990,9 +1020,10 @@
         .user-id-value {
             font-family: monospace;
             background-color: #fff;
-            padding: 5px 10px;
+            padding: 4px 8px;
             border-radius: 4px;
             border: 1px solid #ddd;
+            font-size: 0.8rem;
         }
         
         .admin-panel {
@@ -1034,7 +1065,7 @@
         .panel-header {
             background: linear-gradient(135deg, #e31837 0%, #c8102e 100%);
             color: white;
-            padding: 20px;
+            padding: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -1044,7 +1075,7 @@
         }
         
         .panel-header h2 {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             margin: 0;
         }
         
@@ -1052,10 +1083,10 @@
             background: none;
             border: none;
             color: white;
-            font-size: 2rem;
+            font-size: 1.5rem;
             cursor: pointer;
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1068,23 +1099,23 @@
         }
         
         .panel-content {
-            padding: 20px;
+            padding: 15px;
         }
         
         .admin-tabs {
             display: flex;
             border-bottom: 2px solid #eee;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             flex-wrap: wrap;
         }
         
         .admin-tab {
-            padding: 12px 24px;
+            padding: 10px 18px;
             background: none;
             border: none;
-            font-size: 1.1rem;
+            font-size: 1rem;
             cursor: pointer;
-            border-bottom: 3px solid transparent;
+            border-bottom: 2px solid transparent;
             transition: all 0.3s;
             color: #666;
             font-weight: 500;
@@ -1111,18 +1142,19 @@
         
         .order-filters {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 8px;
+            margin-bottom: 15px;
             flex-wrap: wrap;
         }
         
         .filter-btn {
-            padding: 8px 16px;
+            padding: 6px 12px;
             background-color: #f0f0f0;
             border: none;
-            border-radius: 20px;
+            border-radius: 18px;
             cursor: pointer;
             transition: all 0.3s;
+            font-size: 0.85rem;
         }
         
         .filter-btn:hover {
@@ -1136,45 +1168,45 @@
         
         .orders-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            min-height: 300px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+            min-height: 250px;
         }
         
         .admin-order-item {
             background-color: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-            border-left: 5px solid #ffcc00;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid #ffcc00;
             transition: all 0.3s;
         }
         
         .admin-order-item:hover {
             transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
         }
         
         .order-id {
             font-weight: bold;
             color: #333;
-            font-size: 1.2rem;
-            margin-bottom: 5px;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
         }
         
         .order-time {
             color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 15px;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
         }
         
         .order-status {
             display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.9rem;
+            padding: 3px 10px;
+            border-radius: 18px;
+            font-size: 0.8rem;
             font-weight: bold;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         
         .status-new {
@@ -1193,45 +1225,47 @@
         }
         
         .order-details {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         
         .order-items {
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         
         .order-item-detail {
-            padding: 5px 0;
+            padding: 4px 0;
             border-bottom: 1px dashed #eee;
+            font-size: 0.85rem;
         }
         
         .order-total {
             font-weight: bold;
             color: #e31837;
-            font-size: 1.2rem;
-            margin-top: 10px;
-            padding-top: 10px;
+            font-size: 1.1rem;
+            margin-top: 8px;
+            padding-top: 8px;
             border-top: 2px solid #eee;
         }
         
         .customer-info {
             background-color: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 12px;
+            font-size: 0.85rem;
         }
         
         .customer-info p {
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
         
         .screenshot-container {
-            margin-top: 15px;
+            margin-top: 12px;
         }
         
         .screenshot-container img {
             width: 100%;
-            border-radius: 8px;
+            border-radius: 6px;
             border: 1px solid #ddd;
             cursor: pointer;
             transition: transform 0.3s;
@@ -1243,52 +1277,52 @@
         
         .no-orders {
             text-align: center;
-            padding: 40px 20px;
+            padding: 30px 15px;
             color: #666;
             grid-column: 1 / -1;
             width: 100%;
         }
         
         .no-orders i {
-            font-size: 4rem;
+            font-size: 3rem;
             color: #ddd;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         
         .admin-btn {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            bottom: 15px;
+            right: 15px;
             background-color: #333;
             color: white;
             border: none;
-            padding: 15px 25px;
-            border-radius: 30px;
-            font-size: 1rem;
+            padding: 12px 18px;
+            border-radius: 25px;
+            font-size: 0.9rem;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            gap: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
             transition: all 0.3s;
             z-index: 1000;
         }
         
         .admin-btn:hover {
             background-color: #555;
-            transform: scale(1.05);
+            transform: scale(1.03);
         }
         
         .new-order-badge {
             position: absolute;
-            top: -8px;
-            right: -8px;
+            top: -6px;
+            right: -6px;
             background-color: #e31837;
             color: white;
             border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            font-size: 0.8rem;
+            width: 20px;
+            height: 20px;
+            font-size: 0.7rem;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1326,12 +1360,12 @@
         
         .close-modal {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 15px;
+            right: 15px;
             background: none;
             border: none;
             color: white;
-            font-size: 3rem;
+            font-size: 2.5rem;
             cursor: pointer;
         }
         
@@ -1354,31 +1388,31 @@
         
         .password-box {
             background-color: white;
-            border-radius: 15px;
-            padding: 40px;
+            border-radius: 12px;
+            padding: 30px;
             width: 90%;
-            max-width: 400px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 350px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
             text-align: center;
         }
         
         .password-box h3 {
             color: #e31837;
-            margin-bottom: 20px;
-            font-size: 1.8rem;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
         }
         
         .password-input {
             width: 100%;
-            padding: 15px;
-            font-size: 1.2rem;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            margin-bottom: 20px;
+            padding: 12px;
+            font-size: 1.1rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
             text-align: center;
             letter-spacing: 3px;
         }
@@ -1386,16 +1420,16 @@
         .password-input:focus {
             outline: none;
             border-color: #e31837;
-            box-shadow: 0 0 0 3px rgba(227, 24, 55, 0.2);
+            box-shadow: 0 0 0 2px rgba(227, 24, 55, 0.2);
         }
         
         .password-btn {
             background-color: #e31837;
             color: white;
             border: none;
-            padding: 15px 30px;
-            border-radius: 30px;
-            font-size: 1.2rem;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 1.1rem;
             font-weight: bold;
             cursor: pointer;
             width: 100%;
@@ -1404,14 +1438,15 @@
         
         .password-btn:hover {
             background-color: #c8102e;
-            transform: scale(1.03);
+            transform: scale(1.02);
         }
         
         .password-error {
             color: #e31837;
-            margin-top: 15px;
+            margin-top: 12px;
             font-weight: bold;
             display: none;
+            font-size: 0.9rem;
         }
         
         .meal-page-container {
@@ -1423,40 +1458,42 @@
         }
         
         .meal-management {
-            margin-top: 20px;
+            margin-top: 15px;
         }
         
         .meal-list {
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         
         .meal-list-item {
             background-color: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-left: 4px solid #e31837;
+            border-left: 3px solid #e31837;
         }
         
         .meal-list-item-info {
             flex: 1;
+            font-size: 0.85rem;
         }
         
         .meal-list-item-actions {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
         
         .action-btn {
-            padding: 8px 16px;
+            padding: 6px 12px;
             border: none;
-            border-radius: 5px;
+            border-radius: 4px;
             cursor: pointer;
             font-weight: 500;
             transition: all 0.3s;
+            font-size: 0.85rem;
         }
         
         .edit-btn {
@@ -1488,59 +1525,60 @@
         
         .meal-form {
             background-color: #f9f9f9;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
         }
         
         .form-row {
             display: flex;
-            gap: 20px;
-            margin-bottom: 15px;
+            gap: 15px;
+            margin-bottom: 12px;
             flex-wrap: wrap;
         }
         
         .form-row .form-group {
             flex: 1;
-            min-width: 200px;
+            min-width: 180px;
         }
         
         .option-groups-management {
-            margin-top: 30px;
+            margin-top: 20px;
         }
         
         .option-group-item {
             background-color: #f0f0f0;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border-left: 4px solid #4CAF50;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            border-left: 3px solid #4CAF50;
         }
         
         .option-group-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         
         .option-group-title {
             font-weight: bold;
             color: #333;
-            font-size: 1.1rem;
+            font-size: 1rem;
         }
         
         .option-items-list {
-            margin-top: 10px;
-            padding-left: 20px;
+            margin-top: 8px;
+            padding-left: 15px;
         }
         
         .option-item-list-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 0;
+            padding: 6px 0;
             border-bottom: 1px dashed #ddd;
+            font-size: 0.85rem;
         }
         
         .option-item-list-item:last-child {
@@ -1549,7 +1587,7 @@
         
         .no-meals-message {
             text-align: center;
-            padding: 30px;
+            padding: 25px 15px;
             color: #666;
             background-color: #f9f9f9;
             border-radius: 8px;
@@ -1557,29 +1595,30 @@
         }
         
         .no-meals-message i {
-            font-size: 3rem;
+            font-size: 2.5rem;
             color: #ddd;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         
         .fixed-items-management {
-            margin-top: 20px;
-            padding: 15px;
+            margin-top: 15px;
+            padding: 12px;
             background-color: #f0f0f0;
-            border-radius: 8px;
-            border-left: 4px solid #4CAF50;
+            border-radius: 6px;
+            border-left: 3px solid #4CAF50;
         }
         
         .fixed-item-list {
-            margin-top: 10px;
+            margin-top: 8px;
         }
         
         .fixed-item-list-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 0;
+            padding: 6px 0;
             border-bottom: 1px dashed #ddd;
+            font-size: 0.85rem;
         }
         
         .fixed-item-list-item:last-child {
@@ -1589,8 +1628,8 @@
         .status-toggle {
             position: relative;
             display: inline-block;
-            width: 60px;
-            height: 30px;
+            width: 50px;
+            height: 25px;
         }
         
         .status-toggle input {
@@ -1608,14 +1647,14 @@
             bottom: 0;
             background-color: #ccc;
             transition: .4s;
-            border-radius: 34px;
+            border-radius: 25px;
         }
         
         .status-slider:before {
             position: absolute;
             content: "";
-            height: 22px;
-            width: 22px;
+            height: 18px;
+            width: 18px;
             left: 4px;
             bottom: 4px;
             background-color: white;
@@ -1628,65 +1667,68 @@
         }
         
         input:checked + .status-slider:before {
-            transform: translateX(30px);
+            transform: translateX(24px);
         }
         
         .status-label {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-right: 15px;
+            gap: 6px;
+            margin-right: 12px;
         }
         
         .status-active {
             color: #4CAF50;
             font-weight: bold;
+            font-size: 0.85rem;
         }
         
         .status-inactive {
             color: #f44336;
             font-weight: bold;
+            font-size: 0.85rem;
         }
         
         .meal-card.inactive {
             opacity: 0.6;
-            border-left: 5px solid #ccc;
+            border-left: 4px solid #ccc;
             position: relative;
         }
         
         .meal-card.inactive:after {
             content: "已下架";
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 8px;
+            right: 8px;
             background-color: #f44336;
             color: white;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 0.8rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7rem;
             font-weight: bold;
         }
         
         .meal-card.inactive:hover {
             transform: none;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             cursor: not-allowed;
         }
         
         .meal-filters {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 8px;
+            margin-bottom: 15px;
             flex-wrap: wrap;
         }
         
         .meal-filter-btn {
-            padding: 8px 16px;
+            padding: 6px 12px;
             background-color: #f0f0f0;
             border: none;
-            border-radius: 20px;
+            border-radius: 18px;
             cursor: pointer;
             transition: all 0.3s;
+            font-size: 0.85rem;
         }
         
         .meal-filter-btn:hover {
@@ -1700,27 +1742,28 @@
         
         .sort-order-container {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         
         .sort-order-input {
-            width: 80px;
-            padding: 8px;
+            width: 70px;
+            padding: 6px;
             border: 1px solid #ddd;
             border-radius: 4px;
             text-align: center;
+            font-size: 0.85rem;
         }
         
         .sort-order-buttons {
             display: flex;
-            gap: 5px;
+            gap: 4px;
         }
         
         .sort-order-btn {
-            width: 30px;
-            height: 30px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
             border: 1px solid #ddd;
             background-color: white;
@@ -1729,6 +1772,7 @@
             align-items: center;
             justify-content: center;
             transition: all 0.3s;
+            font-size: 0.8rem;
         }
         
         .sort-order-btn:hover {
@@ -1749,12 +1793,12 @@
         }
         
         .order-display {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #666;
             background-color: #f0f0f0;
-            padding: 2px 8px;
+            padding: 2px 6px;
             border-radius: 10px;
-            margin-left: 10px;
+            margin-left: 8px;
         }
         
         .loading-overlay {
@@ -1775,18 +1819,18 @@
         }
         
         .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #e31837;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #e31837;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
         
         .loading-text {
             color: white;
-            margin-top: 20px;
-            font-size: 1.2rem;
+            margin-top: 15px;
+            font-size: 1rem;
         }
         
         @keyframes spin {
@@ -1797,18 +1841,18 @@
         /* 实时更新指示器 */
         .realtime-indicator {
             position: fixed;
-            top: 80px;
-            right: 20px;
+            top: 70px;
+            right: 15px;
             background-color: #4CAF50;
             color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
+            padding: 6px 12px;
+            border-radius: 18px;
+            font-size: 0.8rem;
             z-index: 999;
             display: flex;
             align-items: center;
-            gap: 8px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
             animation: fadeInOut 2s ease-in-out;
         }
         
@@ -1821,17 +1865,17 @@
         
         .submit-status {
             text-align: center;
-            margin-top: 10px;
-            font-size: 0.9rem;
+            margin-top: 8px;
+            font-size: 0.8rem;
             color: #666;
         }
         
         .compress-progress {
-            margin-top: 10px;
-            padding: 8px;
+            margin-top: 8px;
+            padding: 6px;
             background-color: #f0f0f0;
             border-radius: 4px;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #666;
             display: none;
         }
@@ -1848,21 +1892,21 @@
         .screenshot-preview-container {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
         
         .image-info {
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             color: #666;
             background-color: #f5f5f5;
-            padding: 5px 10px;
+            padding: 4px 8px;
             border-radius: 4px;
-            border-left: 3px solid #4CAF50;
+            border-left: 2px solid #4CAF50;
         }
         
         .edit-form-container {
             display: none;
-            margin-top: 20px;
+            margin-top: 15px;
         }
         
         .edit-form-container.active {
@@ -1917,47 +1961,48 @@
         
         .admin-search-container {
             background-color: white;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 8px;
             align-items: center;
         }
         
         .admin-search-box {
             flex: 1;
-            min-width: 250px;
+            min-width: 220px;
             position: relative;
         }
         
         .admin-search-input {
             width: 100%;
-            padding: 10px 40px 10px 15px;
-            border: 2px solid #e31837;
-            border-radius: 25px;
-            font-size: 0.95rem;
+            padding: 8px 35px 8px 12px;
+            border: 1px solid #e31837;
+            border-radius: 20px;
+            font-size: 0.85rem;
             transition: all 0.3s;
         }
         
         .admin-search-input:focus {
             outline: none;
-            box-shadow: 0 0 0 3px rgba(227, 24, 55, 0.2);
+            box-shadow: 0 0 0 2px rgba(227, 24, 55, 0.2);
         }
         
         .admin-search-btn {
             position: absolute;
-            right: 5px;
-            top: 5px;
+            right: 4px;
+            top: 4px;
             background-color: #e31837;
             color: white;
             border: none;
-            padding: 6px 12px;
-            border-radius: 20px;
+            padding: 5px 10px;
+            border-radius: 18px;
             cursor: pointer;
             transition: all 0.3s;
+            font-size: 0.8rem;
         }
         
         .admin-search-btn:hover {
@@ -1965,40 +2010,39 @@
         }
         
         .admin-search-hint {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #666;
             background-color: #f9f9f9;
-            padding: 6px 10px;
+            padding: 5px 8px;
             border-radius: 6px;
-            border-left: 4px solid #4CAF50;
+            border-left: 3px solid #4CAF50;
         }
         
         .delivery-tag {
             display: inline-block;
             background-color: #e31837;
             color: white;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7rem;
             font-weight: bold;
-            margin-right: 5px;
-            margin-bottom: 3px;
+            margin-right: 4px;
+            margin-bottom: 2px;
         }
         
         .no-delivery-tag {
             display: inline-block;
             background-color: #666;
             color: white;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7rem;
             font-weight: bold;
-            margin-right: 5px;
-            margin-bottom: 3px;
+            margin-right: 4px;
+            margin-bottom: 2px;
         }
         
         @media (max-width: 768px) {
-            /* 手机端保持左右布局 */
             .main-content {
                 flex-direction: row;
                 flex-wrap: wrap;
@@ -2007,7 +2051,7 @@
             .menu-section {
                 flex: 100%;
                 order: 1;
-                margin-bottom: 20px;
+                margin-bottom: 15px;
             }
             
             .right-section {
@@ -2026,15 +2070,15 @@
                 order: 2;
                 width: 100%;
                 position: static;
-                margin-top: 20px;
+                margin-top: 15px;
             }
             
             .logo {
-                font-size: 2rem;
+                font-size: 1.8rem;
             }
             
             .meal-card {
-                padding: 15px;
+                padding: 12px;
             }
             
             .store-selection {
@@ -2062,11 +2106,12 @@
             }
             
             .admin-btn {
-                padding: 15px;
+                padding: 12px;
                 border-radius: 50%;
-                width: 60px;
-                height: 60px;
+                width: 50px;
+                height: 50px;
                 justify-content: center;
+                font-size: 1rem;
             }
             
             .option-items {
@@ -2079,7 +2124,7 @@
             }
             
             .password-box {
-                padding: 25px;
+                padding: 20px;
                 width: 95%;
             }
             
@@ -2098,7 +2143,7 @@
             .meal-list-item {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 10px;
+                gap: 8px;
             }
             
             .meal-list-item-actions {
@@ -2109,7 +2154,7 @@
             .option-group-header {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 10px;
+                gap: 8px;
             }
             
             .header-buttons {
@@ -2118,7 +2163,7 @@
             }
             
             .header-btn {
-                width: 200px;
+                width: 180px;
                 justify-content: center;
             }
             
@@ -2145,8 +2190,8 @@
             .realtime-indicator {
                 top: 60px;
                 right: 10px;
-                font-size: 0.8rem;
-                padding: 6px 12px;
+                font-size: 0.75rem;
+                padding: 5px 10px;
             }
             
             .admin-search-container {
@@ -2155,6 +2200,20 @@
             
             .admin-search-box {
                 min-width: 100%;
+            }
+            
+            /* 移动端进一步压缩购物车 */
+            .cart-items {
+                max-height: 150px;
+            }
+            
+            .cart-item {
+                padding: 6px 0;
+                font-size: 0.8rem;
+            }
+            
+            .cart-section {
+                padding: 12px;
             }
         }
         
@@ -2497,7 +2556,7 @@
                             </div>
                         </div>
 
-                        <h4 class="section-title" style="margin-top: 30px; font-size: 1.4rem;">
+                        <h4 class="section-title" style="margin-top: 20px; font-size: 1.2rem;">
                             <i class="fas fa-list"></i>
                             选项组管理
                         </h4>
@@ -2509,7 +2568,7 @@
                             <i class="fas fa-plus"></i> 添加选项组
                         </button>
 
-                        <h4 class="section-title" style="margin-top: 30px; font-size: 1.4rem;">
+                        <h4 class="section-title" style="margin-top: 20px; font-size: 1.2rem;">
                             <i class="fas fa-th-list"></i>
                             固定搭配管理（可选）
                         </h4>
@@ -2521,11 +2580,11 @@
                             <i class="fas fa-plus"></i> 添加固定搭配项
                         </button>
 
-                        <div style="margin-top: 30px; display: flex; gap: 15px;">
-                            <button class="add-btn action-btn" id="saveMealBtn" style="padding: 12px 30px;">
+                        <div style="margin-top: 20px; display: flex; gap: 12px;">
+                            <button class="add-btn action-btn" id="saveMealBtn" style="padding: 10px 25px;">
                                 <i class="fas fa-save"></i> 保存套餐
                             </button>
-                            <button class="filter-btn" id="cancelEditBtn" style="padding: 12px 30px;">
+                            <button class="filter-btn" id="cancelEditBtn" style="padding: 10px 25px;">
                                 <i class="fas fa-arrow-left"></i> 返回列表
                             </button>
                         </div>
@@ -2608,7 +2667,7 @@
                         </div>
                     </div>
 
-                    <h4 class="section-title" style="margin-top: 30px; font-size: 1.4rem;">
+                    <h4 class="section-title" style="margin-top: 20px; font-size: 1.2rem;">
                         <i class="fas fa-list"></i>
                         选项组管理
                     </h4>
@@ -2620,7 +2679,7 @@
                         <i class="fas fa-plus"></i> 添加选项组
                     </button>
 
-                    <h4 class="section-title" style="margin-top: 30px; font-size: 1.4rem;">
+                    <h4 class="section-title" style="margin-top: 20px; font-size: 1.2rem;">
                         <i class="fas fa-th-list"></i>
                         固定搭配管理（可选）
                     </h4>
@@ -2632,8 +2691,8 @@
                         <i class="fas fa-plus"></i> 添加固定搭配项
                     </button>
 
-                    <div style="margin-top: 30px;">
-                        <button class="add-btn action-btn" id="saveNewMealBtn" style="padding: 12px 30px; width: 100%;">
+                    <div style="margin-top: 20px;">
+                        <button class="add-btn action-btn" id="saveNewMealBtn" style="padding: 10px 25px; width: 100%;">
                             <i class="fas fa-plus-circle"></i> 添加新套餐
                         </button>
                     </div>
@@ -3359,7 +3418,7 @@
                     <div class="meal-description">
                         ${meal.tags.map(tag => `<span class="meal-tag">${tag}</span>`).join('')}
                         ${meal.supportDelivery === false ? '<span class="no-delivery-tag">仅自提</span>' : '<span class="delivery-tag">可宅急送</span>'}
-                        <p style="margin-top: 10px;">${meal.description}</p>
+                        <p style="margin-top: 8px;">${meal.description}</p>
                     </div>
                 `;
 
@@ -3462,7 +3521,7 @@
                             <span class="${meal.active !== false ? 'status-active' : 'status-inactive'}">${meal.active !== false ? '上架' : '下架'}</span>
                         </div>
                         ${sortControls}
-                        <div style="display: flex; gap: 10px;">
+                        <div style="display: flex; gap: 8px;">
                             <button class="action-btn edit-btn" data-meal-id="${meal.id}">
                                 <i class="fas fa-edit"></i> 编辑
                             </button>
@@ -3648,7 +3707,7 @@
                     <div class="meal-description">
                         ${meal.tags.map(tag => `<span class="meal-tag">${tag}</span>`).join('')}
                         ${meal.supportDelivery === false ? '<span class="no-delivery-tag">仅自提</span>' : '<span class="delivery-tag">可宅急送</span>'}
-                        <p style="margin-top: 10px;">${meal.description}</p>
+                        <p style="margin-top: 8px;">${meal.description}</p>
                     </div>
                 `;
 
@@ -3663,7 +3722,6 @@
 
             const mealDetailPage = document.getElementById('mealDetailPage');
 
-            // 修改：将购物车部分移动到配送信息表单内部
             mealDetailPage.innerHTML = `
                 <a href="#" class="back-btn" onclick="showPage('homePage')">
                     <i class="fas fa-arrow-left"></i>
@@ -3813,7 +3871,7 @@
                             
                             <div class="form-group">
                                 <label class="form-label">订单备注</label>
-                                <textarea class="form-input" id="orderNote" rows="3" placeholder="如有特殊要求请在此备注（例如：不吃辣，多要番茄酱等）"></textarea>
+                                <textarea class="form-input" id="orderNote" rows="2" placeholder="如有特殊要求请在此备注（例如：不吃辣，多要番茄酱等）"></textarea>
                             </div>
                             
                             <!-- 购物车在配送信息表单底部 -->
@@ -4433,7 +4491,7 @@
                         cartItemElement.innerHTML = `
                             <div class="cart-item-name">
                                 <div><strong>${item.name}</strong></div>
-                                <div style="font-size:0.9rem; color:#666; margin-top:5px;">
+                                <div style="font-size:0.8rem; color:#666; margin-top:3px;">
                                     ${optionsHtml}
                                 </div>
                             </div>
@@ -4934,7 +4992,7 @@
                 itemsHTML += `<div class="user-order-item-detail">
                     <div class="user-order-item-name">
                         <div><strong>${item.name}</strong></div>
-                        <div style="font-size:0.9rem; color:#666;">${optionText}</div>
+                        <div style="font-size:0.8rem; color:#666;">${optionText}</div>
                     </div>
                     <div class="user-order-item-price">¥${item.totalPrice.toFixed(2)}</div>
                 </div>`;
@@ -5337,7 +5395,7 @@
 
                 itemsHTML += `<div class="order-item-detail">
                     <div><strong>${item.name}</strong> - ¥${item.totalPrice.toFixed(2)}</div>
-                    <div style="font-size:0.9rem; color:#666;">${optionText}</div>
+                    <div style="font-size:0.8rem; color:#666;">${optionText}</div>
                 </div>`;
             });
 
@@ -5383,10 +5441,10 @@
                     ${screenshotHTML}
                 </div>
                 
-                <div style="margin-top: 15px; display: flex; gap: 10px;">
-                    ${order.status === 'new' ? `<button class="filter-btn" style="padding: 6px 12px; font-size: 0.9rem;" data-action="process" data-order-id="${order.id}">标记为处理中</button>` : ''}
-                    ${order.status === 'processing' ? `<button class="filter-btn" style="padding: 6px 12px; font-size: 0.9rem;" data-action="complete" data-order-id="${order.id}">标记为已完成</button>` : ''}
-                    <button class="filter-btn" style="padding: 6px 12px; font-size: 0.9rem; background-color: #f44336; color: white;" data-action="delete" data-order-id="${order.id}">删除订单</button>
+                <div style="margin-top: 12px; display: flex; gap: 8px;">
+                    ${order.status === 'new' ? `<button class="filter-btn" style="padding: 5px 10px; font-size: 0.8rem;" data-action="process" data-order-id="${order.id}">标记为处理中</button>` : ''}
+                    ${order.status === 'processing' ? `<button class="filter-btn" style="padding: 5px 10px; font-size: 0.8rem;" data-action="complete" data-order-id="${order.id}">标记为已完成</button>` : ''}
+                    <button class="filter-btn" style="padding: 5px 10px; font-size: 0.8rem; background-color: #f44336; color: white;" data-action="delete" data-order-id="${order.id}">删除订单</button>
                 </div>
             `;
 
@@ -5688,7 +5746,7 @@
                             <span class="${meal.active !== false ? 'status-active' : 'status-inactive'}">${meal.active !== false ? '上架' : '下架'}</span>
                         </div>
                         ${sortControls}
-                        <div style="display: flex; gap: 10px;">
+                        <div style="display: flex; gap: 8px;">
                             <button class="action-btn edit-btn" data-meal-id="${meal.id}">
                                 <i class="fas fa-edit"></i> 编辑
                             </button>
@@ -5922,8 +5980,8 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">是否可以重复选择</label>
-                                <div style="margin-top: 8px;">
-                                    <label style="display: flex; align-items: center; gap: 8px;">
+                                <div style="margin-top: 6px;">
+                                    <label style="display: flex; align-items: center; gap: 6px;">
                                         <input type="checkbox" class="option-group-repeat-input" data-group-id="${groupId}" ${group.repeat ? 'checked' : ''}>
                                         <span>可以重复选择相同选项</span>
                                     </label>
@@ -6015,8 +6073,8 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">是否可以重复选择</label>
-                        <div style="margin-top: 8px;">
-                            <label style="display: flex; align-items: center; gap: 8px;">
+                        <div style="margin-top: 6px;">
+                            <label style="display: flex; align-items: center; gap: 6px;">
                                 <input type="checkbox" class="option-group-repeat-input" data-group-id="${groupId}" checked>
                                 <span>可以重复选择相同选项</span>
                             </label>
@@ -6059,7 +6117,7 @@
             const optionItem = document.createElement('div');
             optionItem.className = 'option-item-list-item';
             optionItem.innerHTML = `
-                <div style="display: flex; gap: 10px; width: 100%;">
+                <div style="display: flex; gap: 8px; width: 100%;">
                     <input type="text" class="form-input option-item-name-input" style="flex: 3;" placeholder="选项名称，例如：香辣鸡腿堡" value="${name || '选项'}">
                     <input type="number" class="form-input option-item-price-input" style="flex: 1;" placeholder="附加价格" min="0" step="0.01" value="${price || 0}">
                 </div>
@@ -6104,7 +6162,7 @@
             const fixedItem = document.createElement('div');
             fixedItem.className = 'fixed-item-list-item';
             fixedItem.innerHTML = `
-                <div style="display: flex; gap: 10px; width: 100%;">
+                <div style="display: flex; gap: 8px; width: 100%;">
                     <input type="text" class="form-input fixed-item-name-input" style="flex: 3;" placeholder="固定搭配项名称，例如：可乐" value="${name || '固定搭配项'}">
                     <input type="number" class="form-input fixed-item-quantity-input" style="flex: 1;" placeholder="数量" min="1" value="${quantity || 1}">
                 </div>
@@ -6434,8 +6492,8 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">是否可以重复选择</label>
-                        <div style="margin-top: 8px;">
-                            <label style="display: flex; align-items: center; gap: 8px;">
+                        <div style="margin-top: 6px;">
+                            <label style="display: flex; align-items: center; gap: 6px;">
                                 <input type="checkbox" class="new-option-group-repeat-input" data-group-id="${groupId}" checked>
                                 <span>可以重复选择相同选项</span>
                             </label>
@@ -6478,7 +6536,7 @@
             const optionItem = document.createElement('div');
             optionItem.className = 'option-item-list-item';
             optionItem.innerHTML = `
-                <div style="display: flex; gap: 10px; width: 100%;">
+                <div style="display: flex; gap: 8px; width: 100%;">
                     <input type="text" class="form-input new-option-item-name-input" style="flex: 3;" placeholder="选项名称，例如：香辣鸡腿堡" value="${name || '选项'}">
                     <input type="number" class="form-input new-option-item-price-input" style="flex: 1;" placeholder="附加价格" min="0" step="0.01" value="${price || 0}">
                 </div>
@@ -6523,7 +6581,7 @@
             const fixedItem = document.createElement('div');
             fixedItem.className = 'fixed-item-list-item';
             fixedItem.innerHTML = `
-                <div style="display: flex; gap: 10px; width: 100%;">
+                <div style="display: flex; gap: 8px; width: 100%;">
                     <input type="text" class="form-input new-fixed-item-name-input" style="flex: 3;" placeholder="固定搭配项名称，例如：可乐" value="${name || '固定搭配项'}">
                     <input type="number" class="form-input new-fixed-item-quantity-input" style="flex: 1;" placeholder="数量" min="1" value="${quantity || 1}">
                 </div>
@@ -6849,18 +6907,18 @@
             notification.className = 'custom-notification';
             notification.style.cssText = `
                 position: fixed;
-                top: 20px;
-                right: 20px;
+                top: 15px;
+                right: 15px;
                 background-color: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#e31837' : '#e31837'};
                 color: white;
-                padding: 15px 20px;
-                border-radius: 8px;
-                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                padding: 12px 16px;
+                border-radius: 6px;
+                box-shadow: 0 3px 10px rgba(0,0,0,0.2);
                 z-index: 1000;
                 font-weight: bold;
                 animation: slideIn 0.3s ease;
-                max-width: 400px;
-                font-size: 14px;
+                max-width: 350px;
+                font-size: 0.85rem;
             `;
 
             document.body.appendChild(notification);
