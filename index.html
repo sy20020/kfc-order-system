@@ -3030,6 +3030,70 @@
             serverURLs: SERVER_URL || 'https://tu8mlj2p.lc-cn-n1-shared.com'
         });
 
+        // ==================== 全局压缩图片函数 ====================
+        // 将压缩图片函数移到全局作用域，这样所有地方都能使用
+        async function compressImageOptimized(file, progressElement = null) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        // 根据原始图片大小动态调整压缩参数
+                        let maxWidth = 800;
+                        let quality = 0.7;
+                        
+                        // 大图片使用更激进的压缩
+                        if (file.size > 2 * 1024 * 1024) { // 大于2MB
+                            maxWidth = 600;
+                            quality = 0.5;
+                        } else if (file.size > 1 * 1024 * 1024) { // 大于1MB
+                            maxWidth = 700;
+                            quality = 0.6;
+                        }
+                        
+                        // 如果图片宽度超过最大宽度，等比例缩小
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                            
+                            // 更新压缩进度
+                            if (progressElement) {
+                                progressElement.textContent = '50%';
+                            }
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // 更新压缩进度
+                        if (progressElement) {
+                            progressElement.textContent = '75%';
+                        }
+                        
+                        // 转换为压缩后的图片
+                        canvas.toBlob(function(blob) {
+                            // 最终进度
+                            if (progressElement) {
+                                progressElement.textContent = '100%';
+                            }
+                            resolve(blob);
+                        }, file.type, quality);
+                    };
+                    img.onerror = reject;
+                };
+                reader.onerror = reject;
+            });
+        }
+
         // ==================== 数据结构 ====================
         let meals = [];
         let cart = [];
@@ -4733,69 +4797,6 @@
                 reader.readAsDataURL(compressedImage);
             }
 
-            // 优化压缩图片函数
-            async function compressImageOptimized(file, progressElement = null) {
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.readAsDataURL(file);
-                    reader.onload = function(event) {
-                        const img = new Image();
-                        img.src = event.target.result;
-                        img.onload = function() {
-                            const canvas = document.createElement('canvas');
-                            let width = img.width;
-                            let height = img.height;
-                            
-                            // 根据原始图片大小动态调整压缩参数
-                            let maxWidth = 800;
-                            let quality = 0.7;
-                            
-                            // 大图片使用更激进的压缩
-                            if (file.size > 2 * 1024 * 1024) { // 大于2MB
-                                maxWidth = 600;
-                                quality = 0.5;
-                            } else if (file.size > 1 * 1024 * 1024) { // 大于1MB
-                                maxWidth = 700;
-                                quality = 0.6;
-                            }
-                            
-                            // 如果图片宽度超过最大宽度，等比例缩小
-                            if (width > maxWidth) {
-                                height = Math.round((height * maxWidth) / width);
-                                width = maxWidth;
-                                
-                                // 更新压缩进度
-                                if (progressElement) {
-                                    progressElement.textContent = '50%';
-                                }
-                            }
-                            
-                            canvas.width = width;
-                            canvas.height = height;
-                            
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0, width, height);
-                            
-                            // 更新压缩进度
-                            if (progressElement) {
-                                progressElement.textContent = '75%';
-                            }
-                            
-                            // 转换为压缩后的图片
-                            canvas.toBlob(function(blob) {
-                                // 最终进度
-                                if (progressElement) {
-                                    progressElement.textContent = '100%';
-                                }
-                                resolve(blob);
-                            }, file.type, quality);
-                        };
-                        img.onerror = reject;
-                    };
-                    reader.onerror = reject;
-                });
-            }
-
             // 将dataURL转换为Blob对象
             function dataURLtoBlob(dataURL) {
                 const arr = dataURL.split(',');
@@ -6003,7 +6004,8 @@
             return orderElement;
         }
 
-        // 初始化反馈截图上传功能（已修复）
+        // ==================== 修复的反馈截图上传功能 ====================
+        // 初始化反馈截图上传功能 - 修复版本
         function initFeedbackUpload(orderId) {
             const uploadArea = document.getElementById(`feedbackUploadArea-${orderId}`);
             const fileInput = document.getElementById(`feedbackScreenshot-${orderId}`);
@@ -6011,51 +6013,79 @@
             const previewImage = document.getElementById(`feedbackPreviewImage-${orderId}`);
             const removeBtn = document.getElementById(`removeFeedback-${orderId}`);
             const uploadBtn = document.getElementById(`uploadFeedbackBtn-${orderId}`);
+            const imageInfo = document.getElementById(`feedbackImageInfo-${orderId}`);
 
-            if (uploadArea && fileInput && previewContainer && previewImage && removeBtn && uploadBtn) {
-                // 修复：添加文件输入点击事件
-                uploadArea.addEventListener('click', function() {
-                    fileInput.click();
-                });
+            if (!uploadArea || !fileInput) {
+                console.error('反馈上传元素未找到:', orderId);
+                return;
+            }
 
-                fileInput.addEventListener('change', async function(e) {
-                    if (e.target.files.length) {
-                        await handleFeedbackFileSelect(e.target.files[0], orderId);
-                        uploadBtn.style.display = 'block';
-                    }
-                });
+            // 移除之前的旧事件监听器
+            const newUploadArea = uploadArea.cloneNode(true);
+            const newFileInput = fileInput.cloneNode(true);
+            uploadArea.parentNode.replaceChild(newUploadArea, uploadArea);
+            fileInput.parentNode.replaceChild(newFileInput, fileInput);
 
+            // 重新获取元素引用
+            const refreshedUploadArea = document.getElementById(`feedbackUploadArea-${orderId}`);
+            const refreshedFileInput = document.getElementById(`feedbackScreenshot-${orderId}`);
+            
+            // 存储当前订单的图片数据
+            let feedbackImageData = null;
+
+            // 上传区域点击事件
+            refreshedUploadArea.addEventListener('click', function() {
+                refreshedFileInput.click();
+            });
+
+            // 文件选择事件
+            refreshedFileInput.addEventListener('change', async function(e) {
+                if (e.target.files.length) {
+                    await handleFeedbackFileSelect(e.target.files[0], orderId);
+                    if (uploadBtn) uploadBtn.style.display = 'block';
+                }
+            });
+
+            // 移除按钮事件
+            if (removeBtn) {
                 removeBtn.addEventListener('click', function() {
-                    fileInput.value = '';
-                    previewContainer.classList.add('hidden');
-                    uploadArea.style.display = 'block';
-                    uploadBtn.style.display = 'none';
-                    previewImage.src = '';
-                    
-                    // 清除预览图片信息
-                    const imageInfo = document.getElementById(`feedbackImageInfo-${orderId}`);
-                    if (imageInfo) {
-                        imageInfo.innerHTML = '';
-                    }
+                    if (refreshedFileInput) refreshedFileInput.value = '';
+                    if (previewContainer) previewContainer.classList.add('hidden');
+                    if (refreshedUploadArea) refreshedUploadArea.style.display = 'block';
+                    if (uploadBtn) uploadBtn.style.display = 'none';
+                    feedbackImageData = null;
                 });
+            }
 
+            // 上传按钮事件
+            if (uploadBtn) {
                 uploadBtn.addEventListener('click', async function() {
-                    if (!previewImage.src) {
+                    if (!feedbackImageData) {
                         showNotification('请先选择反馈截图', 'error');
                         return;
                     }
 
                     try {
                         const orderIndex = orders.findIndex(o => o.id === orderId);
-                        if (orderIndex === -1) return;
+                        if (orderIndex === -1) {
+                            showNotification('订单不存在', 'error');
+                            return;
+                        }
 
                         const order = orders[orderIndex];
-                        order.feedbackScreenshotData = previewImage.src;
+                        order.feedbackScreenshotData = feedbackImageData;
 
                         const updatedOrder = await LeanCloudData.saveOrder(order);
                         orders[orderIndex] = updatedOrder;
 
-                        localStorage.setItem('kfcOrdersCache', JSON.stringify(orders));
+                        // 更新本地缓存
+                        localStorage.setItem('kfcOrdersCache', JSON.stringify(orders.map(o => ({
+                            id: o.id,
+                            timestamp: o.timestamp,
+                            status: o.status,
+                            totalPrice: o.totalPrice,
+                            userId: o.userId
+                        }))));
 
                         showNotification('反馈截图上传成功！顾客可以在"我的订单"页面查看', 'success');
 
@@ -6072,42 +6102,50 @@
                     }
                 });
             }
-        }
 
-        // 处理反馈截图文件选择（已修复）
-        async function handleFeedbackFileSelect(file, orderId) {
-            if (!file.type.match('image.*')) {
-                showNotification('请选择图片文件', 'error');
-                return;
-            }
-
-            const previewContainer = document.getElementById(`feedbackPreview-${orderId}`);
-            const previewImage = document.getElementById(`feedbackPreviewImage-${orderId}`);
-            const uploadArea = document.getElementById(`feedbackUploadArea-${orderId}`);
-            const imageInfo = document.getElementById(`feedbackImageInfo-${orderId}`);
-
-            // 压缩图片
-            const compressedImage = await compressImageOptimized(file);
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                previewImage.src = e.target.result;
-                previewContainer.classList.remove('hidden');
-                uploadArea.style.display = 'none';
-                
-                // 显示图片信息
-                if (imageInfo) {
-                    const originalSize = (file.size / 1024).toFixed(2);
-                    const compressedSize = (compressedImage.size / 1024).toFixed(2);
-                    const compressionRatio = ((1 - compressedImage.size / file.size) * 100).toFixed(1);
-                    imageInfo.innerHTML = `
-                        原始大小: ${originalSize}KB<br>
-                        压缩后: ${compressedSize}KB<br>
-                        压缩率: ${compressionRatio}%
-                    `;
+            // 处理反馈截图文件选择
+            async function handleFeedbackFileSelect(file, orderId) {
+                if (!file.type.match('image.*')) {
+                    showNotification('请选择图片文件', 'error');
+                    return;
                 }
-            };
-            reader.readAsDataURL(compressedImage);
+
+                try {
+                    // 使用全局压缩函数压缩图片
+                    const compressedImage = await compressImageOptimized(file);
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        feedbackImageData = e.target.result;
+                        
+                        if (previewImage) {
+                            previewImage.src = e.target.result;
+                        }
+                        if (previewContainer) {
+                            previewContainer.classList.remove('hidden');
+                        }
+                        if (refreshedUploadArea) {
+                            refreshedUploadArea.style.display = 'none';
+                        }
+                        
+                        // 显示图片信息
+                        if (imageInfo) {
+                            const originalSize = (file.size / 1024).toFixed(2);
+                            const compressedSize = (compressedImage.size / 1024).toFixed(2);
+                            const compressionRatio = ((1 - compressedImage.size / file.size) * 100).toFixed(1);
+                            imageInfo.innerHTML = `
+                                原始大小: ${originalSize}KB<br>
+                                压缩后: ${compressedSize}KB<br>
+                                压缩率: ${compressionRatio}%
+                            `;
+                        }
+                    };
+                    reader.readAsDataURL(compressedImage);
+                } catch (error) {
+                    console.error('处理反馈截图失败:', error);
+                    showNotification('处理图片失败，请重试', 'error');
+                }
+            }
         }
 
         async function handleOrderAction(action, orderId) {
