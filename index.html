@@ -2042,209 +2042,231 @@
             margin-bottom: 2px;
         }
         
-        /* 新增：订单成功模态框样式 */
-        .success-modal {
+        /* 新增：订单确认模态框样式 */
+        .order-confirm-modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            z-index: 4000;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 3001;
             display: none;
             justify-content: center;
             align-items: center;
         }
         
-        .success-modal.active {
+        .order-confirm-modal.active {
             display: flex;
         }
         
-        .success-modal-box {
+        .order-confirm-box {
             background-color: white;
             border-radius: 15px;
-            padding: 30px;
+            padding: 25px;
             width: 90%;
             max-width: 500px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            text-align: center;
-            animation: modalSlideIn 0.4s ease-out;
-        }
-        
-        @keyframes modalSlideIn {
-            0% { transform: translateY(-30px); opacity: 0; }
-            100% { transform: translateY(0); opacity: 1; }
-        }
-        
-        .success-modal-icon {
-            width: 80px;
-            height: 80px;
-            background-color: #4CAF50;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            font-size: 40px;
-            color: white;
-            animation: iconPulse 1.5s infinite;
-        }
-        
-        @keyframes iconPulse {
-            0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(76, 175, 80, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
-        }
-        
-        .success-modal-title {
-            color: #4CAF50;
-            font-size: 1.8rem;
-            margin-bottom: 10px;
-        }
-        
-        .success-modal-order-id {
-            background-color: #f0f0f0;
-            padding: 10px;
-            border-radius: 8px;
-            margin: 15px 0;
-            font-family: monospace;
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #e31837;
-            border: 2px dashed #4CAF50;
-        }
-        
-        .success-modal-message {
-            color: #666;
-            margin-bottom: 20px;
-            font-size: 1rem;
-            line-height: 1.5;
-        }
-        
-        .success-modal-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 25px;
-        }
-        
-        .success-modal-btn {
-            flex: 1;
-            padding: 12px 20px;
-            border-radius: 25px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: none;
-        }
-        
-        .success-modal-btn-primary {
-            background-color: #4CAF50;
-            color: white;
-        }
-        
-        .success-modal-btn-primary:hover {
-            background-color: #3d8b40;
-            transform: scale(1.03);
-        }
-        
-        .success-modal-btn-secondary {
-            background-color: #f0f0f0;
-            color: #333;
-        }
-        
-        .success-modal-btn-secondary:hover {
-            background-color: #e0e0e0;
-            transform: scale(1.03);
-        }
-        
-        .success-modal-order-details {
-            background-color: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-            text-align: left;
-            max-height: 200px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            animation: modalFadeIn 0.3s ease;
+            max-height: 85vh;
             overflow-y: auto;
         }
         
-        .success-modal-order-item {
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .order-confirm-header {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px dashed #ddd;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ffcc00;
         }
         
-        .success-modal-order-item:last-child {
-            border-bottom: none;
-        }
-        
-        .success-modal-order-total {
-            font-weight: bold;
+        .order-confirm-title {
             color: #e31837;
-            font-size: 1.2rem;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 2px solid #ddd;
-            text-align: right;
-        }
-        
-        /* 新增：管理员上传图片区域样式 */
-        .admin-upload-container {
-            margin-top: 15px;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-radius: 8px;
-            border: 2px dashed #4CAF50;
-        }
-        
-        .admin-upload-title {
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 10px;
+            font-size: 1.5rem;
             display: flex;
             align-items: center;
             gap: 8px;
         }
         
-        .admin-upload-area {
-            border: 2px dashed #ddd;
+        .order-confirm-close {
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        
+        .order-confirm-close:hover {
+            background-color: #f5f5f5;
+            color: #e31837;
+        }
+        
+        .order-confirm-body {
+            margin-bottom: 20px;
+        }
+        
+        .order-confirm-item {
+            background-color: #f9f9f9;
+            padding: 12px;
             border-radius: 8px;
-            padding: 20px;
+            margin-bottom: 10px;
+            border-left: 3px solid #ffcc00;
+        }
+        
+        .order-confirm-item-title {
+            font-weight: bold;
+            color: #e31837;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .order-confirm-item-content {
+            color: #333;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .order-confirm-options {
+            margin-top: 10px;
+            padding-left: 15px;
+        }
+        
+        .order-confirm-option {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+            font-size: 0.85rem;
+        }
+        
+        .order-confirm-total {
+            background-color: #fff5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 2px solid #e31837;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #e31837;
+            text-align: center;
+        }
+        
+        .order-confirm-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .order-confirm-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .order-confirm-btn.confirm {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .order-confirm-btn.confirm:hover {
+            background-color: #3d8b40;
+            transform: scale(1.02);
+        }
+        
+        .order-confirm-btn.cancel {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        
+        .order-confirm-btn.cancel:hover {
+            background-color: #e0e0e0;
+        }
+        
+        /* 新增：反馈截图样式 */
+        .feedback-screenshot-container {
+            margin-top: 12px;
+            padding: 12px;
+            background-color: #f0f8ff;
+            border-radius: 8px;
+            border-left: 3px solid #2196F3;
+        }
+        
+        .feedback-screenshot-container h4 {
+            color: #2196F3;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .feedback-screenshot-container img {
+            width: 100%;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .feedback-screenshot-container img:hover {
+            transform: scale(1.02);
+        }
+        
+        .feedback-upload-area {
+            border: 2px dashed #2196F3;
+            border-radius: 8px;
+            padding: 15px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
-            background-color: white;
+            background-color: #f8fdff;
+            margin-top: 8px;
         }
         
-        .admin-upload-area:hover {
-            border-color: #4CAF50;
-            background-color: #f0f9f0;
+        .feedback-upload-area:hover {
+            border-color: #0d8bf2;
+            background-color: #e6f7ff;
         }
         
-        .admin-upload-area i {
-            font-size: 36px;
-            color: #4CAF50;
+        .feedback-upload-area i {
+            font-size: 24px;
+            color: #2196F3;
             margin-bottom: 8px;
         }
         
-        .admin-upload-hint {
-            font-size: 0.8rem;
-            color: #666;
-            margin-top: 4px;
-        }
-        
-        .admin-upload-preview {
+        .feedback-preview {
             position: relative;
             margin-top: 12px;
             border: 1px solid #ddd;
             border-radius: 6px;
             padding: 8px;
-            background-color: white;
-            max-width: 300px;
+            background-color: #f9f9f9;
         }
         
-        .admin-upload-preview img {
+        .feedback-preview img {
             width: 100%;
             border-radius: 4px;
             display: block;
@@ -2252,7 +2274,7 @@
             object-fit: contain;
         }
         
-        .remove-admin-screenshot {
+        .remove-feedback {
             position: absolute;
             top: -8px;
             right: -8px;
@@ -2269,107 +2291,23 @@
             font-size: 0.8rem;
         }
         
-        .admin-upload-btn {
-            background-color: #4CAF50;
+        .feedback-btn {
+            background-color: #2196F3;
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
+            padding: 6px 12px;
+            border-radius: 18px;
+            font-size: 0.85rem;
             cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.9rem;
-            margin-top: 10px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .admin-upload-btn:hover {
-            background-color: #3d8b40;
-            transform: scale(1.03);
-        }
-        
-        .admin-upload-btn:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .admin-upload-status {
-            font-size: 0.8rem;
-            color: #666;
-            margin-top: 8px;
-            padding: 6px;
-            border-radius: 4px;
-            background-color: #f0f0f0;
-        }
-        
-        .admin-upload-status.success {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-        }
-        
-        .admin-upload-status.error {
-            background-color: #ffebee;
-            color: #c62828;
-        }
-        
-        .admin-screenshot-info {
-            font-size: 0.75rem;
-            color: #666;
-            background-color: #f5f5f5;
-            padding: 4px 8px;
-            border-radius: 4px;
-            border-left: 2px solid #4CAF50;
-            margin-top: 8px;
-        }
-        
-        .admin-screenshot-container {
-            margin-top: 12px;
-        }
-        
-        .admin-screenshot-container p {
-            font-weight: bold;
-            margin-bottom: 6px;
-            color: #333;
-        }
-        
-        .admin-screenshot-container img {
-            width: 100%;
-            max-width: 250px;
-            border-radius: 6px;
-            border: 1px solid #ddd;
-            cursor: pointer;
-            transition: transform 0.3s;
-        }
-        
-        .admin-screenshot-container img:hover {
-            transform: scale(1.02);
-        }
-        
-        /* 新增：顾客查看管理员图片样式 */
-        .admin-screenshot-section {
-            margin-top: 15px;
-            padding: 12px;
-            background-color: #e8f5e9;
-            border-radius: 8px;
-            border-left: 4px solid #4CAF50;
-        }
-        
-        .admin-screenshot-title {
-            font-weight: bold;
-            color: #2e7d32;
-            margin-bottom: 8px;
             display: flex;
             align-items: center;
             gap: 6px;
+            transition: all 0.3s;
+            margin-top: 8px;
         }
         
-        .admin-screenshot-note {
-            font-size: 0.8rem;
-            color: #666;
-            margin-top: 8px;
-            font-style: italic;
+        .feedback-btn:hover {
+            background-color: #0d8bf2;
         }
         
         @media (max-width: 768px) {
@@ -2546,28 +2484,14 @@
                 padding: 12px;
             }
             
-            /* 移动端适配成功模态框 */
-            .success-modal-box {
+            /* 订单确认模态框移动端适配 */
+            .order-confirm-box {
                 padding: 20px;
                 width: 95%;
             }
             
-            .success-modal-buttons {
+            .order-confirm-buttons {
                 flex-direction: column;
-            }
-            
-            .success-modal-order-details {
-                max-height: 150px;
-            }
-            
-            .success-modal-icon {
-                width: 60px;
-                height: 60px;
-                font-size: 30px;
-            }
-            
-            .success-modal-title {
-                font-size: 1.5rem;
             }
         }
         
@@ -2610,33 +2534,31 @@
         <span>实时更新中...</span>
     </div>
     
-    <!-- 订单成功模态框 -->
-    <div class="success-modal" id="successModal">
-        <div class="success-modal-box">
-            <div class="success-modal-icon">
-                <i class="fas fa-check"></i>
-            </div>
-            <h2 class="success-modal-title">订单提交成功！</h2>
-            
-            <div class="success-modal-order-id" id="successOrderId">KFC123456</div>
-            
-            <div class="success-modal-order-details" id="successOrderDetails">
-                <!-- 订单详情将通过JS动态填充 -->
-            </div>
-            
-            <div class="success-modal-message">
-                您的订单已成功提交，我们正在为您准备美食！<br>
-                您可以在"我的订单"页面查看订单状态。
-            </div>
-            
-            <div class="success-modal-buttons">
-                <button class="success-modal-btn success-modal-btn-primary" id="viewOrderBtn">
-                    <i class="fas fa-clipboard-list"></i>
-                    查看我的订单
+    <!-- 订单确认模态框 -->
+    <div class="order-confirm-modal" id="orderConfirmModal">
+        <div class="order-confirm-box">
+            <div class="order-confirm-header">
+                <h2 class="order-confirm-title">
+                    <i class="fas fa-clipboard-check"></i>
+                    确认订单信息
+                </h2>
+                <button class="order-confirm-close" id="orderConfirmClose">
+                    <i class="fas fa-times"></i>
                 </button>
-                <button class="success-modal-btn success-modal-btn-secondary" id="backToHomeBtn">
-                    <i class="fas fa-home"></i>
-                    返回首页
+            </div>
+            
+            <div class="order-confirm-body" id="orderConfirmBody">
+                <!-- 订单详情将通过JavaScript动态填充 -->
+            </div>
+            
+            <div class="order-confirm-buttons">
+                <button class="order-confirm-btn cancel" id="orderConfirmCancel">
+                    <i class="fas fa-times"></i>
+                    取消
+                </button>
+                <button class="order-confirm-btn confirm" id="orderConfirmSubmit">
+                    <i class="fas fa-check"></i>
+                    确认提交
                 </button>
             </div>
         </div>
@@ -3287,10 +3209,8 @@
                             totalPrice: data.totalPrice,
                             hasScreenshot: data.hasScreenshot || false,
                             screenshotData: data.screenshotData,
+                            feedbackScreenshotData: data.feedbackScreenshotData || null, // 新增：反馈截图
                             userId: data.userId,
-                            hasAdminScreenshot: data.hasAdminScreenshot || false, // 新增：管理员上传图片
-                            adminScreenshotData: data.adminScreenshotData || '', // 新增：管理员图片数据
-                            adminScreenshotTime: data.adminScreenshotTime || '', // 新增：管理员上传时间
                             createdAt: createdAt,
                             updatedAt: updatedAt,
                             objectId: item.id
@@ -3322,15 +3242,17 @@
                     orderObj.set('deliveryType', order.deliveryType);
                     orderObj.set('totalPrice', order.totalPrice);
                     orderObj.set('userId', order.userId);
-                    orderObj.set('hasAdminScreenshot', order.hasAdminScreenshot || false); // 新增
-                    orderObj.set('adminScreenshotData', order.adminScreenshotData || ''); // 新增
-                    orderObj.set('adminScreenshotTime', order.adminScreenshotTime || ''); // 新增
                     
                     if (order.hasScreenshot && order.screenshotData) {
                         orderObj.set('hasScreenshot', true);
                         orderObj.set('screenshotData', order.screenshotData);
                     } else {
                         orderObj.set('hasScreenshot', false);
+                    }
+                    
+                    // 新增：保存反馈截图
+                    if (order.feedbackScreenshotData) {
+                        orderObj.set('feedbackScreenshotData', order.feedbackScreenshotData);
                     }
 
                     const result = await orderObj.save();
@@ -3350,9 +3272,7 @@
                         totalPrice: order.totalPrice,
                         hasScreenshot: order.hasScreenshot || false,
                         screenshotData: order.screenshotData,
-                        hasAdminScreenshot: order.hasAdminScreenshot || false, // 新增
-                        adminScreenshotData: order.adminScreenshotData || '', // 新增
-                        adminScreenshotTime: order.adminScreenshotTime || '', // 新增
+                        feedbackScreenshotData: order.feedbackScreenshotData || null, // 新增：反馈截图
                         userId: order.userId,
                         createdAt: createdAt,
                         updatedAt: updatedAt,
@@ -3471,9 +3391,7 @@
                             totalPrice: data.totalPrice,
                             hasScreenshot: data.hasScreenshot || false,
                             screenshotData: data.screenshotData,
-                            hasAdminScreenshot: data.hasAdminScreenshot || false, // 新增
-                            adminScreenshotData: data.adminScreenshotData || '', // 新增
-                            adminScreenshotTime: data.adminScreenshotTime || '', // 新增
+                            feedbackScreenshotData: data.feedbackScreenshotData || null, // 新增：反馈截图
                             userId: data.userId,
                             createdAt: createdAt,
                             updatedAt: updatedAt,
@@ -3518,15 +3436,17 @@
                     orderObj.set('deliveryType', order.deliveryType);
                     orderObj.set('totalPrice', order.totalPrice);
                     orderObj.set('userId', order.userId);
-                    orderObj.set('hasAdminScreenshot', order.hasAdminScreenshot || false); // 新增
-                    orderObj.set('adminScreenshotData', order.adminScreenshotData || ''); // 新增
-                    orderObj.set('adminScreenshotTime', order.adminScreenshotTime || ''); // 新增
                     
                     if (order.hasScreenshot && order.screenshotData) {
                         orderObj.set('hasScreenshot', true);
                         orderObj.set('screenshotData', order.screenshotData);
                     } else {
                         orderObj.set('hasScreenshot', false);
+                    }
+                    
+                    // 新增：保存反馈截图
+                    if (order.feedbackScreenshotData) {
+                        orderObj.set('feedbackScreenshotData', order.feedbackScreenshotData);
                     }
 
                     // 快速保存，不等待返回结果
@@ -3549,9 +3469,7 @@
                         totalPrice: order.totalPrice,
                         hasScreenshot: order.hasScreenshot || false,
                         screenshotData: order.screenshotData,
-                        hasAdminScreenshot: order.hasAdminScreenshot || false, // 新增
-                        adminScreenshotData: order.adminScreenshotData || '', // 新增
-                        adminScreenshotTime: order.adminScreenshotTime || '', // 新增
+                        feedbackScreenshotData: order.feedbackScreenshotData || null, // 新增：反馈截图
                         userId: order.userId,
                         createdAt: Date.now(),
                         updatedAt: Date.now(),
@@ -3572,9 +3490,7 @@
                         totalPrice: order.totalPrice,
                         hasScreenshot: order.hasScreenshot || false,
                         screenshotData: order.screenshotData,
-                        hasAdminScreenshot: order.hasAdminScreenshot || false, // 新增
-                        adminScreenshotData: order.adminScreenshotData || '', // 新增
-                        adminScreenshotTime: order.adminScreenshotTime || '', // 新增
+                        feedbackScreenshotData: order.feedbackScreenshotData || null, // 新增：反馈截图
                         userId: order.userId,
                         createdAt: Date.now(),
                         updatedAt: Date.now(),
@@ -3610,7 +3526,7 @@
                 initMyOrdersPage();
                 initHeaderButtons();
                 initSearchFunction();
-                initSuccessModal();
+                initOrderConfirmModal();
 
                 document.getElementById('currentUserIdDisplay').textContent = currentUserId.substring(0, 12) + '...';
 
@@ -3642,84 +3558,132 @@
                 initMyOrdersPage();
                 initHeaderButtons();
                 initSearchFunction();
-                initSuccessModal();
+                initOrderConfirmModal();
                 
                 // 启动全局轮询，检查新订单
                 startGlobalPolling();
             }
         });
 
-        // ==================== 成功模态框初始化 ====================
-        function initSuccessModal() {
-            const viewOrderBtn = document.getElementById('viewOrderBtn');
-            const backToHomeBtn = document.getElementById('backToHomeBtn');
-            const successModal = document.getElementById('successModal');
+        // ==================== 订单确认模态框初始化 ====================
+        function initOrderConfirmModal() {
+            const orderConfirmModal = document.getElementById('orderConfirmModal');
+            const orderConfirmClose = document.getElementById('orderConfirmClose');
+            const orderConfirmCancel = document.getElementById('orderConfirmCancel');
+            const orderConfirmSubmit = document.getElementById('orderConfirmSubmit');
 
-            viewOrderBtn.addEventListener('click', function() {
-                successModal.classList.remove('active');
-                showMyOrdersPage();
+            orderConfirmClose.addEventListener('click', function() {
+                orderConfirmModal.classList.remove('active');
             });
 
-            backToHomeBtn.addEventListener('click', function() {
-                successModal.classList.remove('active');
-                showPage('homePage');
+            orderConfirmCancel.addEventListener('click', function() {
+                orderConfirmModal.classList.remove('active');
             });
 
-            // 点击模态框外部关闭
-            successModal.addEventListener('click', function(e) {
-                if (e.target === successModal) {
-                    successModal.classList.remove('active');
+            orderConfirmModal.addEventListener('click', function(e) {
+                if (e.target === orderConfirmModal) {
+                    orderConfirmModal.classList.remove('active');
                 }
             });
         }
 
-        // ==================== 显示订单成功模态框 ====================
-        function showSuccessModal(orderId, orderSummary, totalPrice) {
-            const successModal = document.getElementById('successModal');
-            const successOrderId = document.getElementById('successOrderId');
-            const successOrderDetails = document.getElementById('successOrderDetails');
+        // ==================== 美化订单确认信息 ====================
+        function showOrderConfirm(orderData) {
+            const orderConfirmModal = document.getElementById('orderConfirmModal');
+            const orderConfirmBody = document.getElementById('orderConfirmBody');
+            const orderConfirmSubmit = document.getElementById('orderConfirmSubmit');
 
-            // 设置订单号
-            successOrderId.textContent = orderId;
+            let totalPrice = 0;
+            cart.forEach(item => {
+                totalPrice += item.totalPrice;
+            });
 
-            // 解析订单摘要并创建HTML
-            let detailsHTML = '';
-            const lines = orderSummary.split('\n');
-            let inOrderDetails = false;
+            let itemsHTML = '';
+            cart.forEach((item, index) => {
+                const optionCount = {};
+                item.options.forEach(option => {
+                    optionCount[option] = (optionCount[option] || 0) + 1;
+                });
 
-            lines.forEach(line => {
-                if (line.includes('订单详情：')) {
-                    inOrderDetails = true;
-                    return;
-                }
+                const optionText = Object.keys(optionCount).map(option => {
+                    const count = optionCount[option];
+                    return `${option}${count > 1 ? ` ×${count}` : ''}`;
+                }).join(', ');
 
-                if (line.includes('总计：') || line.includes('配送方式：') || line.includes('备注：')) {
-                    inOrderDetails = false;
-                }
+                itemsHTML += `
+                    <div class="order-confirm-option">
+                        <span>${item.name}</span>
+                        <span>¥${item.totalPrice.toFixed(2)}</span>
+                    </div>
+                `;
+            });
 
-                if (inOrderDetails && line.trim() !== '') {
-                    // 如果是项目行（以数字开头）
-                    if (/^\d+\./.test(line.trim())) {
-                        detailsHTML += `<div class="success-modal-order-item">
-                            <div><strong>${line.trim()}</strong></div>
-                        </div>`;
-                    } 
-                    // 如果是子项目行（以•开头）
-                    else if (line.trim().startsWith('•')) {
-                        detailsHTML += `<div class="success-modal-order-item" style="padding-left: 20px; color: #666;">
-                            <div>${line.trim()}</div>
-                        </div>`;
-                    }
+            // 格式化配送信息
+            let deliveryInfoHTML = '';
+            const infoLines = orderData.deliveryInfo.split('\n');
+            infoLines.forEach(line => {
+                if (line.trim()) {
+                    deliveryInfoHTML += `<div>${line}</div>`;
                 }
             });
 
-            // 添加总计
-            detailsHTML += `<div class="success-modal-order-total">总计：¥${totalPrice.toFixed(2)}</div>`;
+            const orderConfirmHTML = `
+                <div class="order-confirm-item">
+                    <div class="order-confirm-item-title">
+                        <i class="fas fa-shopping-cart"></i>
+                        订单详情
+                    </div>
+                    <div class="order-confirm-item-content">
+                        <div class="order-confirm-options">
+                            ${itemsHTML}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="order-confirm-item">
+                    <div class="order-confirm-item-title">
+                        <i class="fas fa-truck"></i>
+                        配送信息
+                    </div>
+                    <div class="order-confirm-item-content">
+                        ${deliveryInfoHTML}
+                        ${orderData.orderNote ? `<div><strong>备注：</strong>${orderData.orderNote}</div>` : ''}
+                    </div>
+                </div>
+                
+                <div class="order-confirm-item">
+                    <div class="order-confirm-item-title">
+                        <i class="fas fa-clock"></i>
+                        订单时间
+                    </div>
+                    <div class="order-confirm-item-content">
+                        ${orderData.timestamp}
+                    </div>
+                </div>
+                
+                <div class="order-confirm-total">
+                    订单总计：<span style="font-size:1.3em;">¥${totalPrice.toFixed(2)}</span>
+                </div>
+                
+                <div class="highlight" style="margin-top: 15px;">
+                    <i class="fas fa-info-circle"></i>
+                    提交订单后，您可以在"查看我的订单"页面查看订单状态
+                </div>
+            `;
 
-            successOrderDetails.innerHTML = detailsHTML;
+            orderConfirmBody.innerHTML = orderConfirmHTML;
+
+            // 设置提交按钮事件
+            orderConfirmSubmit.onclick = function() {
+                orderConfirmModal.classList.remove('active');
+                // 设置一个短暂的延迟，让模态框关闭动画完成
+                setTimeout(() => {
+                    completeOrderSubmission(orderData);
+                }, 300);
+            };
 
             // 显示模态框
-            successModal.classList.add('active');
+            orderConfirmModal.classList.add('active');
         }
 
         // ==================== 全局轮询函数 ====================
@@ -5067,105 +5031,69 @@
                             }
 
                             if (!pickupStore) {
-                            showNotification('请输入自提门店', 'error');
-                            const storeInput = container.querySelector('#pickupStoreInput');
-                            if (storeInput) storeInput.focus();
+                                showNotification('请输入自提门店', 'error');
+                                const storeInput = container.querySelector('#pickupStoreInput');
+                                if (storeInput) storeInput.focus();
+                                return;
+                            }
+
+                            deliveryInfo = `配送方式：到店自提\n自提方式：${pickupType}\n信息提供：手动填写\n自提城市：${pickupCity}\n自提门店：${pickupStore}`;
+                        } else {
+                            const screenshotInput = container.querySelector('#storeScreenshot');
+
+                            if (!screenshotInput.files || !screenshotInput.files.length) {
+                                showNotification('请上传门店截图', 'error');
+                                return;
+                            }
+
+                            // 移除进度条，改为简单的状态提示
+                            const submitStatus = document.getElementById('submitStatus');
+                            submitStatus.textContent = '正在处理图片...';
+
+                            try {
+                                const file = screenshotInput.files[0];
+                                const reader = new FileReader();
+
+                                reader.onload = function(e) {
+                                    screenshotData = e.target.result;
+                                    hasScreenshot = true;
+
+                                    deliveryInfo = `配送方式：到店自提\n自提方式：${pickupType}\n信息提供：截图上传`;
+
+                                    submitStatus.textContent = '图片处理完成';
+
+                                    // 继续准备订单数据
+                                    setTimeout(() => {
+                                        submitStatus.textContent = '';
+                                        prepareOrderData(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, pickupType);
+                                    }, 500);
+                                };
+
+                                reader.onerror = function() {
+                                    submitStatus.textContent = '图片读取失败，请重试';
+                                    showNotification('图片读取失败，请重试', 'error');
+                                };
+
+                                reader.readAsDataURL(file);
+                            } catch (error) {
+                                submitStatus.textContent = '图片处理失败';
+                                showNotification('图片处理失败: ' + error.message, 'error');
+                            }
                             return;
                         }
-
-                        deliveryInfo = `配送方式：到店自提\n自提方式：${pickupType}\n信息提供：手动填写\n自提城市：${pickupCity}\n自提门店：${pickupStore}`;
-                    } else {
-                        const screenshotInput = container.querySelector('#storeScreenshot');
-
-                        if (!screenshotInput.files || !screenshotInput.files.length) {
-                            showNotification('请上传门店截图', 'error');
-                            return;
-                        }
-
-                        // 移除进度条，改为简单的状态提示
-                        const submitStatus = document.getElementById('submitStatus');
-                        submitStatus.textContent = '正在处理图片...';
-
-                        try {
-                            const file = screenshotInput.files[0];
-                            const reader = new FileReader();
-
-                            reader.onload = function(e) {
-                                screenshotData = e.target.result;
-                                hasScreenshot = true;
-
-                                deliveryInfo = `配送方式：到店自提\n自提方式：${pickupType}\n信息提供：截图上传`;
-
-                                submitStatus.textContent = '图片处理完成';
-
-                                // 继续提交订单
-                                setTimeout(() => {
-                                    submitStatus.textContent = '';
-                                    completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container, pickupType);
-                                }, 500);
-                            };
-
-                            reader.onerror = function() {
-                                submitStatus.textContent = '图片读取失败，请重试';
-                                showNotification('图片读取失败，请重试', 'error');
-                            };
-
-                            reader.readAsDataURL(file);
-                        } catch (error) {
-                            submitStatus.textContent = '图片处理失败';
-                            showNotification('图片处理失败: ' + error.message, 'error');
-                        }
-                        return;
                     }
-                }
 
-                await completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container, pickupType);
-            });
+                    prepareOrderData(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, pickupType);
+                });
+            }
         }
-    }
 
-        // ==================== 优化后的订单提交函数（使用美观的模态框） ====================
-        async function completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container, pickupType) {
-            const checkoutBtn = container.querySelector('.checkout-btn');
-            if (checkoutBtn.disabled) return;
-            
-            const submitStatus = document.getElementById('submitStatus');
-            submitStatus.textContent = '正在准备订单...';
-
+        // 准备订单数据并显示确认模态框
+        function prepareOrderData(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, pickupType) {
             let totalPrice = 0;
             cart.forEach(item => {
                 totalPrice += item.totalPrice;
             });
-
-            let orderSummary = "订单详情：\n\n";
-            cart.forEach((item, index) => {
-                orderSummary += `${index + 1}. ${item.name} - ¥${item.totalPrice.toFixed(2)}\n`;
-
-                const optionCount = {};
-                item.options.forEach(option => {
-                    optionCount[option] = (optionCount[option] || 0) + 1;
-                });
-
-                Object.keys(optionCount).forEach(option => {
-                    const count = optionCount[option];
-                    orderSummary += `   ${option}${count > 1 ? ` ×${count}` : ''}\n`;
-                });
-                orderSummary += "\n";
-            });
-
-            orderSummary += `\n总计：¥${totalPrice.toFixed(2)}\n`;
-            orderSummary += `\n${deliveryInfo}\n`;
-            if (orderNote) {
-                orderSummary += `备注：${orderNote}\n`;
-            }
-
-            submitStatus.textContent = '请确认订单信息...';
-
-            // 不再使用confirm，而是直接提交订单
-            checkoutBtn.disabled = true;
-            checkoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 提交中...';
-            
-            submitStatus.textContent = '正在提交订单...';
 
             const orderId = 'KFC' + Date.now().toString().slice(-6) + Math.floor(Math.random() * 100);
             const timestamp = new Date().toLocaleString('zh-CN');
@@ -5182,12 +5110,24 @@
                 totalPrice: totalPrice,
                 hasScreenshot: hasScreenshot,
                 screenshotData: screenshotData,
-                hasAdminScreenshot: false, // 新增：管理员图片标记
-                adminScreenshotData: '', // 新增：管理员图片数据
-                adminScreenshotTime: '', // 新增：管理员上传时间
                 userId: currentUserId
             };
 
+            // 显示美化的订单确认模态框
+            showOrderConfirm(orderData);
+        }
+
+        // ==================== 完成订单提交 ====================
+        async function completeOrderSubmission(orderData) {
+            const checkoutBtn = document.querySelector('.checkout-btn');
+            if (checkoutBtn.disabled) return;
+            
+            const submitStatus = document.getElementById('submitStatus');
+            submitStatus.textContent = '正在提交订单...';
+
+            checkoutBtn.disabled = true;
+            checkoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 提交中...';
+            
             try {
                 // 使用快速保存订单函数，不等待进度条
                 const savedOrder = await LeanCloudData.quickSaveOrder(orderData);
@@ -5222,7 +5162,7 @@
                 cart = [];
                 updateCartDisplay();
 
-                resetForm(container);
+                resetForm(document.querySelector('.meal-page-container.active'));
 
                 updateOrderBadge();
 
@@ -5230,9 +5170,6 @@
 
                 setTimeout(() => {
                     submitStatus.textContent = '';
-                    
-                    // 显示美观的订单成功模态框
-                    showSuccessModal(orderId, orderSummary, totalPrice);
                     
                     showNotification('订单提交成功！', 'success');
 
@@ -5245,6 +5182,78 @@
                         const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
                         renderOrders(activeFilter);
                     }
+
+                    // 显示成功提示，不再使用confirm
+                    const successHTML = `
+                        <div style="text-align: center; padding: 20px;">
+                            <i class="fas fa-check-circle" style="font-size: 3rem; color: #4CAF50; margin-bottom: 15px;"></i>
+                            <h3 style="color: #4CAF50; margin-bottom: 10px;">订单提交成功！</h3>
+                            <p style="margin-bottom: 15px;">订单号：<strong>${orderData.id}</strong></p>
+                            <p style="margin-bottom: 20px;">我们已收到您的订单，请耐心等待处理</p>
+                            <div style="display: flex; gap: 10px; justify-content: center;">
+                                <button id="viewOrderDetail" style="background-color: #e31837; color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer;">
+                                    <i class="fas fa-clipboard-list"></i> 查看订单详情
+                                </button>
+                                <button id="backToHome" style="background-color: #f0f0f0; color: #333; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer;">
+                                    <i class="fas fa-home"></i> 返回首页
+                                </button>
+                            </div>
+                        </div>
+                    `;
+
+                    // 使用自定义提示框替代alert
+                    const successModal = document.createElement('div');
+                    successModal.className = 'order-confirm-modal active';
+                    successModal.innerHTML = `
+                        <div class="order-confirm-box" style="max-width: 400px;">
+                            <div class="order-confirm-header">
+                                <h2 class="order-confirm-title">
+                                    <i class="fas fa-check-circle"></i>
+                                    提交成功
+                                </h2>
+                                <button class="order-confirm-close" onclick="this.closest('.order-confirm-modal').remove()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="order-confirm-body">
+                                ${successHTML}
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(successModal);
+                    
+                    // 绑定按钮事件
+                    successModal.querySelector('#viewOrderDetail').addEventListener('click', function() {
+                        successModal.remove();
+                        showMyOrdersPage();
+
+                        const url = new URL(window.location);
+                        url.searchParams.set('order', orderData.id);
+                        window.history.pushState({}, '', url);
+
+                        setTimeout(() => {
+                            document.getElementById('orderSearchInput').value = orderData.id;
+                            searchUserOrder(orderData.id);
+
+                            const orderElements = document.querySelectorAll('.user-order-item');
+                            orderElements.forEach(el => {
+                                const orderIdElement = el.querySelector('.user-order-id');
+                                if (orderIdElement && orderIdElement.textContent.includes(orderData.id)) {
+                                    el.style.animation = 'highlightOrder 2s';
+                                    el.scrollIntoView({
+                                        behavior: 'smooth',
+                                        block: 'center'
+                                    });
+                                }
+                            });
+                        }, 100);
+                    });
+                    
+                    successModal.querySelector('#backToHome').addEventListener('click', function() {
+                        successModal.remove();
+                        showPage('homePage');
+                    });
 
                 }, 1000);
 
@@ -5465,23 +5474,15 @@
                     </div>
                 `;
             }
-
-            // 新增：管理员上传的图片
-            let adminScreenshotHTML = '';
-            if (order.hasAdminScreenshot && order.adminScreenshotData) {
-                const uploadTime = order.adminScreenshotTime ? `（上传时间：${order.adminScreenshotTime}）` : '';
-                adminScreenshotHTML = `
-                    <div class="admin-screenshot-section">
-                        <div class="admin-screenshot-title">
-                            <i class="fas fa-camera"></i>
-                            管理员上传图片 ${uploadTime}
-                        </div>
-                        <div class="screenshot-container">
-                            <img src="${order.adminScreenshotData}" alt="管理员上传图片" class="screenshot-thumbnail" data-order-id="${order.id}" data-type="admin">
-                        </div>
-                        <div class="admin-screenshot-note">
-                            <i class="fas fa-info-circle"></i> 此图片由管理员上传，如有疑问请联系管理员
-                        </div>
+            
+            // 新增：显示反馈截图
+            let feedbackHTML = '';
+            if (order.feedbackScreenshotData) {
+                feedbackHTML = `
+                    <div class="feedback-screenshot-container">
+                        <h4><i class="fas fa-camera"></i> 商家反馈截图</h4>
+                        <img src="${order.feedbackScreenshotData}" alt="反馈截图" class="feedback-thumbnail" data-order-id="${order.id}">
+                        <p style="font-size:0.8rem; color:#666; margin-top: 5px;">商家已上传反馈信息</p>
                     </div>
                 `;
             }
@@ -5507,26 +5508,25 @@
                     ${deliveryHTML}
                     ${order.orderNote ? `<p><strong>备注：</strong>${order.orderNote}</p>` : ''}
                     ${screenshotHTML}
+                    ${feedbackHTML}
                 </div>
-                
-                ${adminScreenshotHTML}
             `;
 
-            // 绑定图片点击事件
             if (order.hasScreenshot && order.screenshotData) {
-                const screenshotImg = orderElement.querySelector('.screenshot-thumbnail[data-type!="admin"]');
+                const screenshotImg = orderElement.querySelector('.screenshot-thumbnail');
                 if (screenshotImg) {
                     screenshotImg.addEventListener('click', function() {
                         showFullImage(order.screenshotData);
                     });
                 }
             }
-
-            if (order.hasAdminScreenshot && order.adminScreenshotData) {
-                const adminScreenshotImg = orderElement.querySelector('.screenshot-thumbnail[data-type="admin"]');
-                if (adminScreenshotImg) {
-                    adminScreenshotImg.addEventListener('click', function() {
-                        showFullImage(order.adminScreenshotData);
+            
+            // 新增：反馈截图点击查看大图
+            if (order.feedbackScreenshotData) {
+                const feedbackImg = orderElement.querySelector('.feedback-thumbnail');
+                if (feedbackImg) {
+                    feedbackImg.addEventListener('click', function() {
+                        showFullImage(order.feedbackScreenshotData);
                     });
                 }
             }
@@ -5898,49 +5898,41 @@
                     </div>
                 `;
             }
-
-            // 新增：管理员上传的图片
-            let adminScreenshotHTML = '';
-            if (order.hasAdminScreenshot && order.adminScreenshotData) {
-                const uploadTime = order.adminScreenshotTime ? `（上传时间：${order.adminScreenshotTime}）` : '';
-                adminScreenshotHTML = `
-                    <div class="admin-screenshot-container">
-                        <p><strong>管理员上传图片：</strong> ${uploadTime}</p>
-                        <img src="${order.adminScreenshotData}" alt="管理员上传图片" class="screenshot-thumbnail" data-order-id="${order.id}" data-type="admin">
+            
+            // 新增：显示反馈截图
+            let feedbackHTML = '';
+            if (order.feedbackScreenshotData) {
+                feedbackHTML = `
+                    <div class="feedback-screenshot-container">
+                        <h4><i class="fas fa-camera"></i> 反馈截图</h4>
+                        <img src="${order.feedbackScreenshotData}" alt="反馈截图" class="feedback-thumbnail" data-order-id="${order.id}">
                     </div>
                 `;
             }
 
             const userInfo = order.userId ? `<p><strong>用户ID：</strong>${order.userId.substring(0, 12)}...</p>` : '';
 
-            // 新增：管理员上传图片区域
-            const adminUploadHTML = `
-                <div class="admin-upload-container">
-                    <div class="admin-upload-title">
-                        <i class="fas fa-upload"></i>
-                        上传图片给顾客
+            // 新增：反馈截图上传功能
+            const feedbackUploadHTML = `
+                <div class="feedback-upload-area" id="feedbackUploadArea-${order.id}" style="margin-top: 10px;">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>点击上传反馈截图</p>
+                    <p class="upload-hint">支持 JPG、PNG 格式</p>
+                    <input type="file" id="feedbackScreenshot-${order.id}" accept="image/*" style="display: none;">
+                </div>
+                <div class="feedback-preview hidden" id="feedbackPreview-${order.id}">
+                    <div class="screenshot-preview-container">
+                        <img id="feedbackPreviewImage-${order.id}" src="" alt="反馈截图预览">
+                        <div class="image-info" id="feedbackImageInfo-${order.id}"></div>
                     </div>
-                    <div class="admin-upload-area" id="adminUploadArea-${order.id}">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <p>点击或拖拽上传图片</p>
-                        <p class="admin-upload-hint">支持 JPG、PNG 格式，大小不超过 2MB</p>
-                        <input type="file" id="adminScreenshot-${order.id}" accept="image/*" style="display: none;">
-                    </div>
-                    <div class="admin-upload-preview hidden" id="adminUploadPreview-${order.id}">
-                        <div class="screenshot-preview-container">
-                            <img id="adminPreviewImage-${order.id}" src="" alt="管理员图片预览">
-                            <div class="admin-screenshot-info" id="adminImageInfo-${order.id}"></div>
-                        </div>
-                        <button type="button" class="remove-admin-screenshot" id="removeAdminScreenshot-${order.id}">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    <div class="admin-upload-status" id="adminUploadStatus-${order.id}"></div>
-                    <button class="admin-upload-btn" id="adminUploadBtn-${order.id}" data-order-id="${order.id}" ${order.hasAdminScreenshot ? 'disabled' : ''}>
-                        <i class="fas fa-upload"></i>
-                        ${order.hasAdminScreenshot ? '已上传' : '上传图片'}
+                    <button type="button" class="remove-feedback" id="removeFeedback-${order.id}">
+                        <i class="fas fa-times"></i>
                     </button>
                 </div>
+                <button class="feedback-btn" id="uploadFeedbackBtn-${order.id}" style="display: none;">
+                    <i class="fas fa-upload"></i>
+                    上传反馈截图
+                </button>
             `;
 
             orderElement.innerHTML = `
@@ -5963,10 +5955,13 @@
                     ${userInfo}
                     ${order.orderNote ? `<p><strong>备注：</strong>${order.orderNote}</p>` : ''}
                     ${screenshotHTML}
-                    ${adminScreenshotHTML}
+                    ${feedbackHTML}
                 </div>
                 
-                ${adminUploadHTML}
+                <div class="form-group" style="margin-top: 12px;">
+                    <label class="form-label">上传反馈截图给顾客</label>
+                    ${feedbackUploadHTML}
+                </div>
                 
                 <div style="margin-top: 12px; display: flex; gap: 8px;">
                     ${order.status === 'new' ? `<button class="filter-btn" style="padding: 5px 10px; font-size: 0.8rem;" data-action="process" data-order-id="${order.id}">标记为处理中</button>` : ''}
@@ -5975,7 +5970,6 @@
                 </div>
             `;
 
-            // 绑定订单操作按钮事件
             orderElement.querySelectorAll('button[data-action]').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const action = this.dataset.action;
@@ -5984,130 +5978,101 @@
                 });
             });
 
-            // 绑定图片点击事件
             if (order.hasScreenshot && order.screenshotData) {
-                const screenshotImg = orderElement.querySelector('.screenshot-thumbnail[data-type!="admin"]');
+                const screenshotImg = orderElement.querySelector('.screenshot-thumbnail');
                 if (screenshotImg) {
                     screenshotImg.addEventListener('click', function() {
                         showFullImage(order.screenshotData);
                     });
                 }
             }
-
-            if (order.hasAdminScreenshot && order.adminScreenshotData) {
-                const adminScreenshotImg = orderElement.querySelector('.screenshot-thumbnail[data-type="admin"]');
-                if (adminScreenshotImg) {
-                    adminScreenshotImg.addEventListener('click', function() {
-                        showFullImage(order.adminScreenshotData);
+            
+            // 新增：反馈截图点击查看大图
+            if (order.feedbackScreenshotData) {
+                const feedbackImg = orderElement.querySelector('.feedback-thumbnail');
+                if (feedbackImg) {
+                    feedbackImg.addEventListener('click', function() {
+                        showFullImage(order.feedbackScreenshotData);
                     });
                 }
             }
-
-            // 初始化管理员上传图片功能
-            initAdminUpload(order.id, order.hasAdminScreenshot);
+            
+            // 初始化反馈截图上传功能
+            initFeedbackUpload(order.id);
 
             return orderElement;
         }
 
-        // ==================== 初始化管理员上传图片功能 ====================
-        function initAdminUpload(orderId, hasAdminScreenshot) {
-            const uploadArea = document.getElementById(`adminUploadArea-${orderId}`);
-            const fileInput = document.getElementById(`adminScreenshot-${orderId}`);
-            const previewContainer = document.getElementById(`adminUploadPreview-${orderId}`);
-            const previewImage = document.getElementById(`adminPreviewImage-${orderId}`);
-            const removeBtn = document.getElementById(`removeAdminScreenshot-${orderId}`);
-            const uploadBtn = document.getElementById(`adminUploadBtn-${orderId}`);
-            const uploadStatus = document.getElementById(`adminUploadStatus-${orderId}`);
-            const imageInfo = document.getElementById(`adminImageInfo-${orderId}`);
+        // 初始化反馈截图上传功能
+        function initFeedbackUpload(orderId) {
+            const uploadArea = document.getElementById(`feedbackUploadArea-${orderId}`);
+            const fileInput = document.getElementById(`feedbackScreenshot-${orderId}`);
+            const previewContainer = document.getElementById(`feedbackPreview-${orderId}`);
+            const previewImage = document.getElementById(`feedbackPreviewImage-${orderId}`);
+            const removeBtn = document.getElementById(`removeFeedback-${orderId}`);
+            const uploadBtn = document.getElementById(`uploadFeedbackBtn-${orderId}`);
 
-            if (!uploadArea || !fileInput || !previewContainer || !previewImage || !removeBtn || !uploadBtn) {
-                return;
+            if (uploadArea && fileInput && previewContainer && previewImage && removeBtn && uploadBtn) {
+                let feedbackImageData = null;
+
+                uploadArea.addEventListener('click', function() {
+                    fileInput.click();
+                });
+
+                fileInput.addEventListener('change', function(e) {
+                    if (e.target.files.length) {
+                        handleFeedbackFileSelect(e.target.files[0], fileInput, previewContainer, previewImage, uploadArea, orderId);
+                        uploadBtn.style.display = 'block';
+                    }
+                });
+
+                removeBtn.addEventListener('click', function() {
+                    fileInput.value = '';
+                    previewContainer.classList.add('hidden');
+                    uploadArea.style.display = 'block';
+                    uploadBtn.style.display = 'none';
+                    feedbackImageData = null;
+                });
+
+                uploadBtn.addEventListener('click', async function() {
+                    if (!feedbackImageData) {
+                        showNotification('请先选择反馈截图', 'error');
+                        return;
+                    }
+
+                    try {
+                        const orderIndex = orders.findIndex(o => o.id === orderId);
+                        if (orderIndex === -1) return;
+
+                        const order = orders[orderIndex];
+                        order.feedbackScreenshotData = feedbackImageData;
+
+                        const updatedOrder = await LeanCloudData.saveOrder(order);
+                        orders[orderIndex] = updatedOrder;
+
+                        localStorage.setItem('kfcOrdersCache', JSON.stringify(orders));
+
+                        showNotification('反馈截图上传成功！顾客可以在"我的订单"页面查看', 'success');
+
+                        // 重新渲染订单列表
+                        const activeFilterBtn = document.querySelector('.filter-btn.active');
+                        const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
+                        renderOrders(activeFilter);
+
+                        // 显示实时更新指示器
+                        showRealtimeIndicator('反馈截图已上传');
+                    } catch (error) {
+                        console.error('上传反馈截图失败:', error);
+                        showNotification('上传失败，请检查网络连接', 'error');
+                    }
+                });
             }
-
-            // 如果已经上传过图片，显示预览
-            const order = orders.find(o => o.id === orderId);
-            if (order && order.hasAdminScreenshot && order.adminScreenshotData) {
-                previewImage.src = order.adminScreenshotData;
-                previewContainer.classList.remove('hidden');
-                uploadArea.style.display = 'none';
-                uploadBtn.disabled = true;
-                uploadBtn.innerHTML = '<i class="fas fa-check"></i> 已上传';
-                
-                // 显示图片信息
-                if (imageInfo && order.adminScreenshotTime) {
-                    imageInfo.innerHTML = `上传时间：${order.adminScreenshotTime}`;
-                }
-            }
-
-            uploadArea.addEventListener('click', function() {
-                fileInput.click();
-            });
-
-            uploadArea.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                this.style.borderColor = '#4CAF50';
-                this.style.backgroundColor = '#f0f9f0';
-            });
-
-            uploadArea.addEventListener('dragleave', function(e) {
-                e.preventDefault();
-                this.style.borderColor = '#ddd';
-                this.style.backgroundColor = 'white';
-            });
-
-            uploadArea.addEventListener('drop', function(e) {
-                e.preventDefault();
-                this.style.borderColor = '#ddd';
-                this.style.backgroundColor = 'white';
-
-                if (e.dataTransfer.files.length) {
-                    handleAdminFileSelect(e.dataTransfer.files[0], orderId);
-                }
-            });
-
-            fileInput.addEventListener('change', function(e) {
-                if (e.target.files.length) {
-                    handleAdminFileSelect(e.target.files[0], orderId);
-                }
-            });
-
-            removeBtn.addEventListener('click', function() {
-                fileInput.value = '';
-                previewContainer.classList.add('hidden');
-                uploadArea.style.display = 'block';
-                uploadBtn.disabled = false;
-                uploadBtn.innerHTML = '<i class="fas fa-upload"></i> 上传图片';
-                uploadStatus.textContent = '';
-                uploadStatus.className = 'admin-upload-status';
-                
-                if (imageInfo) {
-                    imageInfo.innerHTML = '';
-                }
-            });
-
-            uploadBtn.addEventListener('click', async function() {
-                if (!fileInput.files || !fileInput.files.length) {
-                    uploadStatus.textContent = '请先选择图片';
-                    uploadStatus.className = 'admin-upload-status error';
-                    return;
-                }
-
-                await uploadAdminScreenshot(orderId, fileInput.files[0]);
-            });
         }
 
-        // ==================== 处理管理员文件选择 ====================
-        async function handleAdminFileSelect(file, orderId) {
-            const uploadArea = document.getElementById(`adminUploadArea-${orderId}`);
-            const previewContainer = document.getElementById(`adminUploadPreview-${orderId}`);
-            const previewImage = document.getElementById(`adminPreviewImage-${orderId}`);
-            const imageInfo = document.getElementById(`adminImageInfo-${orderId}`);
-            const uploadBtn = document.getElementById(`adminUploadBtn-${orderId}`);
-
+        // 处理反馈截图文件选择
+        async function handleFeedbackFileSelect(file, fileInput, previewContainer, previewImage, uploadArea, orderId) {
             if (!file.type.match('image.*')) {
-                const uploadStatus = document.getElementById(`adminUploadStatus-${orderId}`);
-                uploadStatus.textContent = '请选择图片文件';
-                uploadStatus.className = 'admin-upload-status error';
+                showNotification('请选择图片文件', 'error');
                 return;
             }
 
@@ -6119,162 +6084,29 @@
                 previewImage.src = e.target.result;
                 previewContainer.classList.remove('hidden');
                 uploadArea.style.display = 'none';
-                uploadBtn.disabled = false;
                 
-                // 显示图片信息
-                if (imageInfo) {
-                    const originalSize = (file.size / 1024).toFixed(2);
-                    const compressedSize = (compressedImage.size / 1024).toFixed(2);
-                    const compressionRatio = ((1 - compressedImage.size / file.size) * 100).toFixed(1);
-                    imageInfo.innerHTML = `
-                        原始大小: ${originalSize}KB<br>
-                        压缩后: ${compressedSize}KB<br>
-                        压缩率: ${compressionRatio}%
-                    `;
+                // 保存图片数据
+                const orderElement = previewContainer.closest('.admin-order-item');
+                if (orderElement) {
+                    const orderIdAttr = orderElement.querySelector('.order-id').textContent.replace('订单号：', '');
+                    // 将图片数据保存到全局变量中，供上传按钮使用
+                    window[`feedbackData_${orderIdAttr}`] = e.target.result;
+                    
+                    // 显示图片信息
+                    const imageInfo = document.getElementById(`feedbackImageInfo-${orderId}`);
+                    if (imageInfo) {
+                        const originalSize = (file.size / 1024).toFixed(2);
+                        const compressedSize = (compressedImage.size / 1024).toFixed(2);
+                        const compressionRatio = ((1 - compressedImage.size / file.size) * 100).toFixed(1);
+                        imageInfo.innerHTML = `
+                            原始大小: ${originalSize}KB<br>
+                            压缩后: ${compressedSize}KB<br>
+                            压缩率: ${compressionRatio}%
+                        `;
+                    }
                 }
             };
             reader.readAsDataURL(compressedImage);
-        }
-
-        // ==================== 上传管理员图片 ====================
-        async function uploadAdminScreenshot(orderId, file) {
-            const uploadStatus = document.getElementById(`adminUploadStatus-${orderId}`);
-            const uploadBtn = document.getElementById(`adminUploadBtn-${orderId}`);
-            const fileInput = document.getElementById(`adminScreenshot-${orderId}`);
-            const orderIndex = orders.findIndex(o => o.id === orderId);
-
-            if (orderIndex === -1) {
-                uploadStatus.textContent = '订单不存在';
-                uploadStatus.className = 'admin-upload-status error';
-                return;
-            }
-
-            const order = orders[orderIndex];
-
-            if (order.hasAdminScreenshot) {
-                if (!confirm('该订单已经上传过图片，确定要替换吗？')) {
-                    return;
-                }
-            }
-
-            uploadStatus.textContent = '正在上传图片...';
-            uploadStatus.className = 'admin-upload-status';
-            uploadBtn.disabled = true;
-            uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 上传中...';
-
-            try {
-                // 压缩图片
-                const compressedImage = await compressImageOptimized(file);
-                
-                const reader = new FileReader();
-                
-                reader.onload = async function(e) {
-                    const screenshotData = e.target.result;
-                    const uploadTime = new Date().toLocaleString('zh-CN');
-
-                    // 更新订单对象
-                    orders[orderIndex].hasAdminScreenshot = true;
-                    orders[orderIndex].adminScreenshotData = screenshotData;
-                    orders[orderIndex].adminScreenshotTime = uploadTime;
-
-                    // 保存到LeanCloud
-                    const updatedOrder = await LeanCloudData.saveOrder(orders[orderIndex]);
-                    orders[orderIndex] = updatedOrder;
-
-                    // 更新本地缓存
-                    localStorage.setItem('kfcOrdersCache', JSON.stringify(orders.map(o => ({
-                        id: o.id,
-                        timestamp: o.timestamp,
-                        status: o.status,
-                        totalPrice: o.totalPrice,
-                        userId: o.userId
-                    }))));
-
-                    // 更新显示
-                    uploadStatus.textContent = '图片上传成功！';
-                    uploadStatus.className = 'admin-upload-status success';
-                    uploadBtn.disabled = true;
-                    uploadBtn.innerHTML = '<i class="fas fa-check"></i> 已上传';
-
-                    // 更新图片信息
-                    const imageInfo = document.getElementById(`adminImageInfo-${orderId}`);
-                    if (imageInfo) {
-                        imageInfo.innerHTML = `上传时间：${uploadTime}`;
-                    }
-
-                    showNotification(`订单 ${orderId} 的图片上传成功`, 'success');
-
-                    // 重新渲染订单列表
-                    const activeFilterBtn = document.querySelector('.filter-btn.active');
-                    const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
-                    renderOrders(activeFilter);
-                };
-
-                reader.onerror = function() {
-                    uploadStatus.textContent = '图片读取失败';
-                    uploadStatus.className = 'admin-upload-status error';
-                    uploadBtn.disabled = false;
-                    uploadBtn.innerHTML = '<i class="fas fa-upload"></i> 上传图片';
-                };
-
-                reader.readAsDataURL(compressedImage);
-            } catch (error) {
-                console.error('上传管理员图片失败:', error);
-                uploadStatus.textContent = '上传失败，请重试';
-                uploadStatus.className = 'admin-upload-status error';
-                uploadBtn.disabled = false;
-                uploadBtn.innerHTML = '<i class="fas fa-upload"></i> 上传图片';
-                showNotification('图片上传失败：' + (error.message || '请检查网络连接'), 'error');
-            }
-        }
-
-        // ==================== 压缩图片函数（通用） ====================
-        async function compressImageOptimized(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = function(event) {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
-                        
-                        // 根据原始图片大小动态调整压缩参数
-                        let maxWidth = 800;
-                        let quality = 0.7;
-                        
-                        // 大图片使用更激进的压缩
-                        if (file.size > 2 * 1024 * 1024) { // 大于2MB
-                            maxWidth = 600;
-                            quality = 0.5;
-                        } else if (file.size > 1 * 1024 * 1024) { // 大于1MB
-                            maxWidth = 700;
-                            quality = 0.6;
-                        }
-                        
-                        // 如果图片宽度超过最大宽度，等比例缩小
-                        if (width > maxWidth) {
-                            height = Math.round((height * maxWidth) / width);
-                            width = maxWidth;
-                        }
-                        
-                        canvas.width = width;
-                        canvas.height = height;
-                        
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        
-                        // 转换为压缩后的图片
-                        canvas.toBlob(function(blob) {
-                            resolve(blob);
-                        }, file.type, quality);
-                    };
-                    img.onerror = reject;
-                };
-                reader.onerror = reject;
-            });
         }
 
         async function handleOrderAction(action, orderId) {
