@@ -2002,21 +2002,26 @@
             margin-bottom: 3px;
         }
         
+        /* 手机端保持左右布局 */
         @media (max-width: 768px) {
-            /* 手机端保持左右布局 */
+            /* 手机端主内容区域保持左右布局 */
             .main-content {
                 flex-direction: row;
-                flex-wrap: wrap;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
             }
             
             .menu-section {
-                flex: 100%;
+                flex: 3;
+                min-width: 0;
                 order: 1;
-                margin-bottom: 20px;
+                margin-right: 15px;
             }
             
             .right-section {
-                flex: 100%;
+                flex: 1;
+                min-width: 300px;
                 order: 2;
                 display: flex;
                 flex-direction: column;
@@ -2025,21 +2030,48 @@
             .delivery-form {
                 order: 1;
                 width: 100%;
+                margin-bottom: 15px;
             }
             
             .cart-section {
                 order: 2;
                 width: 100%;
-                position: static;
-                margin-top: 20px;
+                position: sticky;
+                top: 20px;
+                height: fit-content;
             }
             
-            .logo {
-                font-size: 2rem;
+            /* 调整套餐网格为两列 */
+            .meal-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
             }
             
             .meal-card {
                 padding: 15px;
+                min-height: 150px;
+            }
+            
+            .meal-name {
+                font-size: 1.1rem;
+            }
+            
+            .meal-price {
+                font-size: 1.3rem;
+            }
+            
+            .meal-description {
+                font-size: 0.85rem;
+            }
+            
+            .meal-tag {
+                font-size: 0.7rem;
+                padding: 3px 8px;
+            }
+            
+            /* 其他移动端优化 */
+            .logo {
+                font-size: 2rem;
             }
             
             .store-selection {
@@ -2086,10 +2118,6 @@
             .password-box {
                 padding: 25px;
                 width: 95%;
-            }
-            
-            .meal-grid {
-                grid-template-columns: 1fr;
             }
             
             .form-row {
@@ -2161,6 +2189,12 @@
             .admin-search-box {
                 min-width: 100%;
             }
+            
+            /* 调整配送信息和购物车容器高度 */
+            .delivery-form, .cart-section {
+                max-height: calc(100vh - 200px);
+                overflow-y: auto;
+            }
         }
         
         /* 确保在桌面端保持左右布局 */
@@ -2189,6 +2223,17 @@
                 order: 2;
                 position: sticky;
                 top: 20px;
+            }
+        }
+        
+        /* 平板设备优化 */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .meal-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .right-section {
+                min-width: 350px;
             }
         }
     </style>
