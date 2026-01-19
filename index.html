@@ -3008,7 +3008,7 @@
                         
                         <div class="form-group">
                             <label class="form-label">套餐标签 <span class="required">*</span></label>
-                            <input type="text" class="form-input" id="newMealTags" placeholder="用逗码分隔，例如：自提/宅急送,3人餐,12件套" required>
+                            <input type="text" class="form-input" id="newMealTags" placeholder="用逗号分隔，例如：自提/宅急送,3人餐,12件套" required>
                             <div class="form-hint">
                                 <i class="fas fa-lightbulb"></i> 标签将显示在套餐卡片上，用逗号分隔多个标签
                             </div>
@@ -3529,13 +3529,15 @@
                         orderObj.set('hasScreenshot', false);
                     }
 
-                    const result = await orderObj.save();
-                    console.log('订单保存成功:', order.id);
+                    // 快速保存，不等待返回结果
+                    orderObj.save().then(result => {
+                        console.log('订单快速保存成功:', order.id);
+                    }).catch(error => {
+                        console.error('订单快速保存失败:', error);
+                    });
 
-                    const createdAt = result.createdAt ? result.createdAt.getTime() : Date.now();
-                    const updatedAt = result.updatedAt ? result.updatedAt.getTime() : Date.now();
-
-                    return {
+                    // 立即返回一个承诺，但实际是异步的
+                    return Promise.resolve({
                         id: order.id,
                         timestamp: order.timestamp,
                         status: order.status || 'new',
@@ -3551,14 +3553,14 @@
                         adminScreenshotData: order.adminScreenshotData || '', // 新增
                         adminScreenshotTime: order.adminScreenshotTime || '', // 新增
                         userId: order.userId,
-                        createdAt: createdAt,
-                        updatedAt: updatedAt,
-                        objectId: result.id
-                    };
+                        createdAt: Date.now(),
+                        updatedAt: Date.now(),
+                        objectId: 'pending_' + order.id
+                    });
                 } catch (error) {
                     console.error('快速保存订单失败:', error);
                     // 即使失败也返回一个本地订单对象
-                    return {
+                    return Promise.resolve({
                         id: order.id,
                         timestamp: order.timestamp,
                         status: order.status || 'new',
@@ -3577,7 +3579,7 @@
                         createdAt: Date.now(),
                         updatedAt: Date.now(),
                         objectId: 'local_' + order.id
-                    };
+                    });
                 }
             }
         }
@@ -3728,7 +3730,7 @@
                 clearInterval(globalPollingInterval);
             }
             
-            // 每3秒检查一次新订单计数
+            // 每3秒检查一次新订单计数（从5秒缩短到3秒）
             globalPollingInterval = setInterval(async () => {
                 try {
                     // 检查新订单计数
@@ -4762,9 +4764,7 @@
                     }
                     
                     // 替换原始文件
-                    const dataTransfer = new DataTransfer();
-                    dataTransfer.items.add(compressedImage);
-                    fileInput.files = dataTransfer.files;
+                    fileInput.files = dataURLtoBlob(e.target.result);
                 };
                 reader.readAsDataURL(compressedImage);
             }
@@ -4830,6 +4830,27 @@
                     };
                     reader.onerror = reject;
                 });
+            }
+
+            // 将dataURL转换为Blob对象
+            function dataURLtoBlob(dataURL) {
+                const arr = dataURL.split(',');
+                const mime = arr[0].match(/:(.*?);/)[1];
+                const bstr = atob(arr[1]);
+                let n = bstr.length;
+                const u8arr = new Uint8Array(n);
+                while (n--) {
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+                const blob = new Blob([u8arr], {type: mime});
+                
+                // 创建一个File对象
+                const file = new File([blob], "compressed_image.jpg", {type: mime});
+                
+                // 创建FileList对象
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                return dataTransfer.files;
             }
         }
 
@@ -5046,62 +5067,62 @@
                             }
 
                             if (!pickupStore) {
-                                showNotification('请输入自提门店', 'error');
-                                const storeInput = container.querySelector('#pickupStoreInput');
-                                if (storeInput) storeInput.focus();
-                                return;
-                            }
-
-                            deliveryInfo = `配送方式：到店自提\n自提方式：${pickupType}\n信息提供：手动填写\n自提城市：${pickupCity}\n自提门店：${pickupStore}`;
-                        } else {
-                            const screenshotInput = container.querySelector('#storeScreenshot');
-
-                            if (!screenshotInput.files || !screenshotInput.files.length) {
-                                showNotification('请上传门店截图', 'error');
-                                return;
-                            }
-
-                            // 移除进度条，改为简单的状态提示
-                            const submitStatus = document.getElementById('submitStatus');
-                            submitStatus.textContent = '正在处理图片...';
-
-                            try {
-                                const file = screenshotInput.files[0];
-                                const reader = new FileReader();
-
-                                reader.onload = function(e) {
-                                    screenshotData = e.target.result;
-                                    hasScreenshot = true;
-
-                                    deliveryInfo = `配送方式：到店自提\n自提方式：${pickupType}\n信息提供：截图上传`;
-
-                                    submitStatus.textContent = '图片处理完成';
-
-                                    // 继续提交订单
-                                    setTimeout(() => {
-                                        submitStatus.textContent = '';
-                                        completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container, pickupType);
-                                    }, 500);
-                                };
-
-                                reader.onerror = function() {
-                                    submitStatus.textContent = '图片读取失败，请重试';
-                                    showNotification('图片读取失败，请重试', 'error');
-                                };
-
-                                reader.readAsDataURL(file);
-                            } catch (error) {
-                                submitStatus.textContent = '图片处理失败';
-                                showNotification('图片处理失败: ' + error.message, 'error');
-                            }
+                            showNotification('请输入自提门店', 'error');
+                            const storeInput = container.querySelector('#pickupStoreInput');
+                            if (storeInput) storeInput.focus();
                             return;
                         }
-                    }
 
-                    await completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container, pickupType);
-                });
-            }
+                        deliveryInfo = `配送方式：到店自提\n自提方式：${pickupType}\n信息提供：手动填写\n自提城市：${pickupCity}\n自提门店：${pickupStore}`;
+                    } else {
+                        const screenshotInput = container.querySelector('#storeScreenshot');
+
+                        if (!screenshotInput.files || !screenshotInput.files.length) {
+                            showNotification('请上传门店截图', 'error');
+                            return;
+                        }
+
+                        // 移除进度条，改为简单的状态提示
+                        const submitStatus = document.getElementById('submitStatus');
+                        submitStatus.textContent = '正在处理图片...';
+
+                        try {
+                            const file = screenshotInput.files[0];
+                            const reader = new FileReader();
+
+                            reader.onload = function(e) {
+                                screenshotData = e.target.result;
+                                hasScreenshot = true;
+
+                                deliveryInfo = `配送方式：到店自提\n自提方式：${pickupType}\n信息提供：截图上传`;
+
+                                submitStatus.textContent = '图片处理完成';
+
+                                // 继续提交订单
+                                setTimeout(() => {
+                                    submitStatus.textContent = '';
+                                    completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container, pickupType);
+                                }, 500);
+                            };
+
+                            reader.onerror = function() {
+                                submitStatus.textContent = '图片读取失败，请重试';
+                                showNotification('图片读取失败，请重试', 'error');
+                            };
+
+                            reader.readAsDataURL(file);
+                        } catch (error) {
+                            submitStatus.textContent = '图片处理失败';
+                            showNotification('图片处理失败: ' + error.message, 'error');
+                        }
+                        return;
+                    }
+                }
+
+                await completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container, pickupType);
+            });
         }
+    }
 
         // ==================== 优化后的订单提交函数（使用美观的模态框） ====================
         async function completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container, pickupType) {
@@ -5168,9 +5189,9 @@
             };
 
             try {
-                // 使用快速保存订单函数
+                // 使用快速保存订单函数，不等待进度条
                 const savedOrder = await LeanCloudData.quickSaveOrder(orderData);
-                console.log('订单提交成功:', savedOrder);
+                console.log('订单快速提交成功:', savedOrder);
 
                 savedOrder.objectId = savedOrder.objectId;
                 orders.unshift(savedOrder);
@@ -5218,12 +5239,7 @@
                     // 立即显示实时更新指示器
                     showRealtimeIndicator('订单已提交！');
 
-                    // 如果当前在"我的订单"页面，更新显示
-                    if (document.getElementById('myOrdersPage').classList.contains('active')) {
-                        renderUserOrders('all');
-                    }
-
-                    // 如果管理员面板打开，更新显示
+                    // 立即通知管理员（无论是否登录后台）
                     if (isAdminPanelOpen) {
                         const activeFilterBtn = document.querySelector('.filter-btn.active');
                         const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
@@ -5633,11 +5649,11 @@
                 clearInterval(adminPollingInterval);
             }
             
-            // 每2秒检查一次新订单
+            // 每2秒检查一次新订单（从3秒缩短到2秒）
             adminPollingInterval = setInterval(async () => {
                 if (isAdminPanelOpen) {
                     try {
-                        // 只检查新订单
+                        // 只检查新订单，不检查新订单计数
                         const newOrders = await LeanCloudData.checkForNewOrders(lastOrderUpdateTime - 2000); // 2秒前的更新
                         if (newOrders.length > 0) {
                             // 更新最后更新时间
@@ -6116,11 +6132,6 @@
                         压缩率: ${compressionRatio}%
                     `;
                 }
-                
-                // 替换原始文件
-                const dataTransfer = new DataTransfer();
-                dataTransfer.items.add(compressedImage);
-                document.getElementById(`adminScreenshot-${orderId}`).files = dataTransfer.files;
             };
             reader.readAsDataURL(compressedImage);
         }
