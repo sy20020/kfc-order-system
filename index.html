@@ -2352,37 +2352,81 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         
-        /* 新增：订单反馈截图显示在顶部 */
+        /* 新增：订单反馈截图显示在顶部 - 优化显示大小 */
         .order-feedback-top {
             margin-top: 8px;
             margin-bottom: 12px;
-            padding: 10px;
+            padding: 15px;
             background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
-            border-radius: 8px;
+            border-radius: 10px;
             border-left: 4px solid #4CAF50;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
         }
         
         .order-feedback-top h4 {
             color: #2e7d32;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
+            margin-bottom: 12px;
+            font-size: 1rem;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
         
+        /* 优化：增大订单反馈截图显示大小 */
         .order-feedback-thumbnail {
-            max-width: 150px;
-            border-radius: 6px;
-            border: 1px solid #4CAF50;
+            max-width: 100%; /* 改为100%宽度，根据容器自适应 */
+            width: auto;
+            max-height: 250px; /* 增大最大高度 */
+            border-radius: 8px;
+            border: 2px solid #4CAF50;
             cursor: pointer;
-            transition: transform 0.3s;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            display: block;
+            margin: 0 auto; /* 居中显示 */
         }
         
         .order-feedback-thumbnail:hover {
-            transform: scale(1.05);
+            transform: scale(1.03);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+        
+        /* 新增：顾客订单页面中的反馈截图显示优化 */
+        .user-order-feedback-container {
+            margin-top: 15px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+            border-radius: 10px;
+            border-left: 4px solid #4CAF50;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+        
+        .user-order-feedback-container h4 {
+            color: #2e7d32;
+            margin-bottom: 12px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .user-feedback-thumbnail {
+            max-width: 100%; /* 改为100%宽度，根据容器自适应 */
+            width: auto;
+            max-height: 300px; /* 增大最大高度 */
+            border-radius: 8px;
+            border: 2px solid #4CAF50;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            display: block;
+            margin: 0 auto; /* 居中显示 */
+        }
+        
+        .user-feedback-thumbnail:hover {
+            transform: scale(1.03);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
         }
         
         /* 其他样式保持不变... */
@@ -2579,6 +2623,23 @@
             
             .order-confirm-item-title {
                 font-size: 1rem;
+            }
+            
+            /* 移动端优化反馈截图显示 */
+            .order-feedback-thumbnail {
+                max-height: 200px; /* 移动端适当减小 */
+            }
+            
+            .user-feedback-thumbnail {
+                max-height: 200px; /* 移动端适当减小 */
+            }
+            
+            .order-feedback-top {
+                padding: 12px;
+            }
+            
+            .user-order-feedback-container {
+                padding: 12px;
             }
         }
         
@@ -5552,6 +5613,7 @@
             });
         }
 
+        // ==================== 优化：创建用户订单元素（增大反馈截图显示） ====================
         function createUserOrderElement(order) {
             const orderElement = document.createElement('div');
             orderElement.className = 'user-order-item';
@@ -5616,14 +5678,16 @@
                 `;
             }
             
-            // 新增：美化订单反馈截图显示，放在订单号下方
+            // 新增：美化订单反馈截图显示，使用新的更大容器
             let feedbackTopHTML = '';
             if (order.feedbackScreenshotData) {
                 feedbackTopHTML = `
-                    <div class="order-feedback-top">
+                    <div class="user-order-feedback-container">
                         <h4><i class="fas fa-check-circle"></i> 订单反馈截图</h4>
-                        <img src="${order.feedbackScreenshotData}" alt="订单反馈截图" class="order-feedback-thumbnail" data-order-id="${order.id}">
-                        <p style="font-size:0.8rem; color:#2e7d32; margin-top: 5px; font-weight: bold;">商家已上传反馈信息</p>
+                        <img src="${order.feedbackScreenshotData}" alt="订单反馈截图" class="user-feedback-thumbnail" data-order-id="${order.id}">
+                        <p style="font-size:0.9rem; color:#2e7d32; margin-top: 8px; font-weight: bold; text-align: center;">
+                            <i class="fas fa-info-circle"></i> 商家已上传反馈信息，点击图片可查看大图
+                        </p>
                     </div>
                 `;
             }
@@ -5665,7 +5729,7 @@
             
             // 新增：反馈截图点击查看大图
             if (order.feedbackScreenshotData) {
-                const feedbackImg = orderElement.querySelector('.order-feedback-thumbnail');
+                const feedbackImg = orderElement.querySelector('.user-feedback-thumbnail');
                 if (feedbackImg) {
                     feedbackImg.addEventListener('click', function() {
                         showFullImage(order.feedbackScreenshotData);
@@ -5982,6 +6046,7 @@
             });
         }
 
+        // ==================== 优化：创建订单元素（增大反馈截图显示） ====================
         function createOrderElement(order) {
             const orderElement = document.createElement('div');
             orderElement.className = 'admin-order-item';
@@ -6043,14 +6108,16 @@
                 `;
             }
             
-            // 新增：美化反馈截图显示
+            // 新增：美化反馈截图显示 - 增大显示
             let feedbackHTML = '';
             if (order.feedbackScreenshotData) {
                 feedbackHTML = `
                     <div class="feedback-screenshot-container">
-                        <h4><i class="fas fa-check-circle"></i> 订单反馈截图</h4>
-                        <img src="${order.feedbackScreenshotData}" alt="订单反馈截图" class="feedback-thumbnail" data-order-id="${order.id}">
-                        <p style="font-size:0.8rem; color:#2e7d32; margin-top: 5px; font-weight: bold;">已上传反馈给顾客</p>
+                        <h4><i class="fas fa-check-circle"></i> 订单反馈截图（顾客可见）</h4>
+                        <img src="${order.feedbackScreenshotData}" alt="订单反馈截图" class="feedback-thumbnail" data-order-id="${order.id}" style="max-height: 250px; object-fit: contain;">
+                        <p style="font-size:0.9rem; color:#2e7d32; margin-top: 8px; font-weight: bold; text-align: center;">
+                            <i class="fas fa-info-circle"></i> 已上传反馈给顾客，点击图片可查看大图
+                        </p>
                     </div>
                 `;
             }
@@ -6062,12 +6129,12 @@
                 <div class="feedback-upload-area" id="feedbackUploadArea-${order.id}">
                     <i class="fas fa-cloud-upload-alt"></i>
                     <p>点击上传订单反馈截图</p>
-                    <p class="upload-hint">支持 JPG、PNG 格式</p>
+                    <p class="upload-hint">支持 JPG、PNG 格式，上传后顾客可以在"我的订单"页面查看</p>
                     <input type="file" id="feedbackScreenshot-${order.id}" accept="image/*">
                 </div>
                 <div class="feedback-preview" id="feedbackPreview-${order.id}">
                     <div class="screenshot-preview-container">
-                        <img id="feedbackPreviewImage-${order.id}" src="" alt="反馈截图预览">
+                        <img id="feedbackPreviewImage-${order.id}" src="" alt="反馈截图预览" style="max-height: 200px; object-fit: contain;">
                         <div class="image-info" id="feedbackImageInfo-${order.id}"></div>
                     </div>
                     <button type="button" class="remove-feedback" id="removeFeedback-${order.id}">
