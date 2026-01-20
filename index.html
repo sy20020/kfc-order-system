@@ -3528,6 +3528,43 @@
                     });
                 }
             }
+            
+            // 新增：检查订单更新（包括反馈截图）
+            static async checkForOrderUpdates(sinceTime, userId) {
+                try {
+                    const query = new AV.Query('Orders');
+                    query.greaterThan('updatedAt', new Date(sinceTime));
+                    query.equalTo('userId', userId);
+                    query.descending('updatedAt');
+                    const results = await query.find();
+                    
+                    return results.map(item => {
+                        const data = item.toJSON();
+                        const createdAt = item.createdAt ? item.createdAt.getTime() : Date.now();
+                        const updatedAt = item.updatedAt ? item.updatedAt.getTime() : Date.now();
+                        return {
+                            id: data.id,
+                            timestamp: data.timestamp,
+                            status: data.status || 'new',
+                            cart: data.cart || [],
+                            deliveryInfo: data.deliveryInfo,
+                            orderNote: data.orderNote || '',
+                            deliveryType: data.deliveryType,
+                            totalPrice: data.totalPrice,
+                            hasScreenshot: data.hasScreenshot || false,
+                            screenshotData: data.screenshotData,
+                            feedbackScreenshotData: data.feedbackScreenshotData || null,
+                            userId: data.userId,
+                            createdAt: createdAt,
+                            updatedAt: updatedAt,
+                            objectId: item.id
+                        };
+                    });
+                } catch (error) {
+                    console.error('检查订单更新失败:', error);
+                    return [];
+                }
+            }
         }
 
         // ==================== 图片压缩函数（移到全局作用域） ====================
@@ -3667,15 +3704,21 @@
 
             orderConfirmClose.addEventListener('click', function() {
                 orderConfirmModal.classList.remove('active');
+                // 恢复页面滚动
+                document.body.style.overflow = 'auto';
             });
 
             orderConfirmCancel.addEventListener('click', function() {
                 orderConfirmModal.classList.remove('active');
+                // 恢复页面滚动
+                document.body.style.overflow = 'auto';
             });
 
             orderConfirmModal.addEventListener('click', function(e) {
                 if (e.target === orderConfirmModal) {
                     orderConfirmModal.classList.remove('active');
+                    // 恢复页面滚动
+                    document.body.style.overflow = 'auto';
                 }
             });
         }
@@ -3685,6 +3728,9 @@
             const orderConfirmModal = document.getElementById('orderConfirmModal');
             const orderConfirmBody = document.getElementById('orderConfirmBody');
             const orderConfirmSubmit = document.getElementById('orderConfirmSubmit');
+
+            // 禁止页面滚动
+            document.body.style.overflow = 'hidden';
 
             let totalPrice = 0;
             cart.forEach(item => {
@@ -3769,6 +3815,8 @@
             // 设置提交按钮事件
             orderConfirmSubmit.onclick = function() {
                 orderConfirmModal.classList.remove('active');
+                // 恢复页面滚动
+                document.body.style.overflow = 'auto';
                 // 设置一个短暂的延迟，让模态框关闭动画完成
                 setTimeout(() => {
                     completeOrderSubmission(orderData);
@@ -3809,25 +3857,26 @@
                         }
                     }
                     
-                    // 如果当前页面是"我的订单"页面，检查当前用户的新订单
+                    // 如果当前页面是"我的订单"页面，检查当前用户的订单更新（包括反馈截图）
                     if (document.getElementById('myOrdersPage').classList.contains('active')) {
-                        const newUserOrders = await LeanCloudData.checkForNewOrders(lastUserOrderUpdateTime - 3000, currentUserId);
-                        if (newUserOrders.length > 0) {
+                        const updatedOrders = await LeanCloudData.checkForOrderUpdates(lastUserOrderUpdateTime - 3000, currentUserId);
+                        if (updatedOrders.length > 0) {
                             // 更新最后检查时间
                             lastUserOrderUpdateTime = Date.now();
                             
-                            // 将新订单添加到本地数组，注意去重
-                            newUserOrders.forEach(newOrder => {
-                                const existingIndex = orders.findIndex(o => o.id === newOrder.id);
-                                if (existingIndex === -1) {
-                                    orders.unshift(newOrder);
-                                } else {
-                                    orders[existingIndex] = newOrder;
+                            // 将更新的订单合并到本地数组
+                            updatedOrders.forEach(updatedOrder => {
+                                const existingIndex = orders.findIndex(o => o.id === updatedOrder.id);
+                                if (existingIndex !== -1) {
+                                    // 保留原有订单的某些属性，只更新状态、反馈截图等
+                                    orders[existingIndex].status = updatedOrder.status;
+                                    orders[existingIndex].feedbackScreenshotData = updatedOrder.feedbackScreenshotData;
+                                    orders[existingIndex].updatedAt = updatedOrder.updatedAt;
                                 }
                             });
                             
                             // 显示实时更新指示器
-                            showRealtimeIndicator(`您有${newUserOrders.length}个新订单`);
+                            showRealtimeIndicator(`您的订单有更新`);
                             
                             // 重新渲染"我的订单"页面
                             const activeFilterTab = document.querySelector('.order-filter-tab.active');
@@ -5213,18 +5262,18 @@
                         renderOrders(activeFilter);
                     }
 
-                    // 显示成功提示，不再使用confirm
+                    // 显示更简洁的成功提示
                     const successHTML = `
-                        <div style="text-align: center; padding: 20px;">
-                            <i class="fas fa-check-circle" style="font-size: 3rem; color: #4CAF50; margin-bottom: 15px;"></i>
-                            <h3 style="color: #4CAF50; margin-bottom: 10px;">订单提交成功！</h3>
-                            <p style="margin-bottom: 15px;">订单号：<strong>${orderData.id}</strong></p>
-                            <p style="margin-bottom: 20px;">我们已收到您的订单，请耐心等待处理</p>
-                            <div style="display: flex; gap: 10px; justify-content: center;">
-                                <button id="viewOrderDetail" style="background-color: #e31837; color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer;">
+                        <div style="text-align: center; padding: 15px;">
+                            <i class="fas fa-check-circle" style="font-size: 2.5rem; color: #4CAF50; margin-bottom: 10px;"></i>
+                            <h3 style="color: #4CAF50; margin-bottom: 8px; font-size: 1.2rem;">订单提交成功！</h3>
+                            <p style="margin-bottom: 10px; font-size: 0.9rem;">订单号：<strong>${orderData.id}</strong></p>
+                            <p style="margin-bottom: 15px; font-size: 0.85rem;">我们已收到您的订单，请耐心等待处理</p>
+                            <div style="display: flex; gap: 8px; justify-content: center; margin-top: 15px;">
+                                <button id="viewOrderDetail" style="background-color: #e31837; color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 0.9rem;">
                                     <i class="fas fa-clipboard-list"></i> 查看订单详情
                                 </button>
-                                <button id="backToHome" style="background-color: #f0f0f0; color: #333; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer;">
+                                <button id="backToHome" style="background-color: #f0f0f0; color: #333; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 0.9rem;">
                                     <i class="fas fa-home"></i> 返回首页
                                 </button>
                             </div>
@@ -5235,27 +5284,31 @@
                     const successModal = document.createElement('div');
                     successModal.className = 'order-confirm-modal active';
                     successModal.innerHTML = `
-                        <div class="order-confirm-box" style="max-width: 400px;">
-                            <div class="order-confirm-header">
-                                <h2 class="order-confirm-title">
+                        <div class="order-confirm-box" style="max-width: 350px; max-height: 400px;">
+                            <div class="order-confirm-header" style="padding: 12px 15px;">
+                                <h2 class="order-confirm-title" style="font-size: 1.1rem;">
                                     <i class="fas fa-check-circle"></i>
                                     提交成功
                                 </h2>
-                                <button class="order-confirm-close" onclick="this.closest('.order-confirm-modal').remove()">
+                                <button class="order-confirm-close" onclick="this.closest('.order-confirm-modal').remove(); document.body.style.overflow='auto';">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
-                            <div class="order-confirm-body">
+                            <div class="order-confirm-body" style="padding: 15px; max-height: 280px; overflow-y: auto;">
                                 ${successHTML}
                             </div>
                         </div>
                     `;
+                    
+                    // 禁止页面滚动
+                    document.body.style.overflow = 'hidden';
                     
                     document.body.appendChild(successModal);
                     
                     // 绑定按钮事件
                     successModal.querySelector('#viewOrderDetail').addEventListener('click', function() {
                         successModal.remove();
+                        document.body.style.overflow = 'auto';
                         showMyOrdersPage();
 
                         const url = new URL(window.location);
@@ -5282,6 +5335,7 @@
                     
                     successModal.querySelector('#backToHome').addEventListener('click', function() {
                         successModal.remove();
+                        document.body.style.overflow = 'auto';
                         showPage('homePage');
                     });
 
