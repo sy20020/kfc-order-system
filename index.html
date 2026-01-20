@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>肯德基自助点餐系统</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- LeanCloud SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -2042,295 +2042,6 @@
             margin-bottom: 2px;
         }
         
-        /* 修改：订单确认模态框样式 - 调整大小布局，避免滚动 */
-        .order-confirm-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 3001;
-            display: none;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .order-confirm-modal.active {
-            display: flex;
-        }
-        
-        .order-confirm-box {
-            background-color: white;
-            border-radius: 15px;
-            padding: 25px;
-            width: 90%;
-            max-width: 500px;
-            max-height: 75vh; /* 减少高度避免滚动 */
-            overflow-y: auto;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-            animation: modalFadeIn 0.3s ease;
-        }
-        
-        @keyframes modalFadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .order-confirm-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #ffcc00;
-            position: sticky;
-            top: 0;
-            background-color: white;
-            z-index: 1;
-            padding-top: 5px;
-        }
-        
-        .order-confirm-title {
-            color: #e31837;
-            font-size: 1.3rem; /* 减小字体大小 */
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .order-confirm-close {
-            background: none;
-            border: none;
-            color: #666;
-            font-size: 1.3rem; /* 减小字体大小 */
-            cursor: pointer;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: all 0.3s;
-        }
-        
-        .order-confirm-close:hover {
-            background-color: #f5f5f5;
-            color: #e31837;
-        }
-        
-        .order-confirm-body {
-            margin-bottom: 15px;
-        }
-        
-        .order-confirm-item {
-            background-color: #f9f9f9;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 8px; /* 减小间距 */
-            border-left: 3px solid #ffcc00;
-            font-size: 0.9rem; /* 减小字体大小 */
-        }
-        
-        .order-confirm-item-title {
-            font-weight: bold;
-            color: #e31837;
-            margin-bottom: 6px; /* 减小间距 */
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.95rem; /* 减小字体大小 */
-        }
-        
-        .order-confirm-item-content {
-            color: #333;
-            font-size: 0.85rem; /* 减小字体大小 */
-            line-height: 1.4;
-        }
-        
-        .order-confirm-options {
-            margin-top: 8px; /* 减小间距 */
-            padding-left: 12px; /* 减小间距 */
-        }
-        
-        .order-confirm-option {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 3px; /* 减小间距 */
-            font-size: 0.8rem; /* 减小字体大小 */
-        }
-        
-        .order-confirm-total {
-            background-color: #fff5f5;
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 12px;
-            border: 2px solid #e31837;
-            font-size: 1.1rem; /* 减小字体大小 */
-            font-weight: bold;
-            color: #e31837;
-            text-align: center;
-        }
-        
-        .order-confirm-buttons {
-            display: flex;
-            gap: 10px; /* 减小间距 */
-            margin-top: 15px;
-        }
-        
-        .order-confirm-btn {
-            flex: 1;
-            padding: 10px 15px; /* 减小内边距 */
-            border: none;
-            border-radius: 25px;
-            font-size: 0.95rem; /* 减小字体大小 */
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-        
-        .order-confirm-btn.confirm {
-            background-color: #4CAF50;
-            color: white;
-        }
-        
-        .order-confirm-btn.confirm:hover {
-            background-color: #3d8b40;
-            transform: scale(1.02);
-        }
-        
-        .order-confirm-btn.cancel {
-            background-color: #f0f0f0;
-            color: #333;
-        }
-        
-        .order-confirm-btn.cancel:hover {
-            background-color: #e0e0e0;
-        }
-        
-        /* 新增：反馈截图样式 */
-        .feedback-screenshot-container {
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #f0f8ff;
-            border-radius: 8px;
-            border-left: 3px solid #2196F3;
-            font-size: 0.8rem;
-        }
-        
-        .feedback-screenshot-container h4 {
-            color: #2196F3;
-            margin-bottom: 6px;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .feedback-screenshot-container img {
-            width: 100%;
-            border-radius: 6px;
-            border: 1px solid #ddd;
-            cursor: pointer;
-            transition: transform 0.3s;
-            max-height: 120px;
-            object-fit: contain;
-        }
-        
-        .feedback-screenshot-container img:hover {
-            transform: scale(1.02);
-        }
-        
-        .feedback-upload-area {
-            border: 2px dashed #2196F3;
-            border-radius: 8px;
-            padding: 12px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            background-color: #f8fdff;
-            margin-top: 8px;
-            font-size: 0.85rem;
-        }
-        
-        .feedback-upload-area:hover {
-            border-color: #0d8bf2;
-            background-color: #e6f7ff;
-        }
-        
-        .feedback-upload-area i {
-            font-size: 20px;
-            color: #2196F3;
-            margin-bottom: 6px;
-        }
-        
-        .feedback-preview {
-            position: relative;
-            margin-top: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            padding: 6px;
-            background-color: #f9f9f9;
-        }
-        
-        .feedback-preview img {
-            width: 100%;
-            border-radius: 4px;
-            display: block;
-            max-height: 120px;
-            object-fit: contain;
-        }
-        
-        .remove-feedback {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background-color: #f44336;
-            color: white;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
-        }
-        
-        .feedback-btn {
-            background-color: #2196F3;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 18px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.3s;
-            margin-top: 8px;
-        }
-        
-        .feedback-btn:hover {
-            background-color: #0d8bf2;
-        }
-        
-        /* 新增：压缩订单确认内容 */
-        .order-confirm-compact {
-            font-size: 0.85rem;
-        }
-        
-        .order-confirm-compact .order-confirm-item {
-            padding: 8px;
-            margin-bottom: 6px;
-        }
-        
         @media (max-width: 768px) {
             .main-content {
                 flex-direction: row;
@@ -2504,51 +2215,6 @@
             .cart-section {
                 padding: 12px;
             }
-            
-            /* 移动端订单确认模态框进一步优化 */
-            .order-confirm-box {
-                padding: 15px;
-                width: 95%;
-                max-height: 85vh;
-            }
-            
-            .order-confirm-title {
-                font-size: 1.1rem;
-            }
-            
-            .order-confirm-close {
-                font-size: 1.2rem;
-                width: 28px;
-                height: 28px;
-            }
-            
-            .order-confirm-item {
-                padding: 8px;
-                font-size: 0.8rem;
-            }
-            
-            .order-confirm-item-title {
-                font-size: 0.85rem;
-            }
-            
-            .order-confirm-item-content {
-                font-size: 0.8rem;
-            }
-            
-            .order-confirm-total {
-                font-size: 1rem;
-                padding: 10px;
-            }
-            
-            .order-confirm-btn {
-                padding: 8px 12px;
-                font-size: 0.9rem;
-            }
-            
-            .order-confirm-buttons {
-                flex-direction: column;
-                gap: 8px;
-            }
         }
         
         /* 确保在桌面端保持左右布局 */
@@ -2588,36 +2254,6 @@
     <div class="realtime-indicator" id="realtimeIndicator" style="display: none;">
         <i class="fas fa-sync-alt fa-spin"></i>
         <span>实时更新中...</span>
-    </div>
-    
-    <!-- 订单确认模态框 -->
-    <div class="order-confirm-modal" id="orderConfirmModal">
-        <div class="order-confirm-box">
-            <div class="order-confirm-header">
-                <h2 class="order-confirm-title">
-                    <i class="fas fa-clipboard-check"></i>
-                    确认订单信息
-                </h2>
-                <button class="order-confirm-close" id="orderConfirmClose">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <div class="order-confirm-body order-confirm-compact" id="orderConfirmBody">
-                <!-- 订单详情将通过JavaScript动态填充 -->
-            </div>
-            
-            <div class="order-confirm-buttons">
-                <button class="order-confirm-btn cancel" id="orderConfirmCancel">
-                    <i class="fas fa-times"></i>
-                    取消
-                </button>
-                <button class="order-confirm-btn confirm" id="orderConfirmSubmit">
-                    <i class="fas fa-check"></i>
-                    确认提交
-                </button>
-            </div>
-        </div>
     </div>
     
     <header>
@@ -3074,24 +2710,20 @@
     </div>
 
     <script>
-        // ==================== LeanCloud 配置 ====================
-        const APP_ID = 'Tu8MLJ2PHUY0z4Kgol3hockE-gzGzoHsz';
-        const APP_KEY = '7sdmY7swmMFU9ppvBGheW4oz';
-        const SERVER_URL = 'https://tu8mlj2p.lc-cn-n1-shared.com';
-
-        // 初始化 LeanCloud
-        AV.init({
-            appId: APP_ID,
-            appKey: APP_KEY,
-            serverURLs: SERVER_URL || 'https://tu8mlj2p.lc-cn-n1-shared.com'
-        });
-
+        // ==================== Supabase 配置 ====================
+        // 替换为您的 Supabase 项目配置
+        const SUPABASE_URL = 'https://ircqjymxozjrqiprrasu.supabase.co'; // 替换为您的 Supabase URL
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlyY3FqeW14b3pqcnFpcHJyYXN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4NDEwMzMsImV4cCI6MjA4NDQxNzAzM30.rIX5CnlZV3RiEp_DprB7tmgVL5n4Tn4mfbzqB7gnsKY'; // 替换为您的匿名密钥
+        const ADMIN_PASSWORD = "200104";
+        
+        // 初始化 Supabase 客户端
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
         // ==================== 数据结构 ====================
         let meals = [];
         let cart = [];
         let orders = [];
         let newOrdersCount = 0;
-        const ADMIN_PASSWORD = "200104";
         
         // 实时更新相关变量
         let adminPollingInterval = null;
@@ -3147,33 +2779,32 @@
             }, 3000);
         }
 
-        // ==================== LeanCloud 数据操作类 ====================
-        class LeanCloudData {
+        // ==================== Supabase 数据操作类 ====================
+        class SupabaseData {
             static async loadMeals() {
                 try {
-                    const query = new AV.Query('Meals');
-                    query.descending('createdAt');
-                    const results = await query.find();
-                    return results.map(item => {
-                        const data = item.toJSON();
-                        const createdAt = item.createdAt ? item.createdAt.getTime() : Date.now();
-                        const updatedAt = item.updatedAt ? item.updatedAt.getTime() : Date.now();
-                        return {
-                            id: data.id || item.id,
-                            name: data.name,
-                            price: data.price,
-                            tags: data.tags || [],
-                            description: data.description,
-                            order: data.order || 9999,
-                            active: data.active !== false,
-                            supportDelivery: data.supportDelivery !== false, // 新增：是否支持宅急送，默认true
-                            optionGroups: data.optionGroups || [],
-                            fixedItems: data.fixedItems || [],
-                            createdAt: createdAt,
-                            updatedAt: updatedAt,
-                            objectId: item.id
-                        };
-                    });
+                    const { data, error } = await supabase
+                        .from('meals')
+                        .select('*')
+                        .order('order', { ascending: true })
+                        .order('created_at', { ascending: false });
+                    
+                    if (error) throw error;
+                    
+                    return data.map(item => ({
+                        id: item.id,
+                        name: item.name,
+                        price: item.price,
+                        tags: item.tags || [],
+                        description: item.description,
+                        order: item.order || 9999,
+                        active: item.active !== false,
+                        supportDelivery: item.support_delivery !== false, // 注意字段名转换
+                        optionGroups: item.option_groups || [],
+                        fixedItems: item.fixed_items || [],
+                        createdAt: item.created_at ? new Date(item.created_at).getTime() : Date.now(),
+                        updatedAt: item.updated_at ? new Date(item.updated_at).getTime() : Date.now()
+                    }));
                 } catch (error) {
                     console.error('加载套餐数据失败:', error);
                     return [];
@@ -3182,32 +2813,8 @@
 
             static async saveMeal(meal) {
                 try {
-                    const Meal = AV.Object.extend('Meals');
-                    let mealObj;
-
-                    if (meal.objectId) {
-                        mealObj = AV.Object.createWithoutData('Meals', meal.objectId);
-                    } else {
-                        mealObj = new Meal();
-                    }
-
-                    mealObj.set('id', meal.id);
-                    mealObj.set('name', meal.name);
-                    mealObj.set('price', meal.price);
-                    mealObj.set('tags', meal.tags);
-                    mealObj.set('description', meal.description);
-                    mealObj.set('order', meal.order || 9999);
-                    mealObj.set('active', meal.active !== false);
-                    mealObj.set('supportDelivery', meal.supportDelivery !== false); // 新增：保存是否支持宅急送
-                    mealObj.set('optionGroups', meal.optionGroups || []);
-                    mealObj.set('fixedItems', meal.fixedItems || []);
-
-                    const result = await mealObj.save();
-
-                    const createdAt = result.createdAt ? result.createdAt.getTime() : Date.now();
-                    const updatedAt = result.updatedAt ? result.updatedAt.getTime() : Date.now();
-
-                    return {
+                    // 准备要保存的数据，将字段名转换为数据库格式
+                    const mealData = {
                         id: meal.id,
                         name: meal.name,
                         price: meal.price,
@@ -3215,12 +2822,55 @@
                         description: meal.description,
                         order: meal.order || 9999,
                         active: meal.active !== false,
-                        supportDelivery: meal.supportDelivery !== false, // 新增：是否支持宅急送
-                        optionGroups: meal.optionGroups || [],
-                        fixedItems: meal.fixedItems || [],
-                        createdAt: createdAt,
-                        updatedAt: updatedAt,
-                        objectId: result.id
+                        support_delivery: meal.supportDelivery !== false, // 字段名转换
+                        option_groups: meal.optionGroups || [],
+                        fixed_items: meal.fixedItems || []
+                    };
+                    
+                    // 检查套餐是否已存在
+                    const { data: existingMeal, error: checkError } = await supabase
+                        .from('meals')
+                        .select('id')
+                        .eq('id', meal.id)
+                        .single();
+                    
+                    let result;
+                    if (checkError && checkError.code === 'PGRST116') {
+                        // 套餐不存在，插入新记录
+                        const { data, error } = await supabase
+                            .from('meals')
+                            .insert([mealData])
+                            .select()
+                            .single();
+                        
+                        if (error) throw error;
+                        result = data;
+                    } else {
+                        // 套餐存在，更新记录
+                        const { data, error } = await supabase
+                            .from('meals')
+                            .update(mealData)
+                            .eq('id', meal.id)
+                            .select()
+                            .single();
+                        
+                        if (error) throw error;
+                        result = data;
+                    }
+                    
+                    return {
+                        id: result.id,
+                        name: result.name,
+                        price: result.price,
+                        tags: result.tags || [],
+                        description: result.description,
+                        order: result.order || 9999,
+                        active: result.active !== false,
+                        supportDelivery: result.support_delivery !== false, // 字段名转换
+                        optionGroups: result.option_groups || [],
+                        fixedItems: result.fixed_items || [],
+                        createdAt: result.created_at ? new Date(result.created_at).getTime() : Date.now(),
+                        updatedAt: result.updated_at ? new Date(result.updated_at).getTime() : Date.now()
                     };
                 } catch (error) {
                     console.error('保存套餐失败:', error);
@@ -3230,15 +2880,13 @@
 
             static async deleteMeal(mealId) {
                 try {
-                    const query = new AV.Query('Meals');
-                    query.equalTo('id', mealId);
-                    const result = await query.first();
-
-                    if (result) {
-                        await result.destroy();
-                        return true;
-                    }
-                    return false;
+                    const { error } = await supabase
+                        .from('meals')
+                        .delete()
+                        .eq('id', mealId);
+                    
+                    if (error) throw error;
+                    return true;
                 } catch (error) {
                     console.error('删除套餐失败:', error);
                     throw error;
@@ -3247,31 +2895,29 @@
 
             static async loadOrders() {
                 try {
-                    const query = new AV.Query('Orders');
-                    query.descending('createdAt');
-                    const results = await query.find();
-                    return results.map(item => {
-                        const data = item.toJSON();
-                        const createdAt = item.createdAt ? item.createdAt.getTime() : Date.now();
-                        const updatedAt = item.updatedAt ? item.updatedAt.getTime() : Date.now();
-                        return {
-                            id: data.id,
-                            timestamp: data.timestamp,
-                            status: data.status || 'new',
-                            cart: data.cart || [],
-                            deliveryInfo: data.deliveryInfo,
-                            orderNote: data.orderNote || '',
-                            deliveryType: data.deliveryType,
-                            totalPrice: data.totalPrice,
-                            hasScreenshot: data.hasScreenshot || false,
-                            screenshotData: data.screenshotData,
-                            feedbackScreenshotData: data.feedbackScreenshotData || null, // 新增：反馈截图
-                            userId: data.userId,
-                            createdAt: createdAt,
-                            updatedAt: updatedAt,
-                            objectId: item.id
-                        };
-                    });
+                    const { data, error } = await supabase
+                        .from('orders')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+                    
+                    if (error) throw error;
+                    
+                    return data.map(item => ({
+                        id: item.id,
+                        timestamp: item.timestamp,
+                        status: item.status || 'new',
+                        cart: item.cart || [],
+                        deliveryInfo: item.delivery_info,
+                        orderNote: item.order_note || '',
+                        deliveryType: item.delivery_type,
+                        pickupType: item.pickup_type,
+                        totalPrice: item.total_price,
+                        hasScreenshot: item.has_screenshot || false,
+                        screenshotData: item.screenshot_data,
+                        userId: item.user_id,
+                        createdAt: item.created_at ? new Date(item.created_at).getTime() : Date.now(),
+                        updatedAt: item.updated_at ? new Date(item.updated_at).getTime() : Date.now()
+                    }));
                 } catch (error) {
                     console.error('加载订单数据失败:', error);
                     return [];
@@ -3280,59 +2926,68 @@
 
             static async saveOrder(order) {
                 try {
-                    const Order = AV.Object.extend('Orders');
-                    let orderObj;
-
-                    if (order.objectId) {
-                        orderObj = AV.Object.createWithoutData('Orders', order.objectId);
-                    } else {
-                        orderObj = new Order();
-                    }
-
-                    orderObj.set('id', order.id);
-                    orderObj.set('timestamp', order.timestamp);
-                    orderObj.set('status', order.status || 'new');
-                    orderObj.set('cart', order.cart);
-                    orderObj.set('deliveryInfo', order.deliveryInfo);
-                    orderObj.set('orderNote', order.orderNote || '');
-                    orderObj.set('deliveryType', order.deliveryType);
-                    orderObj.set('totalPrice', order.totalPrice);
-                    orderObj.set('userId', order.userId);
-                    
-                    if (order.hasScreenshot && order.screenshotData) {
-                        orderObj.set('hasScreenshot', true);
-                        orderObj.set('screenshotData', order.screenshotData);
-                    } else {
-                        orderObj.set('hasScreenshot', false);
-                    }
-                    
-                    // 新增：保存反馈截图
-                    if (order.feedbackScreenshotData) {
-                        orderObj.set('feedbackScreenshotData', order.feedbackScreenshotData);
-                    }
-
-                    const result = await orderObj.save();
-
-                    const createdAt = result.createdAt ? result.createdAt.getTime() : Date.now();
-                    const updatedAt = result.updatedAt ? result.updatedAt.getTime() : Date.now();
-
-                    return {
+                    // 准备要保存的数据，将字段名转换为数据库格式
+                    const orderData = {
                         id: order.id,
                         timestamp: order.timestamp,
                         status: order.status || 'new',
                         cart: order.cart,
-                        deliveryInfo: order.deliveryInfo,
-                        orderNote: order.orderNote || '',
-                        deliveryType: order.deliveryType,
-                        pickupType: order.pickupType || '',
-                        totalPrice: order.totalPrice,
-                        hasScreenshot: order.hasScreenshot || false,
-                        screenshotData: order.screenshotData,
-                        feedbackScreenshotData: order.feedbackScreenshotData || null, // 新增：反馈截图
-                        userId: order.userId,
-                        createdAt: createdAt,
-                        updatedAt: updatedAt,
-                        objectId: result.id
+                        delivery_info: order.deliveryInfo,
+                        order_note: order.orderNote || '',
+                        delivery_type: order.deliveryType,
+                        pickup_type: order.pickupType || '',
+                        total_price: order.totalPrice,
+                        user_id: order.userId,
+                        has_screenshot: order.hasScreenshot || false,
+                        screenshot_data: order.screenshotData
+                    };
+                    
+                    // 检查订单是否已存在
+                    const { data: existingOrder, error: checkError } = await supabase
+                        .from('orders')
+                        .select('id')
+                        .eq('id', order.id)
+                        .single();
+                    
+                    let result;
+                    if (checkError && checkError.code === 'PGRST116') {
+                        // 订单不存在，插入新记录
+                        const { data, error } = await supabase
+                            .from('orders')
+                            .insert([orderData])
+                            .select()
+                            .single();
+                        
+                        if (error) throw error;
+                        result = data;
+                    } else {
+                        // 订单存在，更新记录
+                        const { data, error } = await supabase
+                            .from('orders')
+                            .update(orderData)
+                            .eq('id', order.id)
+                            .select()
+                            .single();
+                        
+                        if (error) throw error;
+                        result = data;
+                    }
+                    
+                    return {
+                        id: result.id,
+                        timestamp: result.timestamp,
+                        status: result.status || 'new',
+                        cart: result.cart || [],
+                        deliveryInfo: result.delivery_info,
+                        orderNote: result.order_note || '',
+                        deliveryType: result.delivery_type,
+                        pickupType: result.pickup_type || '',
+                        totalPrice: result.total_price,
+                        hasScreenshot: result.has_screenshot || false,
+                        screenshotData: result.screenshot_data,
+                        userId: result.user_id,
+                        createdAt: result.created_at ? new Date(result.created_at).getTime() : Date.now(),
+                        updatedAt: result.updated_at ? new Date(result.updated_at).getTime() : Date.now()
                     };
                 } catch (error) {
                     console.error('保存订单失败:', error);
@@ -3342,15 +2997,13 @@
 
             static async deleteOrder(orderId) {
                 try {
-                    const query = new AV.Query('Orders');
-                    query.equalTo('id', orderId);
-                    const result = await query.first();
-
-                    if (result) {
-                        await result.destroy();
-                        return true;
-                    }
-                    return false;
+                    const { error } = await supabase
+                        .from('orders')
+                        .delete()
+                        .eq('id', orderId);
+                    
+                    if (error) throw error;
+                    return true;
                 } catch (error) {
                     console.error('删除订单失败:', error);
                     throw error;
@@ -3359,20 +3012,28 @@
 
             static async loadNewOrdersCount() {
                 try {
-                    const query = new AV.Query('Counter');
-                    query.equalTo('type', 'newOrdersCount');
-                    const result = await query.first();
-
-                    if (result) {
-                        return result.get('count') || 0;
-                    } else {
-                        const Counter = AV.Object.extend('Counter');
-                        const counter = new Counter();
-                        counter.set('type', 'newOrdersCount');
-                        counter.set('count', 0);
-                        await counter.save();
-                        return 0;
+                    const { data, error } = await supabase
+                        .from('counter')
+                        .select('count')
+                        .eq('type', 'newOrdersCount')
+                        .single();
+                    
+                    if (error) {
+                        // 如果计数器不存在，创建它
+                        if (error.code === 'PGRST116') {
+                            const { data: newCounter, error: insertError } = await supabase
+                                .from('counter')
+                                .insert([{ type: 'newOrdersCount', count: 0 }])
+                                .select()
+                                .single();
+                            
+                            if (insertError) throw insertError;
+                            return newCounter.count || 0;
+                        }
+                        throw error;
                     }
+                    
+                    return data.count || 0;
                 } catch (error) {
                     console.error('加载新订单计数失败:', error);
                     return 0;
@@ -3381,21 +3042,12 @@
 
             static async updateNewOrdersCount(count) {
                 try {
-                    const Counter = AV.Object.extend('Counter');
-                    const query = new AV.Query('Counter');
-                    query.equalTo('type', 'newOrdersCount');
-                    const result = await query.first();
-
-                    let counter;
-                    if (result) {
-                        counter = result;
-                    } else {
-                        counter = new Counter();
-                        counter.set('type', 'newOrdersCount');
-                    }
-
-                    counter.set('count', count);
-                    await counter.save();
+                    const { error } = await supabase
+                        .from('counter')
+                        .update({ count: count })
+                        .eq('type', 'newOrdersCount');
+                    
+                    if (error) throw error;
                     console.log('新订单计数更新成功:', count);
                     return true;
                 } catch (error) {
@@ -3404,73 +3056,60 @@
                 }
             }
 
-            static async initializeTables() {
-                try {
-                    const mealsQuery = new AV.Query('Meals');
-                    const mealsCount = await mealsQuery.count();
-                    console.log('Meals表记录数:', mealsCount);
-
-                    const ordersQuery = new AV.Query('Orders');
-                    const ordersCount = await ordersQuery.count();
-                    console.log('Orders表记录数:', ordersCount);
-
-                    return true;
-                } catch (error) {
-                    console.log('初始化表（LeanCloud会自动创建不存在的表）');
-                    return true;
-                }
-            }
-            
-            // 实时检查新订单
             static async checkForNewOrders(sinceTime, userId = null) {
                 try {
-                    const query = new AV.Query('Orders');
-                    query.greaterThan('createdAt', new Date(sinceTime));
-                    if (userId) {
-                        query.equalTo('userId', userId);
-                    }
-                    query.descending('createdAt');
-                    const results = await query.find();
+                    let query = supabase
+                        .from('orders')
+                        .select('*')
+                        .gt('created_at', new Date(sinceTime).toISOString());
                     
-                    return results.map(item => {
-                        const data = item.toJSON();
-                        const createdAt = item.createdAt ? item.createdAt.getTime() : Date.now();
-                        const updatedAt = item.updatedAt ? item.updatedAt.getTime() : Date.now();
-                        return {
-                            id: data.id,
-                            timestamp: data.timestamp,
-                            status: data.status || 'new',
-                            cart: data.cart || [],
-                            deliveryInfo: data.deliveryInfo,
-                            orderNote: data.orderNote || '',
-                            deliveryType: data.deliveryType,
-                            totalPrice: data.totalPrice,
-                            hasScreenshot: data.hasScreenshot || false,
-                            screenshotData: data.screenshotData,
-                            feedbackScreenshotData: data.feedbackScreenshotData || null, // 新增：反馈截图
-                            userId: data.userId,
-                            createdAt: createdAt,
-                            updatedAt: updatedAt,
-                            objectId: item.id
-                        };
-                    });
+                    if (userId) {
+                        query = query.eq('user_id', userId);
+                    }
+                    
+                    const { data, error } = await query
+                        .order('created_at', { ascending: false });
+                    
+                    if (error) throw error;
+                    
+                    return data.map(item => ({
+                        id: item.id,
+                        timestamp: item.timestamp,
+                        status: item.status || 'new',
+                        cart: item.cart || [],
+                        deliveryInfo: item.delivery_info,
+                        orderNote: item.order_note || '',
+                        deliveryType: item.delivery_type,
+                        pickupType: item.pickup_type,
+                        totalPrice: item.total_price,
+                        hasScreenshot: item.has_screenshot || false,
+                        screenshotData: item.screenshot_data,
+                        userId: item.user_id,
+                        createdAt: item.created_at ? new Date(item.created_at).getTime() : Date.now(),
+                        updatedAt: item.updated_at ? new Date(item.updated_at).getTime() : Date.now()
+                    }));
                 } catch (error) {
                     console.error('检查新订单失败:', error);
                     return [];
                 }
             }
             
-            // 检查新订单计数（不检查具体订单）
             static async checkNewOrdersCountOnly() {
                 try {
-                    const query = new AV.Query('Counter');
-                    query.equalTo('type', 'newOrdersCount');
-                    const result = await query.first();
-
-                    if (result) {
-                        return result.get('count') || 0;
+                    const { data, error } = await supabase
+                        .from('counter')
+                        .select('count')
+                        .eq('type', 'newOrdersCount')
+                        .single();
+                    
+                    if (error) {
+                        if (error.code === 'PGRST116') {
+                            return 0;
+                        }
+                        throw error;
                     }
-                    return 0;
+                    
+                    return data.count || 0;
                 } catch (error) {
                     console.error('检查新订单计数失败:', error);
                     return 0;
@@ -3480,37 +3119,45 @@
             // 快速保存订单（不等待确认，提高响应速度）
             static async quickSaveOrder(order) {
                 try {
-                    const Order = AV.Object.extend('Orders');
-                    const orderObj = new Order();
-
-                    orderObj.set('id', order.id);
-                    orderObj.set('timestamp', order.timestamp);
-                    orderObj.set('status', order.status || 'new');
-                    orderObj.set('cart', order.cart);
-                    orderObj.set('deliveryInfo', order.deliveryInfo);
-                    orderObj.set('orderNote', order.orderNote || '');
-                    orderObj.set('deliveryType', order.deliveryType);
-                    orderObj.set('totalPrice', order.totalPrice);
-                    orderObj.set('userId', order.userId);
+                    // 准备要保存的数据
+                    const orderData = {
+                        id: order.id,
+                        timestamp: order.timestamp,
+                        status: order.status || 'new',
+                        cart: order.cart,
+                        delivery_info: order.deliveryInfo,
+                        order_note: order.orderNote || '',
+                        delivery_type: order.deliveryType,
+                        pickup_type: order.pickupType || '',
+                        total_price: order.totalPrice,
+                        user_id: order.userId,
+                        has_screenshot: order.hasScreenshot || false,
+                        screenshot_data: order.screenshotData
+                    };
                     
-                    if (order.hasScreenshot && order.screenshotData) {
-                        orderObj.set('hasScreenshot', true);
-                        orderObj.set('screenshotData', order.screenshotData);
-                    } else {
-                        orderObj.set('hasScreenshot', false);
-                    }
-                    
-                    // 新增：保存反馈截图
-                    if (order.feedbackScreenshotData) {
-                        orderObj.set('feedbackScreenshotData', order.feedbackScreenshotData);
-                    }
-
-                    // 快速保存，不等待返回结果
-                    orderObj.save().then(result => {
-                        console.log('订单快速保存成功:', order.id);
-                    }).catch(error => {
-                        console.error('订单快速保存失败:', error);
-                    });
+                    // 使用异步操作，不等待结果
+                    supabase
+                        .from('orders')
+                        .insert([orderData])
+                        .then(({ error }) => {
+                            if (error) {
+                                console.error('订单快速保存失败:', error);
+                                // 尝试更新现有订单
+                                supabase
+                                    .from('orders')
+                                    .update(orderData)
+                                    .eq('id', order.id)
+                                    .then(({ error: updateError }) => {
+                                        if (updateError) {
+                                            console.error('订单更新也失败:', updateError);
+                                        } else {
+                                            console.log('订单快速保存成功（通过更新）:', order.id);
+                                        }
+                                    });
+                            } else {
+                                console.log('订单快速保存成功:', order.id);
+                            }
+                        });
 
                     // 立即返回一个承诺，但实际是异步的
                     return Promise.resolve({
@@ -3525,11 +3172,9 @@
                         totalPrice: order.totalPrice,
                         hasScreenshot: order.hasScreenshot || false,
                         screenshotData: order.screenshotData,
-                        feedbackScreenshotData: order.feedbackScreenshotData || null, // 新增：反馈截图
                         userId: order.userId,
                         createdAt: Date.now(),
-                        updatedAt: Date.now(),
-                        objectId: 'pending_' + order.id
+                        updatedAt: Date.now()
                     });
                 } catch (error) {
                     console.error('快速保存订单失败:', error);
@@ -3546,11 +3191,9 @@
                         totalPrice: order.totalPrice,
                         hasScreenshot: order.hasScreenshot || false,
                         screenshotData: order.screenshotData,
-                        feedbackScreenshotData: order.feedbackScreenshotData || null, // 新增：反馈截图
                         userId: order.userId,
                         createdAt: Date.now(),
-                        updatedAt: Date.now(),
-                        objectId: 'local_' + order.id
+                        updatedAt: Date.now()
                     });
                 }
             }
@@ -3561,14 +3204,11 @@
             try {
                 showLoading('正在加载数据...');
 
-                await Promise.all([
-                    LeanCloudData.initializeTables().catch(e => console.log('表初始化失败:', e)),
-                    loadAllDataFromLeanCloud().catch(e => {
-                        console.error('数据加载失败:', e);
-                        showNotification('数据加载失败，使用本地缓存数据', 'error');
-                        loadFromLocalCache();
-                    })
-                ]);
+                await loadAllDataFromSupabase().catch(e => {
+                    console.error('数据加载失败:', e);
+                    showNotification('数据加载失败，使用本地缓存数据', 'error');
+                    loadFromLocalCache();
+                });
 
                 initHomePage();
                 initAdminPanel();
@@ -3582,7 +3222,6 @@
                 initMyOrdersPage();
                 initHeaderButtons();
                 initSearchFunction();
-                initOrderConfirmModal();
 
                 document.getElementById('currentUserIdDisplay').textContent = currentUserId.substring(0, 12) + '...';
 
@@ -3591,7 +3230,7 @@
                 showNotification('页面加载完成', 'success');
                 hideLoading();
 
-                console.log('页面初始化完成，数据已从LeanCloud加载');
+                console.log('页面初始化完成，数据已从Supabase加载');
                 
                 // 启动全局轮询，检查新订单（无论是否登录管理员页面）
                 startGlobalPolling();
@@ -3614,133 +3253,11 @@
                 initMyOrdersPage();
                 initHeaderButtons();
                 initSearchFunction();
-                initOrderConfirmModal();
                 
                 // 启动全局轮询，检查新订单
                 startGlobalPolling();
             }
         });
-
-        // ==================== 订单确认模态框初始化 ====================
-        function initOrderConfirmModal() {
-            const orderConfirmModal = document.getElementById('orderConfirmModal');
-            const orderConfirmClose = document.getElementById('orderConfirmClose');
-            const orderConfirmCancel = document.getElementById('orderConfirmCancel');
-            const orderConfirmSubmit = document.getElementById('orderConfirmSubmit');
-
-            orderConfirmClose.addEventListener('click', function() {
-                orderConfirmModal.classList.remove('active');
-            });
-
-            orderConfirmCancel.addEventListener('click', function() {
-                orderConfirmModal.classList.remove('active');
-            });
-
-            orderConfirmModal.addEventListener('click', function(e) {
-                if (e.target === orderConfirmModal) {
-                    orderConfirmModal.classList.remove('active');
-                }
-            });
-        }
-
-        // ==================== 美化订单确认信息 ====================
-        function showOrderConfirm(orderData) {
-            const orderConfirmModal = document.getElementById('orderConfirmModal');
-            const orderConfirmBody = document.getElementById('orderConfirmBody');
-            const orderConfirmSubmit = document.getElementById('orderConfirmSubmit');
-
-            let totalPrice = 0;
-            cart.forEach(item => {
-                totalPrice += item.totalPrice;
-            });
-
-            let itemsHTML = '';
-            cart.forEach((item, index) => {
-                const optionCount = {};
-                item.options.forEach(option => {
-                    optionCount[option] = (optionCount[option] || 0) + 1;
-                });
-
-                const optionText = Object.keys(optionCount).map(option => {
-                    const count = optionCount[option];
-                    return `${option}${count > 1 ? ` ×${count}` : ''}`;
-                }).join(', ');
-
-                itemsHTML += `
-                    <div class="order-confirm-option">
-                        <span>${item.name}</span>
-                        <span>¥${item.totalPrice.toFixed(2)}</span>
-                    </div>
-                `;
-            });
-
-            // 格式化配送信息
-            let deliveryInfoHTML = '';
-            const infoLines = orderData.deliveryInfo.split('\n');
-            infoLines.forEach(line => {
-                if (line.trim()) {
-                    deliveryInfoHTML += `<div>${line}</div>`;
-                }
-            });
-
-            const orderConfirmHTML = `
-                <div class="order-confirm-item">
-                    <div class="order-confirm-item-title">
-                        <i class="fas fa-shopping-cart"></i>
-                        订单详情
-                    </div>
-                    <div class="order-confirm-item-content">
-                        <div class="order-confirm-options">
-                            ${itemsHTML}
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="order-confirm-item">
-                    <div class="order-confirm-item-title">
-                        <i class="fas fa-truck"></i>
-                        配送信息
-                    </div>
-                    <div class="order-confirm-item-content">
-                        ${deliveryInfoHTML}
-                        ${orderData.orderNote ? `<div><strong>备注：</strong>${orderData.orderNote}</div>` : ''}
-                    </div>
-                </div>
-                
-                <div class="order-confirm-item">
-                    <div class="order-confirm-item-title">
-                        <i class="fas fa-clock"></i>
-                        订单时间
-                    </div>
-                    <div class="order-confirm-item-content">
-                        ${orderData.timestamp}
-                    </div>
-                </div>
-                
-                <div class="order-confirm-total">
-                    订单总计：<span style="font-size:1.1em;">¥${totalPrice.toFixed(2)}</span>
-                </div>
-                
-                <div class="highlight" style="margin-top: 10px; padding: 6px; font-size: 0.8rem;">
-                    <i class="fas fa-info-circle"></i>
-                    提交订单后，您可以在"查看我的订单"页面查看订单状态
-                </div>
-            `;
-
-            orderConfirmBody.innerHTML = orderConfirmHTML;
-
-            // 设置提交按钮事件
-            orderConfirmSubmit.onclick = function() {
-                orderConfirmModal.classList.remove('active');
-                // 设置一个短暂的延迟，让模态框关闭动画完成
-                setTimeout(() => {
-                    completeOrderSubmission(orderData);
-                }, 300);
-            };
-
-            // 显示模态框
-            orderConfirmModal.classList.add('active');
-        }
 
         // ==================== 全局轮询函数 ====================
         // 启动全局轮询，检查新订单（无论管理员面板是否打开）
@@ -3754,7 +3271,7 @@
             globalPollingInterval = setInterval(async () => {
                 try {
                     // 检查新订单计数
-                    const newCount = await LeanCloudData.checkNewOrdersCountOnly();
+                    const newCount = await SupabaseData.checkNewOrdersCountOnly();
                     if (newCount !== newOrdersCount) {
                         newOrdersCount = newCount;
                         updateOrderBadge();
@@ -3774,7 +3291,7 @@
                     
                     // 如果当前页面是"我的订单"页面，检查当前用户的新订单
                     if (document.getElementById('myOrdersPage').classList.contains('active')) {
-                        const newUserOrders = await LeanCloudData.checkForNewOrders(lastUserOrderUpdateTime - 3000, currentUserId);
+                        const newUserOrders = await SupabaseData.checkForNewOrders(lastUserOrderUpdateTime - 3000, currentUserId);
                         if (newUserOrders.length > 0) {
                             // 更新最后检查时间
                             lastUserOrderUpdateTime = Date.now();
@@ -4078,12 +3595,12 @@
         }
 
         // ==================== 数据加载函数 ====================
-        async function loadAllDataFromLeanCloud() {
+        async function loadAllDataFromSupabase() {
             try {
                 const [mealsData, ordersData, countData] = await Promise.all([
-                    LeanCloudData.loadMeals(),
-                    LeanCloudData.loadOrders(),
-                    LeanCloudData.loadNewOrdersCount()
+                    SupabaseData.loadMeals(),
+                    SupabaseData.loadOrders(),
+                    SupabaseData.loadNewOrdersCount()
                 ]);
 
                 meals = mealsData;
@@ -4098,7 +3615,7 @@
                     description: m.description,
                     order: m.order,
                     active: m.active,
-                    supportDelivery: m.supportDelivery // 新增：保存是否支持宅急送
+                    supportDelivery: m.supportDelivery
                 }))));
                 
                 localStorage.setItem('kfcOrdersCache', JSON.stringify(orders.map(o => ({
@@ -4132,7 +3649,7 @@
                     const parsedMeals = JSON.parse(mealsCache);
                     meals = parsedMeals.map(meal => ({
                         ...meal,
-                        supportDelivery: meal.supportDelivery !== false // 确保有supportDelivery字段
+                        supportDelivery: meal.supportDelivery !== false
                     }));
                 } catch (e) {
                     meals = [];
@@ -4935,7 +4452,7 @@
                         additionalPrice: additionalPrice,
                         totalPrice: totalPrice,
                         options: [...selectedOptions],
-                        supportDelivery: meal.supportDelivery // 新增：保存套餐是否支持宅急送
+                        supportDelivery: meal.supportDelivery
                     };
 
                     // 检查购物车中是否有其他套餐，如果有，检查配送方式是否兼容
@@ -5087,69 +4604,115 @@
                             }
 
                             if (!pickupStore) {
-                                showNotification('请输入自提门店', 'error');
-                                const storeInput = container.querySelector('#pickupStoreInput');
-                                if (storeInput) storeInput.focus();
-                                return;
-                            }
-
-                            deliveryInfo = `配送方式：到店自提\n自提方式：${pickupType}\n信息提供：手动填写\n自提城市：${pickupCity}\n自提门店：${pickupStore}`;
-                        } else {
-                            const screenshotInput = container.querySelector('#storeScreenshot');
-
-                            if (!screenshotInput.files || !screenshotInput.files.length) {
-                                showNotification('请上传门店截图', 'error');
-                                return;
-                            }
-
-                            // 移除进度条，改为简单的状态提示
-                            const submitStatus = document.getElementById('submitStatus');
-                            submitStatus.textContent = '正在处理图片...';
-
-                            try {
-                                const file = screenshotInput.files[0];
-                                const reader = new FileReader();
-
-                                reader.onload = function(e) {
-                                    screenshotData = e.target.result;
-                                    hasScreenshot = true;
-
-                                    deliveryInfo = `配送方式：到店自提\n自提方式：${pickupType}\n信息提供：截图上传`;
-
-                                    submitStatus.textContent = '图片处理完成';
-
-                                    // 继续准备订单数据
-                                    setTimeout(() => {
-                                        submitStatus.textContent = '';
-                                        prepareOrderData(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, pickupType);
-                                    }, 500);
-                                };
-
-                                reader.onerror = function() {
-                                    submitStatus.textContent = '图片读取失败，请重试';
-                                    showNotification('图片读取失败，请重试', 'error');
-                                };
-
-                                reader.readAsDataURL(file);
-                            } catch (error) {
-                                submitStatus.textContent = '图片处理失败';
-                                showNotification('图片处理失败: ' + error.message, 'error');
-                            }
+                            showNotification('请输入自提门店', 'error');
+                            const storeInput = container.querySelector('#pickupStoreInput');
+                            if (storeInput) storeInput.focus();
                             return;
                         }
+
+                        deliveryInfo = `配送方式：到店自提\n自提方式：${pickupType}\n信息提供：手动填写\n自提城市：${pickupCity}\n自提门店：${pickupStore}`;
+                    } else {
+                        const screenshotInput = container.querySelector('#storeScreenshot');
+
+                        if (!screenshotInput.files || !screenshotInput.files.length) {
+                            showNotification('请上传门店截图', 'error');
+                            return;
+                        }
+
+                        // 移除进度条，改为简单的状态提示
+                        const submitStatus = document.getElementById('submitStatus');
+                        submitStatus.textContent = '正在处理图片...';
+
+                        try {
+                            const file = screenshotInput.files[0];
+                            const reader = new FileReader();
+
+                            reader.onload = function(e) {
+                                screenshotData = e.target.result;
+                                hasScreenshot = true;
+
+                                deliveryInfo = `配送方式：到店自提\n自提方式：${pickupType}\n信息提供：截图上传`;
+
+                                submitStatus.textContent = '图片处理完成';
+
+                                // 继续提交订单
+                                setTimeout(() => {
+                                    submitStatus.textContent = '';
+                                    completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container, pickupType);
+                                }, 500);
+                            };
+
+                            reader.onerror = function() {
+                                submitStatus.textContent = '图片读取失败，请重试';
+                                showNotification('图片读取失败，请重试', 'error');
+                            };
+
+                            reader.readAsDataURL(file);
+                        } catch (error) {
+                            submitStatus.textContent = '图片处理失败';
+                            showNotification('图片处理失败: ' + error.message, 'error');
+                        }
+                        return;
                     }
+                }
 
-                    prepareOrderData(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, pickupType);
-                });
-            }
+                await completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container, pickupType);
+            });
         }
+    }
 
-        // 准备订单数据并显示确认模态框
-        function prepareOrderData(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, pickupType) {
+        // ==================== 优化后的订单提交函数（移除进度条，提高响应速度） ====================
+        async function completeCheckout(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, container, pickupType) {
+            const checkoutBtn = container.querySelector('.checkout-btn');
+            if (checkoutBtn.disabled) return;
+            
+            const submitStatus = document.getElementById('submitStatus');
+            submitStatus.textContent = '正在准备订单...';
+
             let totalPrice = 0;
             cart.forEach(item => {
                 totalPrice += item.totalPrice;
             });
+
+            let orderSummary = "订单详情：\n\n";
+            cart.forEach((item, index) => {
+                orderSummary += `${index + 1}. ${item.name} - ¥${item.totalPrice.toFixed(2)}\n`;
+
+                const optionCount = {};
+                item.options.forEach(option => {
+                    optionCount[option] = (optionCount[option] || 0) + 1;
+                });
+
+                Object.keys(optionCount).forEach(option => {
+                    const count = optionCount[option];
+                    orderSummary += `   ${option}${count > 1 ? ` ×${count}` : ''}\n`;
+                });
+                orderSummary += "\n";
+            });
+
+            orderSummary += `\n总计：¥${totalPrice.toFixed(2)}\n`;
+            orderSummary += `\n${deliveryInfo}\n`;
+            if (orderNote) {
+                orderSummary += `备注：${orderNote}\n`;
+            }
+
+            submitStatus.textContent = '请确认订单信息...';
+
+            const confirmed = await new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve(confirm(`请确认订单信息：\n\n${orderSummary}\n\n确认提交订单吗？`));
+                }, 100);
+            });
+
+            if (!confirmed) {
+                submitStatus.textContent = '';
+                return;
+            }
+
+            checkoutBtn.disabled = true;
+            checkoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 提交中...';
+            
+            submitStatus.textContent = '正在提交订单...';
 
             const orderId = 'KFC' + Date.now().toString().slice(-6) + Math.floor(Math.random() * 100);
             const timestamp = new Date().toLocaleString('zh-CN');
@@ -5169,27 +4732,11 @@
                 userId: currentUserId
             };
 
-            // 显示美化的订单确认模态框
-            showOrderConfirm(orderData);
-        }
-
-        // ==================== 完成订单提交 ====================
-        async function completeOrderSubmission(orderData) {
-            const checkoutBtn = document.querySelector('.checkout-btn');
-            if (checkoutBtn.disabled) return;
-            
-            const submitStatus = document.getElementById('submitStatus');
-            submitStatus.textContent = '正在提交订单...';
-
-            checkoutBtn.disabled = true;
-            checkoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 提交中...';
-            
             try {
                 // 使用快速保存订单函数，不等待进度条
-                const savedOrder = await LeanCloudData.quickSaveOrder(orderData);
+                const savedOrder = await SupabaseData.quickSaveOrder(orderData);
                 console.log('订单快速提交成功:', savedOrder);
 
-                savedOrder.objectId = savedOrder.objectId;
                 orders.unshift(savedOrder);
 
                 // 更新新订单计数
@@ -5198,7 +4745,7 @@
                 // 更新新订单计数（异步，不阻塞主流程）
                 setTimeout(async () => {
                     try {
-                        await LeanCloudData.updateNewOrdersCount(newOrdersCount);
+                        await SupabaseData.updateNewOrdersCount(newOrdersCount);
                         console.log('新订单计数更新成功');
                     } catch (countError) {
                         console.warn('更新新订单计数失败，但不影响订单提交:', countError);
@@ -5218,7 +4765,7 @@
                 cart = [];
                 updateCartDisplay();
 
-                resetForm(document.querySelector('.meal-page-container.active'));
+                resetForm(container);
 
                 updateOrderBadge();
 
@@ -5239,63 +4786,23 @@
                         renderOrders(activeFilter);
                     }
 
-                    // 显示成功提示，不再使用confirm
-                    const successHTML = `
-                        <div style="text-align: center; padding: 20px;">
-                            <i class="fas fa-check-circle" style="font-size: 3rem; color: #4CAF50; margin-bottom: 15px;"></i>
-                            <h3 style="color: #4CAF50; margin-bottom: 10px;">订单提交成功！</h3>
-                            <p style="margin-bottom: 15px;">订单号：<strong>${orderData.id}</strong></p>
-                            <p style="margin-bottom: 20px;">我们已收到您的订单，请耐心等待处理</p>
-                            <div style="display: flex; gap: 10px; justify-content: center;">
-                                <button id="viewOrderDetail" style="background-color: #e31837; color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer;">
-                                    <i class="fas fa-clipboard-list"></i> 查看订单详情
-                                </button>
-                                <button id="backToHome" style="background-color: #f0f0f0; color: #333; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer;">
-                                    <i class="fas fa-home"></i> 返回首页
-                                </button>
-                            </div>
-                        </div>
-                    `;
+                    const orderSubmitted = confirm(`订单提交成功！\n订单号：${orderId}\n\n点击"确定"查看您的订单详情，或点击"取消"返回首页。`);
 
-                    // 使用自定义提示框替代alert
-                    const successModal = document.createElement('div');
-                    successModal.className = 'order-confirm-modal active';
-                    successModal.innerHTML = `
-                        <div class="order-confirm-box" style="max-width: 400px;">
-                            <div class="order-confirm-header">
-                                <h2 class="order-confirm-title">
-                                    <i class="fas fa-check-circle"></i>
-                                    提交成功
-                                </h2>
-                                <button class="order-confirm-close" onclick="this.closest('.order-confirm-modal').remove()">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                            <div class="order-confirm-body">
-                                ${successHTML}
-                            </div>
-                        </div>
-                    `;
-                    
-                    document.body.appendChild(successModal);
-                    
-                    // 绑定按钮事件
-                    successModal.querySelector('#viewOrderDetail').addEventListener('click', function() {
-                        successModal.remove();
+                    if (orderSubmitted) {
                         showMyOrdersPage();
 
                         const url = new URL(window.location);
-                        url.searchParams.set('order', orderData.id);
+                        url.searchParams.set('order', orderId);
                         window.history.pushState({}, '', url);
 
                         setTimeout(() => {
-                            document.getElementById('orderSearchInput').value = orderData.id;
-                            searchUserOrder(orderData.id);
+                            document.getElementById('orderSearchInput').value = orderId;
+                            searchUserOrder(orderId);
 
                             const orderElements = document.querySelectorAll('.user-order-item');
                             orderElements.forEach(el => {
                                 const orderIdElement = el.querySelector('.user-order-id');
-                                if (orderIdElement && orderIdElement.textContent.includes(orderData.id)) {
+                                if (orderIdElement && orderIdElement.textContent.includes(orderId)) {
                                     el.style.animation = 'highlightOrder 2s';
                                     el.scrollIntoView({
                                         behavior: 'smooth',
@@ -5304,13 +4811,9 @@
                                 }
                             });
                         }, 100);
-                    });
-                    
-                    successModal.querySelector('#backToHome').addEventListener('click', function() {
-                        successModal.remove();
+                    } else {
                         showPage('homePage');
-                    });
-
+                    }
                 }, 1000);
 
             } catch (error) {
@@ -5530,18 +5033,6 @@
                     </div>
                 `;
             }
-            
-            // 新增：显示反馈截图
-            let feedbackHTML = '';
-            if (order.feedbackScreenshotData) {
-                feedbackHTML = `
-                    <div class="feedback-screenshot-container">
-                        <h4><i class="fas fa-camera"></i> 商家反馈截图</h4>
-                        <img src="${order.feedbackScreenshotData}" alt="反馈截图" class="feedback-thumbnail" data-order-id="${order.id}">
-                        <p style="font-size:0.8rem; color:#666; margin-top: 5px;">商家已上传反馈信息</p>
-                    </div>
-                `;
-            }
 
             orderElement.innerHTML = `
                 <div class="user-order-header">
@@ -5564,7 +5055,6 @@
                     ${deliveryHTML}
                     ${order.orderNote ? `<p><strong>备注：</strong>${order.orderNote}</p>` : ''}
                     ${screenshotHTML}
-                    ${feedbackHTML}
                 </div>
             `;
 
@@ -5573,16 +5063,6 @@
                 if (screenshotImg) {
                     screenshotImg.addEventListener('click', function() {
                         showFullImage(order.screenshotData);
-                    });
-                }
-            }
-            
-            // 新增：反馈截图点击查看大图
-            if (order.feedbackScreenshotData) {
-                const feedbackImg = orderElement.querySelector('.feedback-thumbnail');
-                if (feedbackImg) {
-                    feedbackImg.addEventListener('click', function() {
-                        showFullImage(order.feedbackScreenshotData);
                     });
                 }
             }
@@ -5710,7 +5190,7 @@
                 if (isAdminPanelOpen) {
                     try {
                         // 只检查新订单，不检查新订单计数
-                        const newOrders = await LeanCloudData.checkForNewOrders(lastOrderUpdateTime - 2000); // 2秒前的更新
+                        const newOrders = await SupabaseData.checkForNewOrders(lastOrderUpdateTime - 2000); // 2秒前的更新
                         if (newOrders.length > 0) {
                             // 更新最后更新时间
                             lastOrderUpdateTime = Date.now();
@@ -5778,13 +5258,13 @@
                     try {
                         showLoading('正在清空订单...');
 
-                        const deletePromises = orders.map(order => LeanCloudData.deleteOrder(order.id));
+                        const deletePromises = orders.map(order => SupabaseData.deleteOrder(order.id));
                         await Promise.all(deletePromises);
 
                         orders = [];
                         newOrdersCount = 0;
 
-                        await LeanCloudData.updateNewOrdersCount(0);
+                        await SupabaseData.updateNewOrdersCount(0);
                         localStorage.setItem('newOrdersCountCache', '0');
 
                         localStorage.setItem('kfcOrdersCache', JSON.stringify(orders));
@@ -5954,42 +5434,8 @@
                     </div>
                 `;
             }
-            
-            // 新增：显示反馈截图
-            let feedbackHTML = '';
-            if (order.feedbackScreenshotData) {
-                feedbackHTML = `
-                    <div class="feedback-screenshot-container">
-                        <h4><i class="fas fa-camera"></i> 反馈截图</h4>
-                        <img src="${order.feedbackScreenshotData}" alt="反馈截图" class="feedback-thumbnail" data-order-id="${order.id}">
-                    </div>
-                `;
-            }
 
             const userInfo = order.userId ? `<p><strong>用户ID：</strong>${order.userId.substring(0, 12)}...</p>` : '';
-
-            // 新增：反馈截图上传功能
-            const feedbackUploadHTML = `
-                <div class="feedback-upload-area" id="feedbackUploadArea-${order.id}">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <p>点击上传反馈截图</p>
-                    <p class="upload-hint">支持 JPG、PNG 格式</p>
-                    <input type="file" id="feedbackScreenshot-${order.id}" accept="image/*" style="display: none;">
-                </div>
-                <div class="feedback-preview hidden" id="feedbackPreview-${order.id}">
-                    <div class="screenshot-preview-container">
-                        <img id="feedbackPreviewImage-${order.id}" src="" alt="反馈截图预览">
-                        <div class="image-info" id="feedbackImageInfo-${order.id}"></div>
-                    </div>
-                    <button type="button" class="remove-feedback" id="removeFeedback-${order.id}">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <button class="feedback-btn" id="uploadFeedbackBtn-${order.id}" style="display: none;">
-                    <i class="fas fa-upload"></i>
-                    上传反馈截图
-                </button>
-            `;
 
             orderElement.innerHTML = `
                 <div class="order-id">订单号：${order.id}</div>
@@ -6011,12 +5457,6 @@
                     ${userInfo}
                     ${order.orderNote ? `<p><strong>备注：</strong>${order.orderNote}</p>` : ''}
                     ${screenshotHTML}
-                    ${feedbackHTML}
-                </div>
-                
-                <div class="form-group" style="margin-top: 12px;">
-                    <label class="form-label">上传反馈截图给顾客</label>
-                    ${feedbackUploadHTML}
                 </div>
                 
                 <div style="margin-top: 12px; display: flex; gap: 8px;">
@@ -6042,133 +5482,8 @@
                     });
                 }
             }
-            
-            // 新增：反馈截图点击查看大图
-            if (order.feedbackScreenshotData) {
-                const feedbackImg = orderElement.querySelector('.feedback-thumbnail');
-                if (feedbackImg) {
-                    feedbackImg.addEventListener('click', function() {
-                        showFullImage(order.feedbackScreenshotData);
-                    });
-                }
-            }
-            
-            // 初始化反馈截图上传功能
-            initFeedbackUpload(order.id);
 
             return orderElement;
-        }
-
-        // 修复：初始化反馈截图上传功能
-        function initFeedbackUpload(orderId) {
-            const uploadArea = document.getElementById(`feedbackUploadArea-${orderId}`);
-            const fileInput = document.getElementById(`feedbackScreenshot-${orderId}`);
-            const previewContainer = document.getElementById(`feedbackPreview-${orderId}`);
-            const previewImage = document.getElementById(`feedbackPreviewImage-${orderId}`);
-            const removeBtn = document.getElementById(`removeFeedback-${orderId}`);
-            const uploadBtn = document.getElementById(`uploadFeedbackBtn-${orderId}`);
-
-            if (uploadArea && fileInput) {
-                // 修复：确保点击上传区域能触发文件选择
-                uploadArea.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    fileInput.click();
-                });
-
-                fileInput.addEventListener('change', async function(e) {
-                    if (e.target.files.length) {
-                        await handleFeedbackFileSelect(e.target.files[0], orderId);
-                        if (uploadBtn) uploadBtn.style.display = 'block';
-                    }
-                });
-
-                if (removeBtn) {
-                    removeBtn.addEventListener('click', function() {
-                        fileInput.value = '';
-                        if (previewContainer) previewContainer.classList.add('hidden');
-                        if (uploadArea) uploadArea.style.display = 'block';
-                        if (uploadBtn) uploadBtn.style.display = 'none';
-                        if (previewImage) previewImage.src = '';
-                        
-                        // 清除预览图片信息
-                        const imageInfo = document.getElementById(`feedbackImageInfo-${orderId}`);
-                        if (imageInfo) {
-                            imageInfo.innerHTML = '';
-                        }
-                    });
-                }
-
-                if (uploadBtn) {
-                    uploadBtn.addEventListener('click', async function() {
-                        if (!previewImage || !previewImage.src) {
-                            showNotification('请先选择反馈截图', 'error');
-                            return;
-                        }
-
-                        try {
-                            const orderIndex = orders.findIndex(o => o.id === orderId);
-                            if (orderIndex === -1) return;
-
-                            const order = orders[orderIndex];
-                            order.feedbackScreenshotData = previewImage.src;
-
-                            const updatedOrder = await LeanCloudData.saveOrder(order);
-                            orders[orderIndex] = updatedOrder;
-
-                            localStorage.setItem('kfcOrdersCache', JSON.stringify(orders));
-
-                            showNotification('反馈截图上传成功！顾客可以在"我的订单"页面查看', 'success');
-
-                            // 重新渲染订单列表
-                            const activeFilterBtn = document.querySelector('.filter-btn.active');
-                            const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
-                            renderOrders(activeFilter);
-
-                            // 显示实时更新指示器
-                            showRealtimeIndicator('反馈截图已上传');
-                        } catch (error) {
-                            console.error('上传反馈截图失败:', error);
-                            showNotification('上传失败，请检查网络连接', 'error');
-                        }
-                    });
-                }
-            }
-        }
-
-        // 处理反馈截图文件选择（已修复）
-        async function handleFeedbackFileSelect(file, orderId) {
-            if (!file.type.match('image.*')) {
-                showNotification('请选择图片文件', 'error');
-                return;
-            }
-
-            const previewContainer = document.getElementById(`feedbackPreview-${orderId}`);
-            const previewImage = document.getElementById(`feedbackPreviewImage-${orderId}`);
-            const uploadArea = document.getElementById(`feedbackUploadArea-${orderId}`);
-            const imageInfo = document.getElementById(`feedbackImageInfo-${orderId}`);
-
-            // 压缩图片
-            const compressedImage = await compressImageOptimized(file);
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                if (previewImage) previewImage.src = e.target.result;
-                if (previewContainer) previewContainer.classList.remove('hidden');
-                if (uploadArea) uploadArea.style.display = 'none';
-                
-                // 显示图片信息
-                if (imageInfo) {
-                    const originalSize = (file.size / 1024).toFixed(2);
-                    const compressedSize = (compressedImage.size / 1024).toFixed(2);
-                    const compressionRatio = ((1 - compressedImage.size / file.size) * 100).toFixed(1);
-                    imageInfo.innerHTML = `
-                        原始大小: ${originalSize}KB<br>
-                        压缩后: ${compressedSize}KB<br>
-                        压缩率: ${compressionRatio}%
-                    `;
-                }
-            };
-            reader.readAsDataURL(compressedImage);
         }
 
         async function handleOrderAction(action, orderId) {
@@ -6201,13 +5516,13 @@
                             order.status = 'completed';
                             break;
                         case 'delete':
-                            await LeanCloudData.deleteOrder(orderId);
+                            await SupabaseData.deleteOrder(orderId);
                             orders.splice(orderIndex, 1);
                             break;
                     }
 
                     if (action !== 'delete') {
-                        const updatedOrder = await LeanCloudData.saveOrder(order);
+                        const updatedOrder = await SupabaseData.saveOrder(order);
                         orders[orderIndex] = updatedOrder;
                     }
 
@@ -6544,7 +5859,7 @@
                 meals[mealIndex].order = newOrder;
                 meals[mealIndex].updatedAt = Date.now();
 
-                const updatedMeal = await LeanCloudData.saveMeal(meals[mealIndex]);
+                const updatedMeal = await SupabaseData.saveMeal(meals[mealIndex]);
                 meals[mealIndex] = updatedMeal;
 
                 localStorage.setItem('kfcMealsCache', JSON.stringify(meals));
@@ -6574,7 +5889,7 @@
                     meals[mealIndex].active = isActive;
                     meals[mealIndex].updatedAt = Date.now();
 
-                    const updatedMeal = await LeanCloudData.saveMeal(meals[mealIndex]);
+                    const updatedMeal = await SupabaseData.saveMeal(meals[mealIndex]);
                     meals[mealIndex] = updatedMeal;
 
                     localStorage.setItem('kfcMealsCache', JSON.stringify(meals));
@@ -6908,7 +6223,7 @@
             }
 
             try {
-                await LeanCloudData.deleteMeal(mealId);
+                await SupabaseData.deleteMeal(mealId);
 
                 meals.splice(mealIndex, 1);
 
@@ -6935,7 +6250,7 @@
             const mealTags = document.getElementById('mealTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
             const mealDescription = document.getElementById('mealDescription').value.trim();
             const mealActive = document.getElementById('mealActive').checked;
-            const mealSupportDelivery = document.getElementById('mealSupportDelivery').checked; // 新增：获取是否支持宅急送
+            const mealSupportDelivery = document.getElementById('mealSupportDelivery').checked;
 
             if (!mealName) {
                 showNotification('请填写套餐名称', 'error');
@@ -7060,11 +6375,11 @@
                         meal.tags = mealTags;
                         meal.description = mealDescription;
                         meal.active = mealActive;
-                        meal.supportDelivery = mealSupportDelivery; // 新增：保存是否支持宅急送
+                        meal.supportDelivery = mealSupportDelivery;
                         meal.optionGroups = optionGroups;
                         meal.fixedItems = fixedItems;
 
-                        const savedMeal = await LeanCloudData.saveMeal(meal);
+                        const savedMeal = await SupabaseData.saveMeal(meal);
 
                         const mealIndex = meals.findIndex(m => m.id === mealId);
                         if (mealIndex !== -1) {
@@ -7080,12 +6395,12 @@
                         tags: mealTags,
                         description: mealDescription,
                         active: mealActive,
-                        supportDelivery: mealSupportDelivery, // 新增：保存是否支持宅急送
+                        supportDelivery: mealSupportDelivery,
                         optionGroups: optionGroups,
                         fixedItems: fixedItems
                     };
 
-                    const savedMeal = await LeanCloudData.saveMeal(meal);
+                    const savedMeal = await SupabaseData.saveMeal(meal);
                     meals.push(savedMeal);
                 }
 
@@ -7308,7 +6623,7 @@
             const mealTags = document.getElementById('newMealTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
             const mealDescription = document.getElementById('newMealDescription').value.trim();
             const mealActive = document.getElementById('newMealActive').checked;
-            const mealSupportDelivery = document.getElementById('newMealSupportDelivery').checked; // 新增：获取是否支持宅急送
+            const mealSupportDelivery = document.getElementById('newMealSupportDelivery').checked;
 
             if (!mealName) {
                 showNotification('请填写套餐名称', 'error');
@@ -7429,13 +6744,13 @@
                 tags: mealTags,
                 description: mealDescription,
                 active: mealActive,
-                supportDelivery: mealSupportDelivery, // 新增：保存是否支持宅急送
+                supportDelivery: mealSupportDelivery,
                 optionGroups: optionGroups,
                 fixedItems: fixedItems
             };
 
             try {
-                const savedMeal = await LeanCloudData.saveMeal(meal);
+                const savedMeal = await SupabaseData.saveMeal(meal);
                 meals.push(savedMeal);
 
                 localStorage.setItem('kfcMealsCache', JSON.stringify(meals));
@@ -7512,12 +6827,12 @@
         }
 
         // ==================== 数据同步功能 ====================
-        async function syncDataFromLeanCloud() {
+        async function syncDataFromSupabase() {
             try {
                 const [newMeals, newOrders, newCount] = await Promise.all([
-                    LeanCloudData.loadMeals(),
-                    LeanCloudData.loadOrders(),
-                    LeanCloudData.loadNewOrdersCount()
+                    SupabaseData.loadMeals(),
+                    SupabaseData.loadOrders(),
+                    SupabaseData.loadNewOrdersCount()
                 ]);
 
                 meals = newMeals;
@@ -7532,7 +6847,7 @@
                     description: m.description,
                     order: m.order,
                     active: m.active,
-                    supportDelivery: m.supportDelivery // 新增：保存是否支持宅急送
+                    supportDelivery: m.supportDelivery
                 }))));
                 
                 localStorage.setItem('kfcOrdersCache', JSON.stringify(orders.map(o => ({
@@ -7554,7 +6869,7 @@
 
         async function forceSyncAllData() {
             try {
-                const success = await syncDataFromLeanCloud();
+                const success = await syncDataFromSupabase();
 
                 if (success) {
                     if (document.getElementById('homePage').classList.contains('active')) {
