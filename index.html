@@ -2042,7 +2042,7 @@
             margin-bottom: 2px;
         }
         
-        /* 新增：订单确认模态框样式 */
+        /* 修改：订单确认模态框样式 - 调整大小布局，避免滚动 */
         .order-confirm-modal {
             position: fixed;
             top: 0;
@@ -2066,10 +2066,10 @@
             padding: 25px;
             width: 90%;
             max-width: 500px;
+            max-height: 75vh; /* 减少高度避免滚动 */
+            overflow-y: auto;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
             animation: modalFadeIn 0.3s ease;
-            max-height: 85vh;
-            overflow-y: auto;
         }
         
         @keyframes modalFadeIn {
@@ -2084,11 +2084,16 @@
             margin-bottom: 15px;
             padding-bottom: 10px;
             border-bottom: 2px solid #ffcc00;
+            position: sticky;
+            top: 0;
+            background-color: white;
+            z-index: 1;
+            padding-top: 5px;
         }
         
         .order-confirm-title {
             color: #e31837;
-            font-size: 1.5rem;
+            font-size: 1.3rem; /* 减小字体大小 */
             display: flex;
             align-items: center;
             gap: 8px;
@@ -2098,10 +2103,10 @@
             background: none;
             border: none;
             color: #666;
-            font-size: 1.5rem;
+            font-size: 1.3rem; /* 减小字体大小 */
             cursor: pointer;
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -2115,51 +2120,53 @@
         }
         
         .order-confirm-body {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         .order-confirm-item {
             background-color: #f9f9f9;
-            padding: 12px;
+            padding: 10px;
             border-radius: 8px;
-            margin-bottom: 10px;
+            margin-bottom: 8px; /* 减小间距 */
             border-left: 3px solid #ffcc00;
+            font-size: 0.9rem; /* 减小字体大小 */
         }
         
         .order-confirm-item-title {
             font-weight: bold;
             color: #e31837;
-            margin-bottom: 8px;
+            margin-bottom: 6px; /* 减小间距 */
             display: flex;
             align-items: center;
             gap: 6px;
+            font-size: 0.95rem; /* 减小字体大小 */
         }
         
         .order-confirm-item-content {
             color: #333;
-            font-size: 0.9rem;
-            line-height: 1.5;
+            font-size: 0.85rem; /* 减小字体大小 */
+            line-height: 1.4;
         }
         
         .order-confirm-options {
-            margin-top: 10px;
-            padding-left: 15px;
+            margin-top: 8px; /* 减小间距 */
+            padding-left: 12px; /* 减小间距 */
         }
         
         .order-confirm-option {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 4px;
-            font-size: 0.85rem;
+            margin-bottom: 3px; /* 减小间距 */
+            font-size: 0.8rem; /* 减小字体大小 */
         }
         
         .order-confirm-total {
             background-color: #fff5f5;
-            padding: 15px;
+            padding: 12px;
             border-radius: 8px;
-            margin-top: 15px;
+            margin-top: 12px;
             border: 2px solid #e31837;
-            font-size: 1.2rem;
+            font-size: 1.1rem; /* 减小字体大小 */
             font-weight: bold;
             color: #e31837;
             text-align: center;
@@ -2167,23 +2174,23 @@
         
         .order-confirm-buttons {
             display: flex;
-            gap: 12px;
-            margin-top: 20px;
+            gap: 10px; /* 减小间距 */
+            margin-top: 15px;
         }
         
         .order-confirm-btn {
             flex: 1;
-            padding: 12px 20px;
+            padding: 10px 15px; /* 减小内边距 */
             border: none;
             border-radius: 25px;
-            font-size: 1rem;
+            font-size: 0.95rem; /* 减小字体大小 */
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
         }
         
         .order-confirm-btn.confirm {
@@ -2207,17 +2214,18 @@
         
         /* 新增：反馈截图样式 */
         .feedback-screenshot-container {
-            margin-top: 12px;
-            padding: 12px;
+            margin-top: 10px;
+            padding: 10px;
             background-color: #f0f8ff;
             border-radius: 8px;
             border-left: 3px solid #2196F3;
+            font-size: 0.8rem;
         }
         
         .feedback-screenshot-container h4 {
             color: #2196F3;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -2229,6 +2237,8 @@
             border: 1px solid #ddd;
             cursor: pointer;
             transition: transform 0.3s;
+            max-height: 120px;
+            object-fit: contain;
         }
         
         .feedback-screenshot-container img:hover {
@@ -2238,12 +2248,13 @@
         .feedback-upload-area {
             border: 2px dashed #2196F3;
             border-radius: 8px;
-            padding: 15px;
+            padding: 12px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
             background-color: #f8fdff;
             margin-top: 8px;
+            font-size: 0.85rem;
         }
         
         .feedback-upload-area:hover {
@@ -2252,17 +2263,17 @@
         }
         
         .feedback-upload-area i {
-            font-size: 24px;
+            font-size: 20px;
             color: #2196F3;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         
         .feedback-preview {
             position: relative;
-            margin-top: 12px;
+            margin-top: 10px;
             border: 1px solid #ddd;
             border-radius: 6px;
-            padding: 8px;
+            padding: 6px;
             background-color: #f9f9f9;
         }
         
@@ -2270,7 +2281,7 @@
             width: 100%;
             border-radius: 4px;
             display: block;
-            max-height: 150px;
+            max-height: 120px;
             object-fit: contain;
         }
         
@@ -2278,8 +2289,8 @@
             position: absolute;
             top: -8px;
             right: -8px;
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             background-color: #f44336;
             color: white;
@@ -2288,26 +2299,36 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
         }
         
         .feedback-btn {
             background-color: #2196F3;
             color: white;
             border: none;
-            padding: 6px 12px;
+            padding: 5px 10px;
             border-radius: 18px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             transition: all 0.3s;
             margin-top: 8px;
         }
         
         .feedback-btn:hover {
             background-color: #0d8bf2;
+        }
+        
+        /* 新增：压缩订单确认内容 */
+        .order-confirm-compact {
+            font-size: 0.85rem;
+        }
+        
+        .order-confirm-compact .order-confirm-item {
+            padding: 8px;
+            margin-bottom: 6px;
         }
         
         @media (max-width: 768px) {
@@ -2484,14 +2505,49 @@
                 padding: 12px;
             }
             
-            /* 订单确认模态框移动端适配 */
+            /* 移动端订单确认模态框进一步优化 */
             .order-confirm-box {
-                padding: 20px;
+                padding: 15px;
                 width: 95%;
+                max-height: 85vh;
+            }
+            
+            .order-confirm-title {
+                font-size: 1.1rem;
+            }
+            
+            .order-confirm-close {
+                font-size: 1.2rem;
+                width: 28px;
+                height: 28px;
+            }
+            
+            .order-confirm-item {
+                padding: 8px;
+                font-size: 0.8rem;
+            }
+            
+            .order-confirm-item-title {
+                font-size: 0.85rem;
+            }
+            
+            .order-confirm-item-content {
+                font-size: 0.8rem;
+            }
+            
+            .order-confirm-total {
+                font-size: 1rem;
+                padding: 10px;
+            }
+            
+            .order-confirm-btn {
+                padding: 8px 12px;
+                font-size: 0.9rem;
             }
             
             .order-confirm-buttons {
                 flex-direction: column;
+                gap: 8px;
             }
         }
         
@@ -2547,7 +2603,7 @@
                 </button>
             </div>
             
-            <div class="order-confirm-body" id="orderConfirmBody">
+            <div class="order-confirm-body order-confirm-compact" id="orderConfirmBody">
                 <!-- 订单详情将通过JavaScript动态填充 -->
             </div>
             
@@ -3662,10 +3718,10 @@
                 </div>
                 
                 <div class="order-confirm-total">
-                    订单总计：<span style="font-size:1.3em;">¥${totalPrice.toFixed(2)}</span>
+                    订单总计：<span style="font-size:1.1em;">¥${totalPrice.toFixed(2)}</span>
                 </div>
                 
-                <div class="highlight" style="margin-top: 15px;">
+                <div class="highlight" style="margin-top: 10px; padding: 6px; font-size: 0.8rem;">
                     <i class="fas fa-info-circle"></i>
                     提交订单后，您可以在"查看我的订单"页面查看订单状态
                 </div>
@@ -5914,7 +5970,7 @@
 
             // 新增：反馈截图上传功能
             const feedbackUploadHTML = `
-                <div class="feedback-upload-area" id="feedbackUploadArea-${order.id}" style="margin-top: 10px;">
+                <div class="feedback-upload-area" id="feedbackUploadArea-${order.id}">
                     <i class="fas fa-cloud-upload-alt"></i>
                     <p>点击上传反馈截图</p>
                     <p class="upload-hint">支持 JPG、PNG 格式</p>
@@ -6003,7 +6059,7 @@
             return orderElement;
         }
 
-        // 初始化反馈截图上传功能（已修复）
+        // 修复：初始化反馈截图上传功能
         function initFeedbackUpload(orderId) {
             const uploadArea = document.getElementById(`feedbackUploadArea-${orderId}`);
             const fileInput = document.getElementById(`feedbackScreenshot-${orderId}`);
@@ -6012,65 +6068,70 @@
             const removeBtn = document.getElementById(`removeFeedback-${orderId}`);
             const uploadBtn = document.getElementById(`uploadFeedbackBtn-${orderId}`);
 
-            if (uploadArea && fileInput && previewContainer && previewImage && removeBtn && uploadBtn) {
-                // 修复：添加文件输入点击事件
-                uploadArea.addEventListener('click', function() {
+            if (uploadArea && fileInput) {
+                // 修复：确保点击上传区域能触发文件选择
+                uploadArea.addEventListener('click', function(e) {
+                    e.preventDefault();
                     fileInput.click();
                 });
 
                 fileInput.addEventListener('change', async function(e) {
                     if (e.target.files.length) {
                         await handleFeedbackFileSelect(e.target.files[0], orderId);
-                        uploadBtn.style.display = 'block';
+                        if (uploadBtn) uploadBtn.style.display = 'block';
                     }
                 });
 
-                removeBtn.addEventListener('click', function() {
-                    fileInput.value = '';
-                    previewContainer.classList.add('hidden');
-                    uploadArea.style.display = 'block';
-                    uploadBtn.style.display = 'none';
-                    previewImage.src = '';
-                    
-                    // 清除预览图片信息
-                    const imageInfo = document.getElementById(`feedbackImageInfo-${orderId}`);
-                    if (imageInfo) {
-                        imageInfo.innerHTML = '';
-                    }
-                });
+                if (removeBtn) {
+                    removeBtn.addEventListener('click', function() {
+                        fileInput.value = '';
+                        if (previewContainer) previewContainer.classList.add('hidden');
+                        if (uploadArea) uploadArea.style.display = 'block';
+                        if (uploadBtn) uploadBtn.style.display = 'none';
+                        if (previewImage) previewImage.src = '';
+                        
+                        // 清除预览图片信息
+                        const imageInfo = document.getElementById(`feedbackImageInfo-${orderId}`);
+                        if (imageInfo) {
+                            imageInfo.innerHTML = '';
+                        }
+                    });
+                }
 
-                uploadBtn.addEventListener('click', async function() {
-                    if (!previewImage.src) {
-                        showNotification('请先选择反馈截图', 'error');
-                        return;
-                    }
+                if (uploadBtn) {
+                    uploadBtn.addEventListener('click', async function() {
+                        if (!previewImage || !previewImage.src) {
+                            showNotification('请先选择反馈截图', 'error');
+                            return;
+                        }
 
-                    try {
-                        const orderIndex = orders.findIndex(o => o.id === orderId);
-                        if (orderIndex === -1) return;
+                        try {
+                            const orderIndex = orders.findIndex(o => o.id === orderId);
+                            if (orderIndex === -1) return;
 
-                        const order = orders[orderIndex];
-                        order.feedbackScreenshotData = previewImage.src;
+                            const order = orders[orderIndex];
+                            order.feedbackScreenshotData = previewImage.src;
 
-                        const updatedOrder = await LeanCloudData.saveOrder(order);
-                        orders[orderIndex] = updatedOrder;
+                            const updatedOrder = await LeanCloudData.saveOrder(order);
+                            orders[orderIndex] = updatedOrder;
 
-                        localStorage.setItem('kfcOrdersCache', JSON.stringify(orders));
+                            localStorage.setItem('kfcOrdersCache', JSON.stringify(orders));
 
-                        showNotification('反馈截图上传成功！顾客可以在"我的订单"页面查看', 'success');
+                            showNotification('反馈截图上传成功！顾客可以在"我的订单"页面查看', 'success');
 
-                        // 重新渲染订单列表
-                        const activeFilterBtn = document.querySelector('.filter-btn.active');
-                        const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
-                        renderOrders(activeFilter);
+                            // 重新渲染订单列表
+                            const activeFilterBtn = document.querySelector('.filter-btn.active');
+                            const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
+                            renderOrders(activeFilter);
 
-                        // 显示实时更新指示器
-                        showRealtimeIndicator('反馈截图已上传');
-                    } catch (error) {
-                        console.error('上传反馈截图失败:', error);
-                        showNotification('上传失败，请检查网络连接', 'error');
-                    }
-                });
+                            // 显示实时更新指示器
+                            showRealtimeIndicator('反馈截图已上传');
+                        } catch (error) {
+                            console.error('上传反馈截图失败:', error);
+                            showNotification('上传失败，请检查网络连接', 'error');
+                        }
+                    });
+                }
             }
         }
 
@@ -6091,9 +6152,9 @@
             
             const reader = new FileReader();
             reader.onload = function(e) {
-                previewImage.src = e.target.result;
-                previewContainer.classList.remove('hidden');
-                uploadArea.style.display = 'none';
+                if (previewImage) previewImage.src = e.target.result;
+                if (previewContainer) previewContainer.classList.remove('hidden');
+                if (uploadArea) uploadArea.style.display = 'none';
                 
                 // 显示图片信息
                 if (imageInfo) {
