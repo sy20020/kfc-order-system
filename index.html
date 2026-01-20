@@ -2222,13 +2222,13 @@
         
         /* 新增：修复反馈截图样式 */
         .feedback-upload-area {
-            border: 2px dashed #2196F3;
+            border: 2px dashed #4CAF50;
             border-radius: 8px;
             padding: 12px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
-            background-color: #f8fdff;
+            background-color: #f1f8e9;
             margin-top: 8px;
             font-size: 0.85rem;
             position: relative;
@@ -2246,13 +2246,13 @@
         }
         
         .feedback-upload-area:hover {
-            border-color: #0d8bf2;
-            background-color: #e6f7ff;
+            border-color: #2e7d32;
+            background-color: #e8f5e9;
         }
         
         .feedback-upload-area i {
             font-size: 20px;
-            color: #2196F3;
+            color: #4CAF50;
             margin-bottom: 6px;
         }
         
@@ -2296,7 +2296,7 @@
         }
         
         .feedback-btn {
-            background-color: #2196F3;
+            background-color: #4CAF50;
             color: white;
             border: none;
             padding: 5px 10px;
@@ -2316,20 +2316,21 @@
         }
         
         .feedback-btn:hover {
-            background-color: #0d8bf2;
+            background-color: #3d8b40;
         }
         
-        /* 新增：反馈截图容器样式 */
+        /* 新增：反馈截图容器样式 - 美化 */
         .feedback-screenshot-container {
             margin-top: 12px;
             padding: 10px;
-            background-color: #f8fdff;
-            border-radius: 6px;
-            border: 1px solid #2196F3;
+            background-color: #e8f5e9;
+            border-radius: 8px;
+            border: 1px solid #4CAF50;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         
         .feedback-screenshot-container h4 {
-            color: #2196F3;
+            color: #2e7d32;
             margin-bottom: 8px;
             font-size: 0.9rem;
             display: flex;
@@ -2340,13 +2341,48 @@
         .feedback-thumbnail {
             width: 100%;
             border-radius: 6px;
-            border: 1px solid #ddd;
+            border: 1px solid #4CAF50;
             cursor: pointer;
             transition: transform 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         
         .feedback-thumbnail:hover {
             transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        /* 新增：订单反馈截图显示在顶部 */
+        .order-feedback-top {
+            margin-top: 8px;
+            margin-bottom: 12px;
+            padding: 10px;
+            background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .order-feedback-top h4 {
+            color: #2e7d32;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .order-feedback-thumbnail {
+            max-width: 150px;
+            border-radius: 6px;
+            border: 1px solid #4CAF50;
+            cursor: pointer;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        
+        .order-feedback-thumbnail:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
         }
         
         /* 其他样式保持不变... */
@@ -5580,14 +5616,14 @@
                 `;
             }
             
-            // 新增：显示反馈截图
-            let feedbackHTML = '';
+            // 新增：美化订单反馈截图显示，放在订单号下方
+            let feedbackTopHTML = '';
             if (order.feedbackScreenshotData) {
-                feedbackHTML = `
-                    <div class="feedback-screenshot-container">
-                        <h4><i class="fas fa-camera"></i> 商家反馈截图</h4>
-                        <img src="${order.feedbackScreenshotData}" alt="反馈截图" class="feedback-thumbnail" data-order-id="${order.id}">
-                        <p style="font-size:0.8rem; color:#666; margin-top: 5px;">商家已上传反馈信息</p>
+                feedbackTopHTML = `
+                    <div class="order-feedback-top">
+                        <h4><i class="fas fa-check-circle"></i> 订单反馈截图</h4>
+                        <img src="${order.feedbackScreenshotData}" alt="订单反馈截图" class="order-feedback-thumbnail" data-order-id="${order.id}">
+                        <p style="font-size:0.8rem; color:#2e7d32; margin-top: 5px; font-weight: bold;">商家已上传反馈信息</p>
                     </div>
                 `;
             }
@@ -5601,6 +5637,8 @@
                     <div class="user-order-status ${statusClass}">${statusText}</div>
                 </div>
                 
+                ${feedbackTopHTML}
+                
                 <div class="user-order-items">
                     ${itemsHTML}
                 </div>
@@ -5613,7 +5651,6 @@
                     ${deliveryHTML}
                     ${order.orderNote ? `<p><strong>备注：</strong>${order.orderNote}</p>` : ''}
                     ${screenshotHTML}
-                    ${feedbackHTML}
                 </div>
             `;
 
@@ -5628,7 +5665,7 @@
             
             // 新增：反馈截图点击查看大图
             if (order.feedbackScreenshotData) {
-                const feedbackImg = orderElement.querySelector('.feedback-thumbnail');
+                const feedbackImg = orderElement.querySelector('.order-feedback-thumbnail');
                 if (feedbackImg) {
                     feedbackImg.addEventListener('click', function() {
                         showFullImage(order.feedbackScreenshotData);
@@ -6006,24 +6043,25 @@
                 `;
             }
             
-            // 新增：显示反馈截图
+            // 新增：美化反馈截图显示
             let feedbackHTML = '';
             if (order.feedbackScreenshotData) {
                 feedbackHTML = `
                     <div class="feedback-screenshot-container">
-                        <h4><i class="fas fa-camera"></i> 反馈截图</h4>
-                        <img src="${order.feedbackScreenshotData}" alt="反馈截图" class="feedback-thumbnail" data-order-id="${order.id}">
+                        <h4><i class="fas fa-check-circle"></i> 订单反馈截图</h4>
+                        <img src="${order.feedbackScreenshotData}" alt="订单反馈截图" class="feedback-thumbnail" data-order-id="${order.id}">
+                        <p style="font-size:0.8rem; color:#2e7d32; margin-top: 5px; font-weight: bold;">已上传反馈给顾客</p>
                     </div>
                 `;
             }
 
             const userInfo = order.userId ? `<p><strong>用户ID：</strong>${order.userId.substring(0, 12)}...</p>` : '';
 
-            // 新增：反馈截图上传功能
+            // 新增：反馈截图上传功能 - 修改文字为"订单反馈截图"
             const feedbackUploadHTML = `
                 <div class="feedback-upload-area" id="feedbackUploadArea-${order.id}">
                     <i class="fas fa-cloud-upload-alt"></i>
-                    <p>点击上传反馈截图</p>
+                    <p>点击上传订单反馈截图</p>
                     <p class="upload-hint">支持 JPG、PNG 格式</p>
                     <input type="file" id="feedbackScreenshot-${order.id}" accept="image/*">
                 </div>
@@ -6038,7 +6076,7 @@
                 </div>
                 <button class="feedback-btn" id="uploadFeedbackBtn-${order.id}">
                     <i class="fas fa-upload"></i>
-                    上传反馈截图
+                    上传订单反馈截图
                 </button>
             `;
 
@@ -6066,7 +6104,7 @@
                 </div>
                 
                 <div class="form-group" style="margin-top: 12px;">
-                    <label class="form-label">上传反馈截图给顾客</label>
+                    <label class="form-label">上传订单反馈截图给顾客</label>
                     ${feedbackUploadHTML}
                 </div>
                 
@@ -6180,7 +6218,7 @@
                         localStorage.setItem('kfcOrdersCache', JSON.stringify(orders));
 
                         hideLoading();
-                        showNotification('反馈截图上传成功！顾客可以在"我的订单"页面查看', 'success');
+                        showNotification('订单反馈截图上传成功！顾客可以在"我的订单"页面查看', 'success');
 
                         // 重新渲染订单列表
                         const activeFilterBtn = document.querySelector('.filter-btn.active');
@@ -6188,7 +6226,7 @@
                         renderOrders(activeFilter);
 
                         // 显示实时更新指示器
-                        showRealtimeIndicator('反馈截图已上传');
+                        showRealtimeIndicator('订单反馈截图已上传');
                     } catch (error) {
                         console.error('上传反馈截图失败:', error);
                         hideLoading();
