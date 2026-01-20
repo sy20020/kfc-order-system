@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>肯德基自助点餐系统</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Supabase SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- LeanCloud SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
     <style>
         * {
             margin: 0;
@@ -2710,20 +2710,24 @@
     </div>
 
     <script>
-        // ==================== Supabase 配置 ====================
-        // 替换为您的 Supabase 项目配置
-        const SUPABASE_URL = 'https://ircqjymxozjrqiprrasu.supabase.co'; // 替换为您的 Supabase URL
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlyY3FqeW14b3pqcnFpcHJyYXN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4NDEwMzMsImV4cCI6MjA4NDQxNzAzM30.rIX5CnlZV3RiEp_DprB7tmgVL5n4Tn4mfbzqB7gnsKY'; // 替换为您的匿名密钥
-        const ADMIN_PASSWORD = "200104";
-        
-        // 初始化 Supabase 客户端
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
+        // ==================== LeanCloud 配置 ====================
+        const APP_ID = 'Tu8MLJ2PHUY0z4Kgol3hockE-gzGzoHsz';
+        const APP_KEY = '7sdmY7swmMFU9ppvBGheW4oz';
+        const SERVER_URL = 'https://tu8mlj2p.lc-cn-n1-shared.com';
+
+        // 初始化 LeanCloud
+        AV.init({
+            appId: APP_ID,
+            appKey: APP_KEY,
+            serverURLs: SERVER_URL || 'https://tu8mlj2p.lc-cn-n1-shared.com'
+        });
+
         // ==================== 数据结构 ====================
         let meals = [];
         let cart = [];
         let orders = [];
         let newOrdersCount = 0;
+        const ADMIN_PASSWORD = "200104";
         
         // 实时更新相关变量
         let adminPollingInterval = null;
@@ -2779,32 +2783,33 @@
             }, 3000);
         }
 
-        // ==================== Supabase 数据操作类 ====================
-        class SupabaseData {
+        // ==================== LeanCloud 数据操作类 ====================
+        class LeanCloudData {
             static async loadMeals() {
                 try {
-                    const { data, error } = await supabase
-                        .from('meals')
-                        .select('*')
-                        .order('order', { ascending: true })
-                        .order('created_at', { ascending: false });
-                    
-                    if (error) throw error;
-                    
-                    return data.map(item => ({
-                        id: item.id,
-                        name: item.name,
-                        price: item.price,
-                        tags: item.tags || [],
-                        description: item.description,
-                        order: item.order || 9999,
-                        active: item.active !== false,
-                        supportDelivery: item.support_delivery !== false, // 注意字段名转换
-                        optionGroups: item.option_groups || [],
-                        fixedItems: item.fixed_items || [],
-                        createdAt: item.created_at ? new Date(item.created_at).getTime() : Date.now(),
-                        updatedAt: item.updated_at ? new Date(item.updated_at).getTime() : Date.now()
-                    }));
+                    const query = new AV.Query('Meals');
+                    query.descending('createdAt');
+                    const results = await query.find();
+                    return results.map(item => {
+                        const data = item.toJSON();
+                        const createdAt = item.createdAt ? item.createdAt.getTime() : Date.now();
+                        const updatedAt = item.updatedAt ? item.updatedAt.getTime() : Date.now();
+                        return {
+                            id: data.id || item.id,
+                            name: data.name,
+                            price: data.price,
+                            tags: data.tags || [],
+                            description: data.description,
+                            order: data.order || 9999,
+                            active: data.active !== false,
+                            supportDelivery: data.supportDelivery !== false, // 新增：是否支持宅急送，默认true
+                            optionGroups: data.optionGroups || [],
+                            fixedItems: data.fixedItems || [],
+                            createdAt: createdAt,
+                            updatedAt: updatedAt,
+                            objectId: item.id
+                        };
+                    });
                 } catch (error) {
                     console.error('加载套餐数据失败:', error);
                     return [];
@@ -2813,8 +2818,32 @@
 
             static async saveMeal(meal) {
                 try {
-                    // 准备要保存的数据，将字段名转换为数据库格式
-                    const mealData = {
+                    const Meal = AV.Object.extend('Meals');
+                    let mealObj;
+
+                    if (meal.objectId) {
+                        mealObj = AV.Object.createWithoutData('Meals', meal.objectId);
+                    } else {
+                        mealObj = new Meal();
+                    }
+
+                    mealObj.set('id', meal.id);
+                    mealObj.set('name', meal.name);
+                    mealObj.set('price', meal.price);
+                    mealObj.set('tags', meal.tags);
+                    mealObj.set('description', meal.description);
+                    mealObj.set('order', meal.order || 9999);
+                    mealObj.set('active', meal.active !== false);
+                    mealObj.set('supportDelivery', meal.supportDelivery !== false); // 新增：保存是否支持宅急送
+                    mealObj.set('optionGroups', meal.optionGroups || []);
+                    mealObj.set('fixedItems', meal.fixedItems || []);
+
+                    const result = await mealObj.save();
+
+                    const createdAt = result.createdAt ? result.createdAt.getTime() : Date.now();
+                    const updatedAt = result.updatedAt ? result.updatedAt.getTime() : Date.now();
+
+                    return {
                         id: meal.id,
                         name: meal.name,
                         price: meal.price,
@@ -2822,55 +2851,12 @@
                         description: meal.description,
                         order: meal.order || 9999,
                         active: meal.active !== false,
-                        support_delivery: meal.supportDelivery !== false, // 字段名转换
-                        option_groups: meal.optionGroups || [],
-                        fixed_items: meal.fixedItems || []
-                    };
-                    
-                    // 检查套餐是否已存在
-                    const { data: existingMeal, error: checkError } = await supabase
-                        .from('meals')
-                        .select('id')
-                        .eq('id', meal.id)
-                        .single();
-                    
-                    let result;
-                    if (checkError && checkError.code === 'PGRST116') {
-                        // 套餐不存在，插入新记录
-                        const { data, error } = await supabase
-                            .from('meals')
-                            .insert([mealData])
-                            .select()
-                            .single();
-                        
-                        if (error) throw error;
-                        result = data;
-                    } else {
-                        // 套餐存在，更新记录
-                        const { data, error } = await supabase
-                            .from('meals')
-                            .update(mealData)
-                            .eq('id', meal.id)
-                            .select()
-                            .single();
-                        
-                        if (error) throw error;
-                        result = data;
-                    }
-                    
-                    return {
-                        id: result.id,
-                        name: result.name,
-                        price: result.price,
-                        tags: result.tags || [],
-                        description: result.description,
-                        order: result.order || 9999,
-                        active: result.active !== false,
-                        supportDelivery: result.support_delivery !== false, // 字段名转换
-                        optionGroups: result.option_groups || [],
-                        fixedItems: result.fixed_items || [],
-                        createdAt: result.created_at ? new Date(result.created_at).getTime() : Date.now(),
-                        updatedAt: result.updated_at ? new Date(result.updated_at).getTime() : Date.now()
+                        supportDelivery: meal.supportDelivery !== false, // 新增：是否支持宅急送
+                        optionGroups: meal.optionGroups || [],
+                        fixedItems: meal.fixedItems || [],
+                        createdAt: createdAt,
+                        updatedAt: updatedAt,
+                        objectId: result.id
                     };
                 } catch (error) {
                     console.error('保存套餐失败:', error);
@@ -2880,13 +2866,15 @@
 
             static async deleteMeal(mealId) {
                 try {
-                    const { error } = await supabase
-                        .from('meals')
-                        .delete()
-                        .eq('id', mealId);
-                    
-                    if (error) throw error;
-                    return true;
+                    const query = new AV.Query('Meals');
+                    query.equalTo('id', mealId);
+                    const result = await query.first();
+
+                    if (result) {
+                        await result.destroy();
+                        return true;
+                    }
+                    return false;
                 } catch (error) {
                     console.error('删除套餐失败:', error);
                     throw error;
@@ -2895,29 +2883,30 @@
 
             static async loadOrders() {
                 try {
-                    const { data, error } = await supabase
-                        .from('orders')
-                        .select('*')
-                        .order('created_at', { ascending: false });
-                    
-                    if (error) throw error;
-                    
-                    return data.map(item => ({
-                        id: item.id,
-                        timestamp: item.timestamp,
-                        status: item.status || 'new',
-                        cart: item.cart || [],
-                        deliveryInfo: item.delivery_info,
-                        orderNote: item.order_note || '',
-                        deliveryType: item.delivery_type,
-                        pickupType: item.pickup_type,
-                        totalPrice: item.total_price,
-                        hasScreenshot: item.has_screenshot || false,
-                        screenshotData: item.screenshot_data,
-                        userId: item.user_id,
-                        createdAt: item.created_at ? new Date(item.created_at).getTime() : Date.now(),
-                        updatedAt: item.updated_at ? new Date(item.updated_at).getTime() : Date.now()
-                    }));
+                    const query = new AV.Query('Orders');
+                    query.descending('createdAt');
+                    const results = await query.find();
+                    return results.map(item => {
+                        const data = item.toJSON();
+                        const createdAt = item.createdAt ? item.createdAt.getTime() : Date.now();
+                        const updatedAt = item.updatedAt ? item.updatedAt.getTime() : Date.now();
+                        return {
+                            id: data.id,
+                            timestamp: data.timestamp,
+                            status: data.status || 'new',
+                            cart: data.cart || [],
+                            deliveryInfo: data.deliveryInfo,
+                            orderNote: data.orderNote || '',
+                            deliveryType: data.deliveryType,
+                            totalPrice: data.totalPrice,
+                            hasScreenshot: data.hasScreenshot || false,
+                            screenshotData: data.screenshotData,
+                            userId: data.userId,
+                            createdAt: createdAt,
+                            updatedAt: updatedAt,
+                            objectId: item.id
+                        };
+                    });
                 } catch (error) {
                     console.error('加载订单数据失败:', error);
                     return [];
@@ -2926,68 +2915,53 @@
 
             static async saveOrder(order) {
                 try {
-                    // 准备要保存的数据，将字段名转换为数据库格式
-                    const orderData = {
+                    const Order = AV.Object.extend('Orders');
+                    let orderObj;
+
+                    if (order.objectId) {
+                        orderObj = AV.Object.createWithoutData('Orders', order.objectId);
+                    } else {
+                        orderObj = new Order();
+                    }
+
+                    orderObj.set('id', order.id);
+                    orderObj.set('timestamp', order.timestamp);
+                    orderObj.set('status', order.status || 'new');
+                    orderObj.set('cart', order.cart);
+                    orderObj.set('deliveryInfo', order.deliveryInfo);
+                    orderObj.set('orderNote', order.orderNote || '');
+                    orderObj.set('deliveryType', order.deliveryType);
+                    orderObj.set('totalPrice', order.totalPrice);
+                    orderObj.set('userId', order.userId);
+                    
+                    if (order.hasScreenshot && order.screenshotData) {
+                        orderObj.set('hasScreenshot', true);
+                        orderObj.set('screenshotData', order.screenshotData);
+                    } else {
+                        orderObj.set('hasScreenshot', false);
+                    }
+
+                    const result = await orderObj.save();
+
+                    const createdAt = result.createdAt ? result.createdAt.getTime() : Date.now();
+                    const updatedAt = result.updatedAt ? result.updatedAt.getTime() : Date.now();
+
+                    return {
                         id: order.id,
                         timestamp: order.timestamp,
                         status: order.status || 'new',
                         cart: order.cart,
-                        delivery_info: order.deliveryInfo,
-                        order_note: order.orderNote || '',
-                        delivery_type: order.deliveryType,
-                        pickup_type: order.pickupType || '',
-                        total_price: order.totalPrice,
-                        user_id: order.userId,
-                        has_screenshot: order.hasScreenshot || false,
-                        screenshot_data: order.screenshotData
-                    };
-                    
-                    // 检查订单是否已存在
-                    const { data: existingOrder, error: checkError } = await supabase
-                        .from('orders')
-                        .select('id')
-                        .eq('id', order.id)
-                        .single();
-                    
-                    let result;
-                    if (checkError && checkError.code === 'PGRST116') {
-                        // 订单不存在，插入新记录
-                        const { data, error } = await supabase
-                            .from('orders')
-                            .insert([orderData])
-                            .select()
-                            .single();
-                        
-                        if (error) throw error;
-                        result = data;
-                    } else {
-                        // 订单存在，更新记录
-                        const { data, error } = await supabase
-                            .from('orders')
-                            .update(orderData)
-                            .eq('id', order.id)
-                            .select()
-                            .single();
-                        
-                        if (error) throw error;
-                        result = data;
-                    }
-                    
-                    return {
-                        id: result.id,
-                        timestamp: result.timestamp,
-                        status: result.status || 'new',
-                        cart: result.cart || [],
-                        deliveryInfo: result.delivery_info,
-                        orderNote: result.order_note || '',
-                        deliveryType: result.delivery_type,
-                        pickupType: result.pickup_type || '',
-                        totalPrice: result.total_price,
-                        hasScreenshot: result.has_screenshot || false,
-                        screenshotData: result.screenshot_data,
-                        userId: result.user_id,
-                        createdAt: result.created_at ? new Date(result.created_at).getTime() : Date.now(),
-                        updatedAt: result.updated_at ? new Date(result.updated_at).getTime() : Date.now()
+                        deliveryInfo: order.deliveryInfo,
+                        orderNote: order.orderNote || '',
+                        deliveryType: order.deliveryType,
+                        pickupType: order.pickupType || '',
+                        totalPrice: order.totalPrice,
+                        hasScreenshot: order.hasScreenshot || false,
+                        screenshotData: order.screenshotData,
+                        userId: order.userId,
+                        createdAt: createdAt,
+                        updatedAt: updatedAt,
+                        objectId: result.id
                     };
                 } catch (error) {
                     console.error('保存订单失败:', error);
@@ -2997,13 +2971,15 @@
 
             static async deleteOrder(orderId) {
                 try {
-                    const { error } = await supabase
-                        .from('orders')
-                        .delete()
-                        .eq('id', orderId);
-                    
-                    if (error) throw error;
-                    return true;
+                    const query = new AV.Query('Orders');
+                    query.equalTo('id', orderId);
+                    const result = await query.first();
+
+                    if (result) {
+                        await result.destroy();
+                        return true;
+                    }
+                    return false;
                 } catch (error) {
                     console.error('删除订单失败:', error);
                     throw error;
@@ -3012,28 +2988,20 @@
 
             static async loadNewOrdersCount() {
                 try {
-                    const { data, error } = await supabase
-                        .from('counter')
-                        .select('count')
-                        .eq('type', 'newOrdersCount')
-                        .single();
-                    
-                    if (error) {
-                        // 如果计数器不存在，创建它
-                        if (error.code === 'PGRST116') {
-                            const { data: newCounter, error: insertError } = await supabase
-                                .from('counter')
-                                .insert([{ type: 'newOrdersCount', count: 0 }])
-                                .select()
-                                .single();
-                            
-                            if (insertError) throw insertError;
-                            return newCounter.count || 0;
-                        }
-                        throw error;
+                    const query = new AV.Query('Counter');
+                    query.equalTo('type', 'newOrdersCount');
+                    const result = await query.first();
+
+                    if (result) {
+                        return result.get('count') || 0;
+                    } else {
+                        const Counter = AV.Object.extend('Counter');
+                        const counter = new Counter();
+                        counter.set('type', 'newOrdersCount');
+                        counter.set('count', 0);
+                        await counter.save();
+                        return 0;
                     }
-                    
-                    return data.count || 0;
                 } catch (error) {
                     console.error('加载新订单计数失败:', error);
                     return 0;
@@ -3042,12 +3010,21 @@
 
             static async updateNewOrdersCount(count) {
                 try {
-                    const { error } = await supabase
-                        .from('counter')
-                        .update({ count: count })
-                        .eq('type', 'newOrdersCount');
-                    
-                    if (error) throw error;
+                    const Counter = AV.Object.extend('Counter');
+                    const query = new AV.Query('Counter');
+                    query.equalTo('type', 'newOrdersCount');
+                    const result = await query.first();
+
+                    let counter;
+                    if (result) {
+                        counter = result;
+                    } else {
+                        counter = new Counter();
+                        counter.set('type', 'newOrdersCount');
+                    }
+
+                    counter.set('count', count);
+                    await counter.save();
                     console.log('新订单计数更新成功:', count);
                     return true;
                 } catch (error) {
@@ -3056,60 +3033,72 @@
                 }
             }
 
+            static async initializeTables() {
+                try {
+                    const mealsQuery = new AV.Query('Meals');
+                    const mealsCount = await mealsQuery.count();
+                    console.log('Meals表记录数:', mealsCount);
+
+                    const ordersQuery = new AV.Query('Orders');
+                    const ordersCount = await ordersQuery.count();
+                    console.log('Orders表记录数:', ordersCount);
+
+                    return true;
+                } catch (error) {
+                    console.log('初始化表（LeanCloud会自动创建不存在的表）');
+                    return true;
+                }
+            }
+            
+            // 实时检查新订单
             static async checkForNewOrders(sinceTime, userId = null) {
                 try {
-                    let query = supabase
-                        .from('orders')
-                        .select('*')
-                        .gt('created_at', new Date(sinceTime).toISOString());
-                    
+                    const query = new AV.Query('Orders');
+                    query.greaterThan('createdAt', new Date(sinceTime));
                     if (userId) {
-                        query = query.eq('user_id', userId);
+                        query.equalTo('userId', userId);
                     }
+                    query.descending('createdAt');
+                    const results = await query.find();
                     
-                    const { data, error } = await query
-                        .order('created_at', { ascending: false });
-                    
-                    if (error) throw error;
-                    
-                    return data.map(item => ({
-                        id: item.id,
-                        timestamp: item.timestamp,
-                        status: item.status || 'new',
-                        cart: item.cart || [],
-                        deliveryInfo: item.delivery_info,
-                        orderNote: item.order_note || '',
-                        deliveryType: item.delivery_type,
-                        pickupType: item.pickup_type,
-                        totalPrice: item.total_price,
-                        hasScreenshot: item.has_screenshot || false,
-                        screenshotData: item.screenshot_data,
-                        userId: item.user_id,
-                        createdAt: item.created_at ? new Date(item.created_at).getTime() : Date.now(),
-                        updatedAt: item.updated_at ? new Date(item.updated_at).getTime() : Date.now()
-                    }));
+                    return results.map(item => {
+                        const data = item.toJSON();
+                        const createdAt = item.createdAt ? item.createdAt.getTime() : Date.now();
+                        const updatedAt = item.updatedAt ? item.updatedAt.getTime() : Date.now();
+                        return {
+                            id: data.id,
+                            timestamp: data.timestamp,
+                            status: data.status || 'new',
+                            cart: data.cart || [],
+                            deliveryInfo: data.deliveryInfo,
+                            orderNote: data.orderNote || '',
+                            deliveryType: data.deliveryType,
+                            totalPrice: data.totalPrice,
+                            hasScreenshot: data.hasScreenshot || false,
+                            screenshotData: data.screenshotData,
+                            userId: data.userId,
+                            createdAt: createdAt,
+                            updatedAt: updatedAt,
+                            objectId: item.id
+                        };
+                    });
                 } catch (error) {
                     console.error('检查新订单失败:', error);
                     return [];
                 }
             }
             
+            // 检查新订单计数（不检查具体订单）
             static async checkNewOrdersCountOnly() {
                 try {
-                    const { data, error } = await supabase
-                        .from('counter')
-                        .select('count')
-                        .eq('type', 'newOrdersCount')
-                        .single();
-                    
-                    if (error) {
-                        if (error.code === 'PGRST116') {
-                            return 0;
-                        }
-                        throw error;
+                    const query = new AV.Query('Counter');
+                    query.equalTo('type', 'newOrdersCount');
+                    const result = await query.first();
+
+                    if (result) {
+                        return result.get('count') || 0;
                     }
-                    
-                    return data.count || 0;
+                    return 0;
                 } catch (error) {
                     console.error('检查新订单计数失败:', error);
                     return 0;
@@ -3119,45 +3108,32 @@
             // 快速保存订单（不等待确认，提高响应速度）
             static async quickSaveOrder(order) {
                 try {
-                    // 准备要保存的数据
-                    const orderData = {
-                        id: order.id,
-                        timestamp: order.timestamp,
-                        status: order.status || 'new',
-                        cart: order.cart,
-                        delivery_info: order.deliveryInfo,
-                        order_note: order.orderNote || '',
-                        delivery_type: order.deliveryType,
-                        pickup_type: order.pickupType || '',
-                        total_price: order.totalPrice,
-                        user_id: order.userId,
-                        has_screenshot: order.hasScreenshot || false,
-                        screenshot_data: order.screenshotData
-                    };
+                    const Order = AV.Object.extend('Orders');
+                    const orderObj = new Order();
+
+                    orderObj.set('id', order.id);
+                    orderObj.set('timestamp', order.timestamp);
+                    orderObj.set('status', order.status || 'new');
+                    orderObj.set('cart', order.cart);
+                    orderObj.set('deliveryInfo', order.deliveryInfo);
+                    orderObj.set('orderNote', order.orderNote || '');
+                    orderObj.set('deliveryType', order.deliveryType);
+                    orderObj.set('totalPrice', order.totalPrice);
+                    orderObj.set('userId', order.userId);
                     
-                    // 使用异步操作，不等待结果
-                    supabase
-                        .from('orders')
-                        .insert([orderData])
-                        .then(({ error }) => {
-                            if (error) {
-                                console.error('订单快速保存失败:', error);
-                                // 尝试更新现有订单
-                                supabase
-                                    .from('orders')
-                                    .update(orderData)
-                                    .eq('id', order.id)
-                                    .then(({ error: updateError }) => {
-                                        if (updateError) {
-                                            console.error('订单更新也失败:', updateError);
-                                        } else {
-                                            console.log('订单快速保存成功（通过更新）:', order.id);
-                                        }
-                                    });
-                            } else {
-                                console.log('订单快速保存成功:', order.id);
-                            }
-                        });
+                    if (order.hasScreenshot && order.screenshotData) {
+                        orderObj.set('hasScreenshot', true);
+                        orderObj.set('screenshotData', order.screenshotData);
+                    } else {
+                        orderObj.set('hasScreenshot', false);
+                    }
+
+                    // 快速保存，不等待返回结果
+                    orderObj.save().then(result => {
+                        console.log('订单快速保存成功:', order.id);
+                    }).catch(error => {
+                        console.error('订单快速保存失败:', error);
+                    });
 
                     // 立即返回一个承诺，但实际是异步的
                     return Promise.resolve({
@@ -3174,7 +3150,8 @@
                         screenshotData: order.screenshotData,
                         userId: order.userId,
                         createdAt: Date.now(),
-                        updatedAt: Date.now()
+                        updatedAt: Date.now(),
+                        objectId: 'pending_' + order.id
                     });
                 } catch (error) {
                     console.error('快速保存订单失败:', error);
@@ -3193,7 +3170,8 @@
                         screenshotData: order.screenshotData,
                         userId: order.userId,
                         createdAt: Date.now(),
-                        updatedAt: Date.now()
+                        updatedAt: Date.now(),
+                        objectId: 'local_' + order.id
                     });
                 }
             }
@@ -3204,11 +3182,14 @@
             try {
                 showLoading('正在加载数据...');
 
-                await loadAllDataFromSupabase().catch(e => {
-                    console.error('数据加载失败:', e);
-                    showNotification('数据加载失败，使用本地缓存数据', 'error');
-                    loadFromLocalCache();
-                });
+                await Promise.all([
+                    LeanCloudData.initializeTables().catch(e => console.log('表初始化失败:', e)),
+                    loadAllDataFromLeanCloud().catch(e => {
+                        console.error('数据加载失败:', e);
+                        showNotification('数据加载失败，使用本地缓存数据', 'error');
+                        loadFromLocalCache();
+                    })
+                ]);
 
                 initHomePage();
                 initAdminPanel();
@@ -3230,7 +3211,7 @@
                 showNotification('页面加载完成', 'success');
                 hideLoading();
 
-                console.log('页面初始化完成，数据已从Supabase加载');
+                console.log('页面初始化完成，数据已从LeanCloud加载');
                 
                 // 启动全局轮询，检查新订单（无论是否登录管理员页面）
                 startGlobalPolling();
@@ -3271,7 +3252,7 @@
             globalPollingInterval = setInterval(async () => {
                 try {
                     // 检查新订单计数
-                    const newCount = await SupabaseData.checkNewOrdersCountOnly();
+                    const newCount = await LeanCloudData.checkNewOrdersCountOnly();
                     if (newCount !== newOrdersCount) {
                         newOrdersCount = newCount;
                         updateOrderBadge();
@@ -3291,7 +3272,7 @@
                     
                     // 如果当前页面是"我的订单"页面，检查当前用户的新订单
                     if (document.getElementById('myOrdersPage').classList.contains('active')) {
-                        const newUserOrders = await SupabaseData.checkForNewOrders(lastUserOrderUpdateTime - 3000, currentUserId);
+                        const newUserOrders = await LeanCloudData.checkForNewOrders(lastUserOrderUpdateTime - 3000, currentUserId);
                         if (newUserOrders.length > 0) {
                             // 更新最后检查时间
                             lastUserOrderUpdateTime = Date.now();
@@ -3595,12 +3576,12 @@
         }
 
         // ==================== 数据加载函数 ====================
-        async function loadAllDataFromSupabase() {
+        async function loadAllDataFromLeanCloud() {
             try {
                 const [mealsData, ordersData, countData] = await Promise.all([
-                    SupabaseData.loadMeals(),
-                    SupabaseData.loadOrders(),
-                    SupabaseData.loadNewOrdersCount()
+                    LeanCloudData.loadMeals(),
+                    LeanCloudData.loadOrders(),
+                    LeanCloudData.loadNewOrdersCount()
                 ]);
 
                 meals = mealsData;
@@ -3615,7 +3596,7 @@
                     description: m.description,
                     order: m.order,
                     active: m.active,
-                    supportDelivery: m.supportDelivery
+                    supportDelivery: m.supportDelivery // 新增：保存是否支持宅急送
                 }))));
                 
                 localStorage.setItem('kfcOrdersCache', JSON.stringify(orders.map(o => ({
@@ -3649,7 +3630,7 @@
                     const parsedMeals = JSON.parse(mealsCache);
                     meals = parsedMeals.map(meal => ({
                         ...meal,
-                        supportDelivery: meal.supportDelivery !== false
+                        supportDelivery: meal.supportDelivery !== false // 确保有supportDelivery字段
                     }));
                 } catch (e) {
                     meals = [];
@@ -4452,7 +4433,7 @@
                         additionalPrice: additionalPrice,
                         totalPrice: totalPrice,
                         options: [...selectedOptions],
-                        supportDelivery: meal.supportDelivery
+                        supportDelivery: meal.supportDelivery // 新增：保存套餐是否支持宅急送
                     };
 
                     // 检查购物车中是否有其他套餐，如果有，检查配送方式是否兼容
@@ -4734,9 +4715,10 @@
 
             try {
                 // 使用快速保存订单函数，不等待进度条
-                const savedOrder = await SupabaseData.quickSaveOrder(orderData);
+                const savedOrder = await LeanCloudData.quickSaveOrder(orderData);
                 console.log('订单快速提交成功:', savedOrder);
 
+                savedOrder.objectId = savedOrder.objectId;
                 orders.unshift(savedOrder);
 
                 // 更新新订单计数
@@ -4745,7 +4727,7 @@
                 // 更新新订单计数（异步，不阻塞主流程）
                 setTimeout(async () => {
                     try {
-                        await SupabaseData.updateNewOrdersCount(newOrdersCount);
+                        await LeanCloudData.updateNewOrdersCount(newOrdersCount);
                         console.log('新订单计数更新成功');
                     } catch (countError) {
                         console.warn('更新新订单计数失败，但不影响订单提交:', countError);
@@ -5190,7 +5172,7 @@
                 if (isAdminPanelOpen) {
                     try {
                         // 只检查新订单，不检查新订单计数
-                        const newOrders = await SupabaseData.checkForNewOrders(lastOrderUpdateTime - 2000); // 2秒前的更新
+                        const newOrders = await LeanCloudData.checkForNewOrders(lastOrderUpdateTime - 2000); // 2秒前的更新
                         if (newOrders.length > 0) {
                             // 更新最后更新时间
                             lastOrderUpdateTime = Date.now();
@@ -5258,13 +5240,13 @@
                     try {
                         showLoading('正在清空订单...');
 
-                        const deletePromises = orders.map(order => SupabaseData.deleteOrder(order.id));
+                        const deletePromises = orders.map(order => LeanCloudData.deleteOrder(order.id));
                         await Promise.all(deletePromises);
 
                         orders = [];
                         newOrdersCount = 0;
 
-                        await SupabaseData.updateNewOrdersCount(0);
+                        await LeanCloudData.updateNewOrdersCount(0);
                         localStorage.setItem('newOrdersCountCache', '0');
 
                         localStorage.setItem('kfcOrdersCache', JSON.stringify(orders));
@@ -5516,13 +5498,13 @@
                             order.status = 'completed';
                             break;
                         case 'delete':
-                            await SupabaseData.deleteOrder(orderId);
+                            await LeanCloudData.deleteOrder(orderId);
                             orders.splice(orderIndex, 1);
                             break;
                     }
 
                     if (action !== 'delete') {
-                        const updatedOrder = await SupabaseData.saveOrder(order);
+                        const updatedOrder = await LeanCloudData.saveOrder(order);
                         orders[orderIndex] = updatedOrder;
                     }
 
@@ -5859,7 +5841,7 @@
                 meals[mealIndex].order = newOrder;
                 meals[mealIndex].updatedAt = Date.now();
 
-                const updatedMeal = await SupabaseData.saveMeal(meals[mealIndex]);
+                const updatedMeal = await LeanCloudData.saveMeal(meals[mealIndex]);
                 meals[mealIndex] = updatedMeal;
 
                 localStorage.setItem('kfcMealsCache', JSON.stringify(meals));
@@ -5889,7 +5871,7 @@
                     meals[mealIndex].active = isActive;
                     meals[mealIndex].updatedAt = Date.now();
 
-                    const updatedMeal = await SupabaseData.saveMeal(meals[mealIndex]);
+                    const updatedMeal = await LeanCloudData.saveMeal(meals[mealIndex]);
                     meals[mealIndex] = updatedMeal;
 
                     localStorage.setItem('kfcMealsCache', JSON.stringify(meals));
@@ -6223,7 +6205,7 @@
             }
 
             try {
-                await SupabaseData.deleteMeal(mealId);
+                await LeanCloudData.deleteMeal(mealId);
 
                 meals.splice(mealIndex, 1);
 
@@ -6250,7 +6232,7 @@
             const mealTags = document.getElementById('mealTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
             const mealDescription = document.getElementById('mealDescription').value.trim();
             const mealActive = document.getElementById('mealActive').checked;
-            const mealSupportDelivery = document.getElementById('mealSupportDelivery').checked;
+            const mealSupportDelivery = document.getElementById('mealSupportDelivery').checked; // 新增：获取是否支持宅急送
 
             if (!mealName) {
                 showNotification('请填写套餐名称', 'error');
@@ -6375,11 +6357,11 @@
                         meal.tags = mealTags;
                         meal.description = mealDescription;
                         meal.active = mealActive;
-                        meal.supportDelivery = mealSupportDelivery;
+                        meal.supportDelivery = mealSupportDelivery; // 新增：保存是否支持宅急送
                         meal.optionGroups = optionGroups;
                         meal.fixedItems = fixedItems;
 
-                        const savedMeal = await SupabaseData.saveMeal(meal);
+                        const savedMeal = await LeanCloudData.saveMeal(meal);
 
                         const mealIndex = meals.findIndex(m => m.id === mealId);
                         if (mealIndex !== -1) {
@@ -6395,12 +6377,12 @@
                         tags: mealTags,
                         description: mealDescription,
                         active: mealActive,
-                        supportDelivery: mealSupportDelivery,
+                        supportDelivery: mealSupportDelivery, // 新增：保存是否支持宅急送
                         optionGroups: optionGroups,
                         fixedItems: fixedItems
                     };
 
-                    const savedMeal = await SupabaseData.saveMeal(meal);
+                    const savedMeal = await LeanCloudData.saveMeal(meal);
                     meals.push(savedMeal);
                 }
 
@@ -6623,7 +6605,7 @@
             const mealTags = document.getElementById('newMealTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
             const mealDescription = document.getElementById('newMealDescription').value.trim();
             const mealActive = document.getElementById('newMealActive').checked;
-            const mealSupportDelivery = document.getElementById('newMealSupportDelivery').checked;
+            const mealSupportDelivery = document.getElementById('newMealSupportDelivery').checked; // 新增：获取是否支持宅急送
 
             if (!mealName) {
                 showNotification('请填写套餐名称', 'error');
@@ -6744,13 +6726,13 @@
                 tags: mealTags,
                 description: mealDescription,
                 active: mealActive,
-                supportDelivery: mealSupportDelivery,
+                supportDelivery: mealSupportDelivery, // 新增：保存是否支持宅急送
                 optionGroups: optionGroups,
                 fixedItems: fixedItems
             };
 
             try {
-                const savedMeal = await SupabaseData.saveMeal(meal);
+                const savedMeal = await LeanCloudData.saveMeal(meal);
                 meals.push(savedMeal);
 
                 localStorage.setItem('kfcMealsCache', JSON.stringify(meals));
@@ -6827,12 +6809,12 @@
         }
 
         // ==================== 数据同步功能 ====================
-        async function syncDataFromSupabase() {
+        async function syncDataFromLeanCloud() {
             try {
                 const [newMeals, newOrders, newCount] = await Promise.all([
-                    SupabaseData.loadMeals(),
-                    SupabaseData.loadOrders(),
-                    SupabaseData.loadNewOrdersCount()
+                    LeanCloudData.loadMeals(),
+                    LeanCloudData.loadOrders(),
+                    LeanCloudData.loadNewOrdersCount()
                 ]);
 
                 meals = newMeals;
@@ -6847,7 +6829,7 @@
                     description: m.description,
                     order: m.order,
                     active: m.active,
-                    supportDelivery: m.supportDelivery
+                    supportDelivery: m.supportDelivery // 新增：保存是否支持宅急送
                 }))));
                 
                 localStorage.setItem('kfcOrdersCache', JSON.stringify(orders.map(o => ({
@@ -6869,7 +6851,7 @@
 
         async function forceSyncAllData() {
             try {
-                const success = await syncDataFromSupabase();
+                const success = await syncDataFromLeanCloud();
 
                 if (success) {
                     if (document.getElementById('homePage').classList.contains('active')) {
