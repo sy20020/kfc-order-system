@@ -3167,11 +3167,9 @@
 
     <script>
         // ==================== Supabase 配置 ====================
-        // 请替换为您的 Supabase 项目 URL 和 Anon Key
         const SUPABASE_URL = 'https://ljijvuguvllradywpwht.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqaWp2dWd1dmxscmFkeXdwd2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5MDI0MzUsImV4cCI6MjA4NDQ3ODQzNX0.hX02D8f2LaLtBLLBVw2AIzwivKSH-JP0TTI1J3bVmwM';
         
-        // 全局 Supabase 客户端实例
         let supabaseClient = null;
 
         // ==================== 数据结构 ====================
@@ -3181,15 +3179,13 @@
         let newOrdersCount = 0;
         const ADMIN_PASSWORD = "200104";
         
-        // 实时更新相关变量
         let adminPollingInterval = null;
         let globalPollingInterval = null;
         let isAdminPanelOpen = false;
         let lastOrderUpdateTime = 0;
-        let lastUserOrderUpdateTime = Date.now(); // 用户订单检查时间
-        let lastGlobalCheckTime = Date.now(); // 全局检查时间
+        let lastUserOrderUpdateTime = Date.now();
+        let lastGlobalCheckTime = Date.now();
 
-        // 用户标识符
         let currentUserId = localStorage.getItem('kfcUserId');
 
         if (!currentUserId) {
@@ -3200,7 +3196,6 @@
         // ==================== 全局加载状态管理 ====================
         let isLoading = false;
         
-        // 显示加载动画
         function showLoading(text = '处理中...') {
             if (!isLoading) {
                 isLoading = true;
@@ -3212,7 +3207,6 @@
             }
         }
         
-        // 隐藏加载动画
         function hideLoading() {
             if (isLoading) {
                 isLoading = false;
@@ -3222,14 +3216,12 @@
             }
         }
         
-        // 显示实时更新指示器
         function showRealtimeIndicator(message = '实时更新中...') {
             const indicator = document.getElementById('realtimeIndicator');
             const indicatorSpan = indicator.querySelector('span');
             indicatorSpan.textContent = message;
             indicator.style.display = 'flex';
             
-            // 3秒后自动隐藏
             setTimeout(() => {
                 indicator.style.display = 'none';
             }, 3000);
@@ -3299,7 +3291,6 @@
                     let result;
                     
                     if (meal.objectId) {
-                        // 更新现有套餐
                         const { data, error } = await supabase
                             .from('meals')
                             .update(mealData)
@@ -3309,7 +3300,6 @@
                         if (error) throw error;
                         result = data[0];
                     } else {
-                        // 创建新套餐
                         mealData.created_at = new Date().toISOString();
                         
                         const { data, error } = await supabase
@@ -3431,7 +3421,6 @@
                     let result;
                     
                     if (order.objectId) {
-                        // 更新现有订单
                         const { data, error } = await supabase
                             .from('orders')
                             .update(orderData)
@@ -3441,7 +3430,6 @@
                         if (error) throw error;
                         result = data[0];
                     } else {
-                        // 创建新订单
                         orderData.created_at = new Date().toISOString();
                         
                         const { data, error } = await supabase
@@ -3515,7 +3503,6 @@
                         .single();
                     
                     if (error) {
-                        // 如果没有记录，创建默认记录
                         if (error.code === 'PGRST116') {
                             const { data: newData, error: insertError } = await supabase
                                 .from('counters')
@@ -3544,7 +3531,6 @@
                 }
                 
                 try {
-                    // 先尝试更新
                     const { data, error } = await supabase
                         .from('counters')
                         .update({ count: count, updated_at: new Date().toISOString() })
@@ -3552,7 +3538,6 @@
                         .select();
                     
                     if (error) {
-                        // 如果更新失败，尝试插入
                         const { data: insertData, error: insertError } = await supabase
                             .from('counters')
                             .insert([{ type: 'newOrdersCount', count: count }])
@@ -3578,7 +3563,6 @@
                 }
                 
                 try {
-                    // Supabase 表会自动创建，这里只检查连接
                     const { data, error } = await supabase
                         .from('meals')
                         .select('id', { count: 'exact', head: true });
@@ -3591,7 +3575,6 @@
                 }
             }
             
-            // 实时检查新订单
             static async checkForNewOrders(sinceTime, userId = null) {
                 const supabase = supabaseClient;
                 if (!supabase) {
@@ -3637,7 +3620,6 @@
                 }
             }
             
-            // 检查新订单计数
             static async checkNewOrdersCountOnly() {
                 const supabase = supabaseClient;
                 if (!supabase) {
@@ -3654,12 +3636,10 @@
                 }
             }
             
-            // 快速保存订单
             static async quickSaveOrder(order) {
                 const supabase = supabaseClient;
                 if (!supabase) {
                     console.error('Supabase 客户端未初始化');
-                    // 即使失败也返回一个本地订单对象
                     return {
                         id: order.id,
                         timestamp: order.timestamp,
@@ -3697,7 +3677,6 @@
                         updated_at: new Date().toISOString()
                     };
 
-                    // 异步保存，不等待结果
                     supabase
                         .from('orders')
                         .insert([orderData])
@@ -3709,7 +3688,6 @@
                             }
                         });
 
-                    // 立即返回本地订单对象
                     return {
                         id: order.id,
                         timestamp: order.timestamp,
@@ -3729,7 +3707,6 @@
                     };
                 } catch (error) {
                     console.error('快速保存订单失败:', error);
-                    // 即使失败也返回一个本地订单对象
                     return {
                         id: order.id,
                         timestamp: order.timestamp,
@@ -3750,7 +3727,6 @@
                 }
             }
             
-            // 检查订单更新
             static async checkForOrderUpdates(sinceTime, userId) {
                 const supabase = supabaseClient;
                 if (!supabase) {
@@ -3791,7 +3767,6 @@
                 }
             }
             
-            // 清空所有订单
             static async clearAllOrders() {
                 const supabase = supabaseClient;
                 if (!supabase) {
@@ -3803,11 +3778,10 @@
                     const { error } = await supabase
                         .from('orders')
                         .delete()
-                        .neq('id', 'dummy'); // 删除所有订单
+                        .neq('id', 'dummy');
                     
                     if (error) throw error;
                     
-                    // 重置计数器
                     await this.updateNewOrdersCount(0);
                     
                     return true;
@@ -3818,9 +3792,15 @@
             }
         }
 
-        // ==================== 图片压缩函数 ====================
-        async function compressImageOptimized(file, progressElement = null) {
+        // ==================== 优化的图片压缩函数 ====================
+        async function compressImageFast(file, maxWidth = 800, quality = 0.6) {
             return new Promise((resolve, reject) => {
+                // 如果文件小于100KB，直接返回原文件
+                if (file.size < 100 * 1024) {
+                    resolve(file);
+                    return;
+                }
+                
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 reader.onload = function(event) {
@@ -3831,28 +3811,10 @@
                         let width = img.width;
                         let height = img.height;
                         
-                        // 根据原始图片大小动态调整压缩参数
-                        let maxWidth = 800;
-                        let quality = 0.7;
-                        
-                        // 大图片使用更激进的压缩
-                        if (file.size > 2 * 1024 * 1024) { // 大于2MB
-                            maxWidth = 600;
-                            quality = 0.5;
-                        } else if (file.size > 1 * 1024 * 1024) { // 大于1MB
-                            maxWidth = 700;
-                            quality = 0.6;
-                        }
-                        
-                        // 如果图片宽度超过最大宽度，等比例缩小
+                        // 计算新尺寸
                         if (width > maxWidth) {
                             height = Math.round((height * maxWidth) / width);
                             width = maxWidth;
-                            
-                            // 更新压缩进度
-                            if (progressElement) {
-                                progressElement.textContent = '50%';
-                            }
                         }
                         
                         canvas.width = width;
@@ -3861,19 +3823,15 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
                         
-                        // 更新压缩进度
-                        if (progressElement) {
-                            progressElement.textContent = '75%';
-                        }
-                        
                         // 转换为压缩后的图片
                         canvas.toBlob(function(blob) {
-                            // 最终进度
-                            if (progressElement) {
-                                progressElement.textContent = '100%';
+                            // 如果压缩后反而更大，返回原文件
+                            if (blob.size >= file.size) {
+                                resolve(file);
+                            } else {
+                                resolve(blob);
                             }
-                            resolve(blob);
-                        }, file.type, quality);
+                        }, 'image/jpeg', quality);
                     };
                     img.onerror = reject;
                 };
@@ -3886,18 +3844,15 @@
             try {
                 showLoading('正在加载数据...');
 
-                // 初始化 Supabase 客户端（只做一次）
                 if (!supabaseClient && window.supabase) {
                     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                     console.log('Supabase 客户端已初始化');
                 }
 
-                // 初始化 Supabase 连接
                 if (supabaseClient) {
                     await SupabaseData.initializeTables();
                 }
                 
-                // 加载数据
                 await loadAllDataFromSupabase();
 
                 initHomePage();
@@ -3923,7 +3878,6 @@
 
                 console.log('页面初始化完成，数据已从Supabase加载');
                 
-                // 启动全局轮询
                 startGlobalPolling();
             } catch (error) {
                 console.error('页面初始化失败:', error);
@@ -3946,7 +3900,6 @@
                 initSearchFunction();
                 initOrderConfirmModal();
                 
-                // 启动全局轮询
                 startGlobalPolling();
             }
         });
@@ -4061,7 +4014,6 @@
             const orderConfirmBody = document.getElementById('orderConfirmBody');
             const orderConfirmSubmit = document.getElementById('orderConfirmSubmit');
 
-            // 禁止页面滚动
             document.body.style.overflow = 'hidden';
 
             let totalPrice = 0;
@@ -4089,7 +4041,6 @@
                 `;
             });
 
-            // 格式化配送信息
             let deliveryInfoHTML = '';
             const infoLines = orderData.deliveryInfo.split('\n');
             infoLines.forEach(line => {
@@ -4144,7 +4095,6 @@
 
             orderConfirmBody.innerHTML = orderConfirmHTML;
 
-            // 设置提交按钮事件
             orderConfirmSubmit.onclick = function() {
                 orderConfirmModal.classList.remove('active');
                 document.body.style.overflow = 'auto';
@@ -4153,7 +4103,6 @@
                 }, 300);
             };
 
-            // 显示模态框
             orderConfirmModal.classList.add('active');
         }
 
@@ -4165,7 +4114,6 @@
             
             globalPollingInterval = setInterval(async () => {
                 try {
-                    // 检查新订单计数
                     const newCount = await SupabaseData.checkNewOrdersCountOnly();
                     if (newCount !== newOrdersCount) {
                         newOrdersCount = newCount;
@@ -4175,7 +4123,6 @@
                         
                         console.log('全局轮询检测到新订单，数量：', newOrdersCount);
                         
-                        // 如果管理员面板打开，立即更新订单列表
                         if (isAdminPanelOpen) {
                             const activeFilterBtn = document.querySelector('.filter-btn.active');
                             const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
@@ -4183,7 +4130,6 @@
                         }
                     }
                     
-                    // 如果当前页面是"我的订单"页面，检查当前用户的订单更新
                     if (document.getElementById('myOrdersPage').classList.contains('active')) {
                         const updatedOrders = await SupabaseData.checkForOrderUpdates(lastUserOrderUpdateTime - 3000, currentUserId);
                         if (updatedOrders.length > 0) {
@@ -4222,7 +4168,6 @@
 
         // ==================== 搜索功能初始化 ====================
         function initSearchFunction() {
-            // 用户端搜索
             const mealSearchInput = document.getElementById('mealSearchInput');
             const mealSearchBtn = document.getElementById('mealSearchBtn');
             
@@ -4238,7 +4183,6 @@
                 });
             }
             
-            // 管理员端搜索
             const adminMealSearchInput = document.getElementById('adminMealSearchInput');
             const adminMealSearchBtn = document.getElementById('adminMealSearchBtn');
             
@@ -4442,7 +4386,6 @@
                 mealList.appendChild(mealItem);
             });
 
-            // 重新绑定事件
             document.querySelectorAll('.status-toggle-input').forEach(toggle => {
                 toggle.addEventListener('change', async function() {
                     const mealId = this.dataset.mealId;
@@ -5077,14 +5020,12 @@
                     return;
                 }
 
-                // 显示压缩进度
                 if (compressProgress) {
                     compressProgress.classList.add('active');
                     if (compressPercent) compressPercent.textContent = '0%';
                 }
 
-                // 优化压缩算法，根据文件大小动态调整压缩参数
-                const compressedImage = await compressImageOptimized(file, compressPercent);
+                const compressedImage = await compressImageFast(file, 800, 0.7);
                 
                 const reader = new FileReader();
                 reader.onload = function(e) {
@@ -5092,7 +5033,6 @@
                     previewContainer.classList.remove('hidden');
                     uploadArea.style.display = 'none';
                     
-                    // 显示图片信息
                     if (imageInfo) {
                         const originalSize = (file.size / 1024).toFixed(2);
                         const compressedSize = (compressedImage.size / 1024).toFixed(2);
@@ -5104,18 +5044,15 @@
                         `;
                     }
                     
-                    // 隐藏压缩进度
                     if (compressProgress) {
                         compressProgress.classList.remove('active');
                     }
                     
-                    // 替换原始文件
                     fileInput.files = dataURLtoBlob(e.target.result);
                 };
                 reader.readAsDataURL(compressedImage);
             }
 
-            // 将dataURL转换为Blob对象
             function dataURLtoBlob(dataURL) {
                 const arr = dataURL.split(',');
                 const mime = arr[0].match(/:(.*?);/)[1];
@@ -5127,10 +5064,8 @@
                 }
                 const blob = new Blob([u8arr], {type: mime});
                 
-                // 创建一个File对象
                 const file = new File([blob], "compressed_image.jpg", {type: mime});
                 
-                // 创建FileList对象
                 const dataTransfer = new DataTransfer();
                 dataTransfer.items.add(file);
                 return dataTransfer.files;
@@ -5201,7 +5136,6 @@
                         supportDelivery: meal.supportDelivery
                     };
 
-                    // 检查购物车中是否有其他套餐，如果有，检查配送方式是否兼容
                     if (cart.length > 0) {
                         const firstMealDelivery = cart[0].supportDelivery;
                         if (firstMealDelivery !== meal.supportDelivery) {
@@ -5365,7 +5299,6 @@
                                 return;
                             }
 
-                            // 移除进度条，改为简单的状态提示
                             const submitStatus = document.getElementById('submitStatus');
                             submitStatus.textContent = '正在处理图片...';
 
@@ -5381,7 +5314,6 @@
 
                                     submitStatus.textContent = '图片处理完成';
 
-                                    // 继续准备订单数据
                                     setTimeout(() => {
                                         submitStatus.textContent = '';
                                         prepareOrderData(deliveryType, orderNote, deliveryInfo, hasScreenshot, screenshotData, pickupType);
@@ -5432,7 +5364,6 @@
                 userId: currentUserId
             };
 
-            // 显示美化的订单确认模态框
             showOrderConfirm(orderData);
         }
 
@@ -5448,17 +5379,14 @@
             checkoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 提交中...';
             
             try {
-                // 使用快速保存订单函数
                 const savedOrder = await SupabaseData.quickSaveOrder(orderData);
                 console.log('订单快速提交成功:', savedOrder);
 
                 savedOrder.objectId = savedOrder.objectId;
                 orders.unshift(savedOrder);
 
-                // 更新新订单计数
                 newOrdersCount++;
                 
-                // 更新新订单计数（异步，不阻塞主流程）
                 setTimeout(async () => {
                     try {
                         await SupabaseData.updateNewOrdersCount(newOrdersCount);
@@ -5468,7 +5396,6 @@
                     }
                 }, 1000);
 
-                // 更新本地缓存
                 localStorage.setItem('kfcOrdersCache', JSON.stringify(orders.map(o => ({
                     id: o.id,
                     timestamp: o.timestamp,
@@ -5492,17 +5419,14 @@
                     
                     showNotification('订单提交成功！', 'success');
 
-                    // 立即显示实时更新指示器
                     showRealtimeIndicator('订单已提交！');
 
-                    // 立即通知管理员
                     if (isAdminPanelOpen) {
                         const activeFilterBtn = document.querySelector('.filter-btn.active');
                         const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
                         renderOrders(activeFilter);
                     }
 
-                    // 显示更简洁的成功提示
                     const successHTML = `
                         <div style="text-align: center; padding: 15px;">
                             <i class="fas fa-check-circle" style="font-size: 2.5rem; color: #4CAF50; margin-bottom: 10px;"></i>
@@ -5520,7 +5444,6 @@
                         </div>
                     `;
 
-                    // 使用自定义提示框替代alert
                     const successModal = document.createElement('div');
                     successModal.className = 'order-confirm-modal active';
                     successModal.innerHTML = `
@@ -5540,12 +5463,10 @@
                         </div>
                     `;
                     
-                    // 禁止页面滚动
                     document.body.style.overflow = 'hidden';
                     
                     document.body.appendChild(successModal);
                     
-                    // 绑定按钮事件
                     successModal.querySelector('#viewOrderDetail').addEventListener('click', function() {
                         successModal.remove();
                         document.body.style.overflow = 'auto';
@@ -5800,7 +5721,6 @@
                 `;
             }
             
-            // 新增：美化订单反馈截图显示
             let feedbackTopHTML = '';
             if (order.feedbackScreenshotData) {
                 feedbackTopHTML = `
@@ -5849,7 +5769,6 @@
                 }
             }
             
-            // 新增：反馈截图点击查看大图
             if (order.feedbackScreenshotData) {
                 const feedbackImg = orderElement.querySelector('.user-feedback-thumbnail');
                 if (feedbackImg) {
@@ -5947,22 +5866,17 @@
             panelOverlay.classList.add('active');
             document.body.style.overflow = 'hidden';
             
-            // 设置管理员面板打开状态
             isAdminPanelOpen = true;
             
-            // 记录最后更新时间
             lastOrderUpdateTime = Date.now();
 
             updateOrderBadge();
 
-            // 先加载本地数据渲染
             renderOrders('all');
             updateMealList('all');
             
-            // 启动管理员面板的实时轮询
             startAdminPolling();
             
-            // 立即同步一次数据，确保数据最新
             try {
                 await forceSyncAllData();
             } catch (error) {
@@ -5970,24 +5884,18 @@
             }
         }
         
-        // 改进的实时轮询函数
         function startAdminPolling() {
-            // 清除现有的轮询
             if (adminPollingInterval) {
                 clearInterval(adminPollingInterval);
             }
             
-            // 每2秒检查一次新订单
             adminPollingInterval = setInterval(async () => {
                 if (isAdminPanelOpen) {
                     try {
-                        // 只检查新订单
                         const newOrders = await SupabaseData.checkForNewOrders(lastOrderUpdateTime - 2000);
                         if (newOrders.length > 0) {
-                            // 更新最后更新时间
                             lastOrderUpdateTime = Date.now();
                             
-                            // 将新订单添加到本地数组
                             newOrders.forEach(newOrder => {
                                 const existingIndex = orders.findIndex(o => o.id === newOrder.id);
                                 if (existingIndex === -1) {
@@ -5997,22 +5905,18 @@
                                 }
                             });
                             
-                            // 显示实时更新指示器
                             showRealtimeIndicator(`有${newOrders.length}个新订单`);
                             
-                            // 重新渲染订单列表
                             const activeFilterBtn = document.querySelector('.filter-btn.active');
                             const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
                             renderOrders(activeFilter);
                             
-                            // 更新新订单徽章
                             updateOrderBadge();
                         }
                     } catch (error) {
                         console.warn('轮询更新失败:', error);
                     }
                 } else {
-                    // 如果管理员面板关闭，停止轮询
                     clearInterval(adminPollingInterval);
                     adminPollingInterval = null;
                 }
@@ -6095,7 +5999,6 @@
                         showMealList();
                     }
                     
-                    // 切换到套餐管理时，如果有搜索内容，重新搜索
                     if (tabId === 'meals' && adminMealSearchInput && adminMealSearchInput.value.trim()) {
                         adminSearchMeals(adminMealSearchInput.value.trim());
                     }
@@ -6128,10 +6031,8 @@
             panelOverlay.classList.remove('active');
             document.body.style.overflow = 'auto';
             
-            // 设置管理员面板关闭状态
             isAdminPanelOpen = false;
             
-            // 停止管理面板轮询
             if (adminPollingInterval) {
                 clearInterval(adminPollingInterval);
                 adminPollingInterval = null;
@@ -6160,7 +6061,6 @@
             filteredOrders.forEach(order => {
                 const orderElement = createOrderElement(order);
                 ordersContainer.appendChild(orderElement);
-                // 初始化反馈上传功能
                 initFeedbackUpload(order.id);
             });
         }
@@ -6227,7 +6127,6 @@
                 `;
             }
             
-            // 新增：美化反馈截图显示
             let feedbackHTML = '';
             if (order.feedbackScreenshotData) {
                 feedbackHTML = `
@@ -6243,7 +6142,6 @@
 
             const userInfo = order.userId ? `<p><strong>用户ID：</strong>${order.userId.substring(0, 12)}...</p>` : '';
 
-            // 新增：反馈截图上传功能
             const feedbackUploadHTML = `
                 <div class="feedback-upload-area" id="feedbackUploadArea-${order.id}">
                     <i class="fas fa-cloud-upload-alt"></i>
@@ -6318,7 +6216,6 @@
                 }
             }
             
-            // 新增：反馈截图点击查看大图
             if (order.feedbackScreenshotData) {
                 const feedbackImg = orderElement.querySelector('.feedback-thumbnail');
                 if (feedbackImg) {
@@ -6331,7 +6228,7 @@
             return orderElement;
         }
 
-        // ==================== 初始化反馈截图上传功能 ====================
+        // ==================== 优化的反馈截图上传功能 ====================
         function initFeedbackUpload(orderId) {
             const uploadArea = document.getElementById(`feedbackUploadArea-${orderId}`);
             const fileInput = document.getElementById(`feedbackScreenshot-${orderId}`);
@@ -6345,11 +6242,9 @@
                 return;
             }
 
-            // 隐藏预览和上传按钮
             if (previewContainer) previewContainer.style.display = 'none';
             if (uploadBtn) uploadBtn.style.display = 'none';
 
-            // 确保文件输入在区域内
             fileInput.style.position = 'absolute';
             fileInput.style.top = '0';
             fileInput.style.left = '0';
@@ -6358,7 +6253,6 @@
             fileInput.style.opacity = '0';
             fileInput.style.cursor = 'pointer';
             
-            // 修复：添加文件变化事件监听器
             fileInput.addEventListener('change', async function(e) {
                 if (e.target.files.length) {
                     await handleFeedbackFileSelect(e.target.files[0], orderId);
@@ -6374,7 +6268,6 @@
                     if (uploadBtn) uploadBtn.style.display = 'none';
                     if (previewImage) previewImage.src = '';
                     
-                    // 清除预览图片信息
                     const imageInfo = document.getElementById(`feedbackImageInfo-${orderId}`);
                     if (imageInfo) {
                         imageInfo.innerHTML = '';
@@ -6406,12 +6299,10 @@
                         hideLoading();
                         showNotification('订单反馈截图上传成功！顾客可以在"我的订单"页面查看', 'success');
 
-                        // 重新渲染订单列表
                         const activeFilterBtn = document.querySelector('.filter-btn.active');
                         const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
                         renderOrders(activeFilter);
 
-                        // 显示实时更新指示器
                         showRealtimeIndicator('订单反馈截图已上传');
                     } catch (error) {
                         console.error('上传反馈截图失败:', error);
@@ -6422,7 +6313,7 @@
             }
         }
 
-        // 处理反馈截图文件选择
+        // 优化的反馈截图处理函数
         async function handleFeedbackFileSelect(file, orderId) {
             if (!file.type.match('image.*')) {
                 showNotification('请选择图片文件', 'error');
@@ -6434,8 +6325,8 @@
             const uploadArea = document.getElementById(`feedbackUploadArea-${orderId}`);
             const imageInfo = document.getElementById(`feedbackImageInfo-${orderId}`);
 
-            // 压缩图片
-            const compressedImage = await compressImageOptimized(file);
+            // 使用快速压缩函数
+            const compressedImage = await compressImageFast(file, 600, 0.5);
             
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -6446,7 +6337,6 @@
                 }
                 if (uploadArea) uploadArea.style.display = 'none';
                 
-                // 显示图片信息
                 if (imageInfo) {
                     const originalSize = (file.size / 1024).toFixed(2);
                     const compressedSize = (compressedImage.size / 1024).toFixed(2);
@@ -6647,7 +6537,6 @@
             const noMealsAdminMessage = document.getElementById('noMealsAdminMessage');
             const adminMealSearchInput = document.getElementById('adminMealSearchInput');
 
-            // 如果有搜索内容，使用搜索功能
             if (adminMealSearchInput && adminMealSearchInput.value.trim()) {
                 adminSearchMeals(adminMealSearchInput.value.trim());
                 return;
@@ -7729,7 +7618,6 @@
                 const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
                 updateMealList(activeFilter);
 
-                // 重置表单
                 document.getElementById('newMealName').value = '';
                 document.getElementById('newMealPrice').value = '';
                 document.getElementById('newMealOrder').value = '9999';
@@ -7749,7 +7637,6 @@
                 document.getElementById('newOptionGroupsManagement').innerHTML = '';
                 document.getElementById('newFixedItemsManagement').innerHTML = '';
 
-                // 切换到套餐管理标签页
                 document.querySelector('.admin-tab[data-tab="meals"]').click();
 
                 showNotification('套餐已添加', 'success');
