@@ -8,8 +8,7 @@
     <!-- LeanCloud SDK -->
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
     <style>
-        /* 所有样式保持不变... */
-        /* 由于代码太长，这里省略CSS样式部分，保持原样 */
+        /* 所有现有样式保持不变... */
         * {
             margin: 0;
             padding: 0;
@@ -192,6 +191,8 @@
             display: block;
             text-decoration: none;
             color: inherit;
+            position: relative;
+            min-height: 180px;
         }
         
         .meal-card:hover {
@@ -202,20 +203,24 @@
         .meal-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             margin-bottom: 8px;
+            position: relative;
         }
         
         .meal-name {
             font-size: 1.2rem;
             font-weight: bold;
             color: #e31837;
+            flex: 1;
+            padding-right: 40px;
         }
         
         .meal-price {
             font-size: 1.3rem;
             font-weight: bold;
             color: #e31837;
+            margin-top: 5px;
         }
         
         .meal-description {
@@ -234,6 +239,33 @@
             font-weight: bold;
             margin-right: 5px;
             margin-bottom: 4px;
+        }
+        
+        /* 修改：分享按钮放在右上角 */
+        .meal-share-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: rgba(227, 24, 55, 0.1);
+            color: #e31837;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+        
+        .meal-share-btn:hover {
+            background-color: #e31837;
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 3px 8px rgba(227, 24, 55, 0.3);
         }
         
         .back-btn {
@@ -2429,7 +2461,37 @@
             box-shadow: 0 6px 15px rgba(0,0,0,0.2);
         }
         
-        /* 其他样式保持不变... */
+        /* 修改：套餐详情页的分享按钮样式 */
+        .meal-detail-share-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s;
+            text-decoration: none;
+            margin-left: auto;
+        }
+        
+        .meal-detail-share-btn:hover {
+            background-color: #3d8b40;
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+        }
+        
+        .meal-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
         
         @media (max-width: 768px) {
             .main-content {
@@ -2641,6 +2703,18 @@
             .user-order-feedback-container {
                 padding: 12px;
             }
+            
+            /* 移动端调整分享按钮位置 */
+            .meal-detail-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .meal-detail-share-btn {
+                margin-left: 0;
+                width: 100%;
+                justify-content: center;
+            }
         }
         
         /* 确保在桌面端保持左右布局 */
@@ -2664,6 +2738,119 @@
             .delivery-form {
                 order: 1;
             }
+        }
+        
+        /* 新增：分享模态框样式 */
+        .share-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 3000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .share-modal.active {
+            display: flex;
+        }
+        
+        .share-box {
+            background-color: white;
+            border-radius: 12px;
+            padding: 25px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        
+        .share-box h3 {
+            color: #e31837;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .share-link-container {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            word-break: break-all;
+            text-align: left;
+        }
+        
+        .share-link {
+            font-size: 0.9rem;
+            color: #333;
+            font-family: monospace;
+        }
+        
+        .share-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .share-action-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        
+        .share-action-btn.copy {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .share-action-btn.copy:hover {
+            background-color: #3d8b40;
+            transform: scale(1.02);
+        }
+        
+        .share-action-btn.close {
+            background-color: #f0f0f0;
+            color: #666;
+        }
+        
+        .share-action-btn.close:hover {
+            background-color: #e0e0e0;
+            transform: scale(1.02);
+        }
+        
+        .copy-status {
+            margin-top: 12px;
+            font-size: 0.9rem;
+            color: #4CAF50;
+            display: none;
+        }
+        
+        .copy-status.show {
+            display: block;
+            animation: fadeInOut 2s ease-in-out;
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; }
         }
     </style>
 </head>
@@ -2707,6 +2894,31 @@
                 <button class="order-confirm-btn confirm" id="orderConfirmSubmit">
                     <i class="fas fa-check"></i>
                     确认提交
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 新增：分享模态框 -->
+    <div class="share-modal" id="shareModal">
+        <div class="share-box">
+            <h3><i class="fas fa-share-alt"></i> 分享套餐</h3>
+            <p>复制下面的链接分享给朋友，点击链接可直接跳转到该套餐页面：</p>
+            
+            <div class="share-link-container">
+                <div class="share-link" id="shareLink">https://sykfc.top?meal=</div>
+            </div>
+            
+            <div class="copy-status" id="copyStatus">
+                <i class="fas fa-check-circle"></i> 链接已复制到剪贴板！
+            </div>
+            
+            <div class="share-actions">
+                <button class="share-action-btn copy" id="copyLinkBtn">
+                    <i class="fas fa-copy"></i> 复制链接
+                </button>
+                <button class="share-action-btn close" id="closeShareBtn">
+                    <i class="fas fa-times"></i> 关闭
                 </button>
             </div>
         </div>
@@ -2779,11 +2991,13 @@
                         <li>在右侧配送信息底部确认订单并选择配送方式</li>
                         <li>提交订单完成购买</li>
                         <li>提交后可以点击上方"查看我的订单"查看订单状态</li>
+                        <li>点击右上角"分享"按钮可以将套餐分享给朋友</li>
                     </ol>
                 </div>
             </div>
 
             <div class="meal-grid" id="mealGrid">
+                <!-- 套餐卡片将通过JavaScript动态生成 -->
             </div>
 
             <div class="no-meals-message" id="noMealsMessage" style="display: none;">
@@ -2795,6 +3009,7 @@
 
         <!-- 套餐详情页 -->
         <div id="mealDetailPage" class="meal-page-container">
+            <!-- 套餐详情内容将通过JavaScript动态生成 -->
         </div>
 
         <!-- 我的订单页 -->
@@ -2830,6 +3045,7 @@
                 </div>
 
                 <div id="myOrdersContainer">
+                    <!-- 订单内容将通过JavaScript动态生成 -->
                 </div>
 
                 <div class="no-user-orders" id="noUserOrdersMessage">
@@ -3200,6 +3416,10 @@
             currentUserId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
             localStorage.setItem('kfcUserId', currentUserId);
         }
+
+        // ==================== 分享功能相关变量 ====================
+        let currentShareMealId = '';
+        const BASE_URL = 'https://sykfc.top';
 
         // ==================== 全局加载状态管理 ====================
         let isLoading = false;
@@ -3685,7 +3905,7 @@
             }
         }
 
-        // ==================== 图片压缩函数（移到全局作用域） ====================
+        // ==================== 图片压缩函数 ====================
         async function compressImageOptimized(file, progressElement = null) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -3775,6 +3995,7 @@
                 initHeaderButtons();
                 initSearchFunction();
                 initOrderConfirmModal();
+                initShareModal(); // 新增：初始化分享模态框
 
                 document.getElementById('currentUserIdDisplay').textContent = currentUserId.substring(0, 12) + '...';
 
@@ -3807,11 +4028,125 @@
                 initHeaderButtons();
                 initSearchFunction();
                 initOrderConfirmModal();
+                initShareModal(); // 新增：初始化分享模态框
                 
                 // 启动全局轮询，检查新订单
                 startGlobalPolling();
             }
         });
+
+        // ==================== 新增：初始化分享模态框 ====================
+        function initShareModal() {
+            const shareModal = document.getElementById('shareModal');
+            const closeShareBtn = document.getElementById('closeShareBtn');
+            const copyLinkBtn = document.getElementById('copyLinkBtn');
+
+            // 关闭按钮点击事件
+            closeShareBtn.addEventListener('click', function() {
+                shareModal.classList.remove('active');
+                // 恢复页面滚动
+                document.body.style.overflow = 'auto';
+            });
+
+            // 模态框外部点击关闭
+            shareModal.addEventListener('click', function(e) {
+                if (e.target === shareModal) {
+                    shareModal.classList.remove('active');
+                    // 恢复页面滚动
+                    document.body.style.overflow = 'auto';
+                }
+            });
+
+            // 复制链接按钮点击事件
+            copyLinkBtn.addEventListener('click', function() {
+                const shareLink = document.getElementById('shareLink');
+                const copyStatus = document.getElementById('copyStatus');
+                
+                // 复制文本到剪贴板
+                const textToCopy = shareLink.textContent;
+                navigator.clipboard.writeText(textToCopy).then(function() {
+                    // 显示复制成功提示
+                    copyStatus.classList.add('show');
+                    
+                    // 3秒后隐藏提示
+                    setTimeout(function() {
+                        copyStatus.classList.remove('show');
+                    }, 2000);
+                    
+                    // 关闭模态框
+                    setTimeout(function() {
+                        shareModal.classList.remove('active');
+                        document.body.style.overflow = 'auto';
+                    }, 1000);
+                }).catch(function(err) {
+                    console.error('复制失败: ', err);
+                    showNotification('复制失败，请手动复制链接', 'error');
+                });
+            });
+        }
+
+        // ==================== 新增：分享套餐功能 ====================
+        function shareMeal(mealId) {
+            const meal = meals.find(m => m.id === mealId);
+            if (!meal) {
+                showNotification('套餐不存在或已被删除', 'error');
+                return;
+            }
+
+            // 设置当前分享的套餐ID
+            currentShareMealId = mealId;
+            
+            // 生成分享链接
+            const shareUrl = `${BASE_URL}?meal=${mealId}`;
+            
+            // 更新分享模态框内容
+            const shareLink = document.getElementById('shareLink');
+            const shareModal = document.getElementById('shareModal');
+            const copyStatus = document.getElementById('copyStatus');
+            
+            shareLink.textContent = shareUrl;
+            copyStatus.classList.remove('show');
+            
+            // 显示分享模态框
+            shareModal.classList.add('active');
+            // 禁止页面滚动
+            document.body.style.overflow = 'hidden';
+            
+            // 更新页面标题，显示分享的套餐名称
+            document.title = `分享：${meal.name} - 肯德基自助点餐系统`;
+        }
+
+        // ==================== 修改：检查URL参数，支持套餐ID直接跳转 ====================
+        function checkUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('order');
+            const mealId = urlParams.get('meal'); // 新增：获取套餐ID参数
+
+            // 检查订单参数
+            if (orderId) {
+                showMyOrdersPage();
+
+                setTimeout(() => {
+                    document.getElementById('orderSearchInput').value = orderId;
+                    searchUserOrder(orderId);
+                }, 100);
+            }
+            
+            // 新增：检查套餐参数，如果存在则直接跳转到该套餐详情页
+            if (mealId) {
+                const meal = meals.find(m => m.id === mealId);
+                if (meal && meal.active !== false) {
+                    // 短暂延迟确保页面已加载完成
+                    setTimeout(() => {
+                        showMealDetail(mealId);
+                    }, 300);
+                } else if (meal && meal.active === false) {
+                    showNotification('该套餐已下架，无法查看', 'error');
+                } else {
+                    showNotification('套餐不存在或已被删除', 'error');
+                }
+            }
+        }
 
         // ==================== 订单确认模态框初始化 ====================
         function initOrderConfirmModal() {
@@ -3946,7 +4281,6 @@
         }
 
         // ==================== 全局轮询函数 ====================
-        // 启动全局轮询，检查新订单（无论管理员面板是否打开）
         function startGlobalPolling() {
             // 清除现有的全局轮询
             if (globalPollingInterval) {
@@ -4105,7 +4439,7 @@
 
             filteredMeals.forEach(meal => {
                 const mealCard = document.createElement('a');
-                mealCard.href = getMealLink(meal.id);
+                mealCard.href = '#';
                 mealCard.className = 'meal-card';
                 if (meal.active === false) {
                     mealCard.classList.add('inactive');
@@ -4113,18 +4447,17 @@
                 mealCard.onclick = function(e) {
                     e.preventDefault();
                     if (meal.active === false) return;
-                    // 更新URL参数
-                    const url = new URL(window.location);
-                    url.searchParams.set('meal', meal.id);
-                    window.history.pushState({}, '', url);
                     showMealDetail(meal.id);
                 };
 
                 mealCard.innerHTML = `
                     <div class="meal-header">
                         <h4 class="meal-name">${meal.name}</h4>
-                        <div class="meal-price">¥${meal.price}</div>
+                        <button class="meal-share-btn" onclick="event.stopPropagation(); shareMeal('${meal.id}')" title="分享套餐">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
                     </div>
+                    <div class="meal-price">¥${meal.price}</div>
                     <div class="meal-description">
                         ${meal.tags.map(tag => `<span class="meal-tag">${tag}</span>`).join('')}
                         ${meal.supportDelivery === false ? '<span class="no-delivery-tag">仅自提</span>' : '<span class="delivery-tag">可宅急送</span>'}
@@ -4285,11 +4618,6 @@
             });
         }
 
-        // ==================== 生成套餐链接 ====================
-        function getMealLink(mealId) {
-            return window.location.origin + window.location.pathname + '?meal=' + mealId;
-        }
-
         // ==================== 数据加载函数 ====================
         async function loadAllDataFromLeanCloud() {
             try {
@@ -4403,7 +4731,7 @@
 
             activeMeals.forEach(meal => {
                 const mealCard = document.createElement('a');
-                mealCard.href = getMealLink(meal.id);
+                mealCard.href = '#';
                 mealCard.className = 'meal-card';
                 if (meal.active === false) {
                     mealCard.classList.add('inactive');
@@ -4411,18 +4739,17 @@
                 mealCard.onclick = function(e) {
                     e.preventDefault();
                     if (meal.active === false) return;
-                    // 更新URL参数
-                    const url = new URL(window.location);
-                    url.searchParams.set('meal', meal.id);
-                    window.history.pushState({}, '', url);
                     showMealDetail(meal.id);
                 };
 
                 mealCard.innerHTML = `
                     <div class="meal-header">
                         <h4 class="meal-name">${meal.name}</h4>
-                        <div class="meal-price">¥${meal.price}</div>
+                        <button class="meal-share-btn" onclick="event.stopPropagation(); shareMeal('${meal.id}')" title="分享套餐">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
                     </div>
+                    <div class="meal-price">¥${meal.price}</div>
                     <div class="meal-description">
                         ${meal.tags.map(tag => `<span class="meal-tag">${tag}</span>`).join('')}
                         ${meal.supportDelivery === false ? '<span class="no-delivery-tag">仅自提</span>' : '<span class="delivery-tag">可宅急送</span>'}
@@ -4437,26 +4764,28 @@
         // ==================== 套餐详情页 ====================
         function showMealDetail(mealId) {
             const meal = meals.find(m => m.id === mealId);
-            if (!meal) {
-                showNotification('套餐不存在或已被删除', 'error');
-                showPage('homePage');
-                return;
-            }
+            if (!meal) return;
 
             const mealDetailPage = document.getElementById('mealDetailPage');
 
             mealDetailPage.innerHTML = `
-                <a href="#" class="back-btn" onclick="goHome()">
+                <a href="#" class="back-btn" onclick="showPage('homePage')">
                     <i class="fas fa-arrow-left"></i>
                     返回套餐列表
                 </a>
                 
                 <div class="main-content">
                     <div class="menu-section">
-                        <h2 class="section-title">
-                            <i class="fas fa-hamburger"></i>
-                            ${meal.name}
-                        </h2>
+                        <div class="meal-detail-header">
+                            <h2 class="section-title" style="margin-bottom: 0;">
+                                <i class="fas fa-hamburger"></i>
+                                ${meal.name}
+                            </h2>
+                            <button class="meal-detail-share-btn" onclick="shareMeal('${meal.id}')">
+                                <i class="fas fa-share-alt"></i>
+                                分享套餐
+                            </button>
+                        </div>
                         
                         <div class="highlight">
                             <i class="fas fa-info-circle"></i>
@@ -4469,6 +4798,7 @@
                                 <li>${meal.description}</li>
                                 <li>请按照要求选择选项</li>
                                 <li>提交订单后可在右上角"查看我的订单"查看订单状态</li>
+                                <li>点击"分享套餐"按钮可以将此套餐分享给朋友</li>
                             </ul>
                         </div>
                         
@@ -4729,16 +5059,9 @@
             if (pageId === 'homePage') {
                 document.getElementById('viewOrdersBtn').style.display = 'flex';
                 document.getElementById('viewHomeBtn').style.display = 'none';
+                // 恢复页面标题
+                document.title = '肯德基自助点餐系统';
             }
-        }
-
-        // ==================== 返回首页函数 ====================
-        function goHome() {
-            // 清除URL参数中的meal
-            const url = new URL(window.location);
-            url.searchParams.delete('meal');
-            window.history.pushState({}, '', url);
-            showPage('homePage');
         }
 
         // ==================== 选项选择功能 ====================
@@ -5480,7 +5803,7 @@
                     successModal.querySelector('#backToHome').addEventListener('click', function() {
                         successModal.remove();
                         document.body.style.overflow = 'auto';
-                        goHome();
+                        showPage('homePage');
                     });
 
                 }, 1000);
@@ -5551,30 +5874,10 @@
             });
 
             viewHomeBtn.addEventListener('click', function() {
-                goHome();
+                showPage('homePage');
                 this.style.display = 'none';
                 viewOrdersBtn.style.display = 'flex';
             });
-        }
-
-        function checkUrlParams() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const orderId = urlParams.get('order');
-            const mealId = urlParams.get('meal');
-
-            if (orderId) {
-                showMyOrdersPage();
-
-                setTimeout(() => {
-                    document.getElementById('orderSearchInput').value = orderId;
-                    searchUserOrder(orderId);
-                }, 100);
-            } else if (mealId) {
-                // 如果有meal参数，直接显示套餐详情页
-                setTimeout(() => {
-                    showMealDetail(mealId);
-                }, 500);
-            }
         }
 
         function initMyOrdersPage() {
@@ -5645,7 +5948,7 @@
             });
         }
 
-        // ==================== 优化：创建用户订单元素（增大反馈截图显示） ====================
+        // ==================== 优化：创建用户订单元素 ====================
         function createUserOrderElement(order) {
             const orderElement = document.createElement('div');
             orderElement.className = 'user-order-item';
@@ -6078,7 +6381,7 @@
             });
         }
 
-        // ==================== 优化：创建订单元素（增大反馈截图显示） ====================
+        // ==================== 优化：创建订单元素 ====================
         function createOrderElement(order) {
             const orderElement = document.createElement('div');
             orderElement.className = 'admin-order-item';
@@ -7068,7 +7371,7 @@
                     <input type="text" class="form-input fixed-item-name-input" style="flex: 3;" placeholder="固定搭配项名称，例如：可乐" value="${name || '固定搭配项'}">
                     <input type="number" class="form-input fixed-item-quantity-input" style="flex: 1;" placeholder="数量" min="1" value="${quantity || 1}">
                 </div>
-                <button class="action-btn delete-btn delete-fixed-item-btn">
+                <button class="action-btn delete-btn delete-fixed-item-btn" data-item-id="${Date.now()}">
                     <i class="fas fa-trash"></i>
                 </button>
             `;
@@ -7080,52 +7383,7 @@
             });
         }
 
-        // 删除套餐
-        async function deleteMeal(mealId) {
-            const mealIndex = meals.findIndex(m => m.id === mealId);
-            if (mealIndex === -1) return;
-
-            const meal = meals[mealIndex];
-
-            if (!confirm(`确定要删除套餐 "${meal.name}" 吗？\n\n价格：¥${meal.price}\n标签：${meal.tags.join(', ')}\n\n此操作不可恢复！`)) {
-                return;
-            }
-
-            let hasOrders = false;
-            orders.forEach(order => {
-                order.cart.forEach(item => {
-                    if (item.id === mealId) {
-                        hasOrders = true;
-                    }
-                });
-            });
-
-            if (hasOrders) {
-                if (!confirm('警告：有订单包含此套餐。删除套餐不会删除相关订单，但会影响订单详情显示。\n\n确定要继续删除吗？')) {
-                    return;
-                }
-            }
-
-            try {
-                await LeanCloudData.deleteMeal(mealId);
-
-                meals.splice(mealIndex, 1);
-
-                localStorage.setItem('kfcMealsCache', JSON.stringify(meals));
-
-                updateHomePage();
-
-                const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
-                updateMealList(activeFilter);
-
-                showNotification(`套餐"${meal.name}"已删除`, 'success');
-            } catch (error) {
-                console.error('删除套餐失败:', error);
-                showNotification('删除失败，请检查网络连接', 'error');
-            }
-        }
-
-        // ==================== 保存套餐函数（已修复） ====================
+        // 保存套餐
         async function saveMeal() {
             const mealId = document.getElementById('currentMealId').value;
             const mealName = document.getElementById('mealName').value.trim();
@@ -7134,161 +7392,139 @@
             const mealTags = document.getElementById('mealTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
             const mealDescription = document.getElementById('mealDescription').value.trim();
             const mealActive = document.getElementById('mealActive').checked;
-            const mealSupportDelivery = document.getElementById('mealSupportDelivery').checked; // 新增：获取是否支持宅急送
+            const mealSupportDelivery = document.getElementById('mealSupportDelivery').checked;
 
-            if (!mealName) {
-                showNotification('请填写套餐名称', 'error');
-                document.getElementById('mealName').focus();
+            if (!mealName || !mealPrice || mealTags.length === 0 || !mealDescription) {
+                showNotification('请填写所有必填字段', 'error');
                 return;
             }
 
             if (isNaN(mealPrice) || mealPrice <= 0) {
-                showNotification('请填写有效的套餐价格', 'error');
-                document.getElementById('mealPrice').focus();
+                showNotification('套餐价格必须是大于0的数字', 'error');
                 return;
             }
-
-            if (mealTags.length === 0) {
-                showNotification('请至少填写一个套餐标签', 'error');
-                document.getElementById('mealTags').focus();
-                return;
-            }
-
-            if (!mealDescription) {
-                showNotification('请填写套餐描述', 'error');
-                document.getElementById('mealDescription').focus();
-                return;
-            }
-
-            const optionGroups = [];
-            document.querySelectorAll('#optionGroupsManagement .option-group-item').forEach((groupElement, index) => {
-                const title = groupElement.querySelector('.option-group-title-input').value.trim();
-                const rules = groupElement.querySelector('.option-group-rules-input').value.trim();
-                const minSelect = parseInt(groupElement.querySelector('.option-group-min-input').value) || 1;
-                const maxSelect = parseInt(groupElement.querySelector('.option-group-max-input').value) || 1;
-                const repeat = groupElement.querySelector('.option-group-repeat-input').checked;
-                const maxPerItem = parseInt(groupElement.querySelector('.option-group-max-per-item-input').value) || (repeat ? 999 : 1);
-
-                if (!title) {
-                    showNotification(`选项组 ${index + 1} 的标题不能为空`, 'error');
-                    groupElement.querySelector('.option-group-title-input').focus();
-                    throw new Error('选项组标题为空');
-                }
-
-                if (!rules) {
-                    showNotification(`选项组 ${index + 1} 的规则描述不能为空`, 'error');
-                    groupElement.querySelector('.option-group-rules-input').focus();
-                    throw new Error('选项组规则为空');
-                }
-
-                if (minSelect < 0) {
-                    showNotification(`选项组 ${index + 1} 的最少选择数量不能小于0`, 'error');
-                    groupElement.querySelector('.option-group-min-input').focus();
-                    throw new Error('最小选择数量无效');
-                }
-
-                if (maxSelect < minSelect) {
-                    showNotification(`选项组 ${index + 1} 的最多选择数量不能小于最少选择数量`, 'error');
-                    groupElement.querySelector('.option-group-max-input').focus();
-                    throw new Error('最大选择数量无效');
-                }
-
-                const items = [];
-                groupElement.querySelectorAll('.option-item-list-item').forEach(itemElement => {
-                    // 修复：使用正确的选择器获取选项项名称和价格
-                    const nameInput = itemElement.querySelector('.option-item-name-input');
-                    const priceInput = itemElement.querySelector('.option-item-price-input');
-                    
-                    if (nameInput) {
-                        const name = nameInput.value.trim();
-                        const addPrice = priceInput ? parseFloat(priceInput.value) || 0 : 0;
-
-                        if (name) {
-                            items.push({
-                                name,
-                                addPrice
-                            });
-                        }
-                    }
-                });
-
-                if (items.length === 0) {
-                    showNotification(`选项组 ${index + 1} 至少需要一个选项项`, 'error');
-                    throw new Error('选项组没有选项项');
-                }
-
-                optionGroups.push({
-                    title,
-                    rules,
-                    minSelect,
-                    maxSelect,
-                    repeat,
-                    maxPerItem,
-                    items
-                });
-            });
-
-            const fixedItems = [];
-            document.querySelectorAll('#fixedItemsManagement .fixed-item-list-item').forEach((itemElement, index) => {
-                const nameInput = itemElement.querySelector('.fixed-item-name-input');
-                const quantityInput = itemElement.querySelector('.fixed-item-quantity-input');
-                
-                if (nameInput && quantityInput) {
-                    const name = nameInput.value.trim();
-                    const quantity = parseInt(quantityInput.value) || 1;
-
-                    if (name) {
-                        fixedItems.push({
-                            name,
-                            quantity
-                        });
-                    }
-                }
-            });
-
-            let meal;
-            const now = Date.now();
 
             try {
+                showLoading('正在保存套餐...');
+
+                // 收集选项组数据
+                const optionGroups = [];
+                document.querySelectorAll('.option-group-item').forEach(groupElement => {
+                    const titleInput = groupElement.querySelector('.option-group-title-input');
+                    const rulesInput = groupElement.querySelector('.option-group-rules-input');
+                    const minInput = groupElement.querySelector('.option-group-min-input');
+                    const maxInput = groupElement.querySelector('.option-group-max-input');
+                    const repeatInput = groupElement.querySelector('.option-group-repeat-input');
+                    const maxPerItemInput = groupElement.querySelector('.option-group-max-per-item-input');
+
+                    const title = titleInput ? titleInput.value.trim() : '选项组';
+                    const rules = rulesInput ? rulesInput.value.trim() : '请选择选项';
+                    const minSelect = minInput ? parseInt(minInput.value) || 1 : 1;
+                    const maxSelect = maxInput ? parseInt(maxInput.value) || 1 : 1;
+                    const repeat = repeatInput ? repeatInput.checked : false;
+                    const maxPerItem = maxPerItemInput ? parseInt(maxPerItemInput.value) || (repeat ? 999 : 1) : (repeat ? 999 : 1);
+
+                    const items = [];
+                    const itemElements = groupElement.querySelectorAll('.option-item-list-item');
+                    itemElements.forEach(itemElement => {
+                        const nameInput = itemElement.querySelector('.option-item-name-input');
+                        const priceInput = itemElement.querySelector('.option-item-price-input');
+
+                        if (nameInput && nameInput.value.trim()) {
+                            items.push({
+                                name: nameInput.value.trim(),
+                                addPrice: priceInput ? parseFloat(priceInput.value) || 0 : 0
+                            });
+                        }
+                    });
+
+                    if (items.length > 0) {
+                        optionGroups.push({
+                            title: title,
+                            rules: rules,
+                            minSelect: minSelect,
+                            maxSelect: maxSelect,
+                            repeat: repeat,
+                            maxPerItem: maxPerItem,
+                            items: items
+                        });
+                    }
+                });
+
+                // 收集固定搭配数据
+                const fixedItems = [];
+                document.querySelectorAll('.fixed-item-list-item').forEach(itemElement => {
+                    const nameInput = itemElement.querySelector('.fixed-item-name-input');
+                    const quantityInput = itemElement.querySelector('.fixed-item-quantity-input');
+
+                    if (nameInput && nameInput.value.trim()) {
+                        fixedItems.push({
+                            name: nameInput.value.trim(),
+                            quantity: quantityInput ? parseInt(quantityInput.value) || 1 : 1
+                        });
+                    }
+                });
+
+                let meal;
+
                 if (mealId) {
-                    meal = meals.find(m => m.id === mealId);
-                    if (meal) {
+                    // 更新现有套餐
+                    const mealIndex = meals.findIndex(m => m.id === mealId);
+                    if (mealIndex !== -1) {
+                        meal = meals[mealIndex];
                         meal.name = mealName;
                         meal.price = mealPrice;
                         meal.order = mealOrder;
                         meal.tags = mealTags;
                         meal.description = mealDescription;
                         meal.active = mealActive;
-                        meal.supportDelivery = mealSupportDelivery; // 新增：保存是否支持宅急送
+                        meal.supportDelivery = mealSupportDelivery;
                         meal.optionGroups = optionGroups;
                         meal.fixedItems = fixedItems;
-
-                        const savedMeal = await LeanCloudData.saveMeal(meal);
-
-                        const mealIndex = meals.findIndex(m => m.id === mealId);
-                        if (mealIndex !== -1) {
-                            meals[mealIndex] = savedMeal;
-                        }
+                        meal.updatedAt = Date.now();
                     }
                 } else {
+                    // 创建新套餐
+                    const newId = 'meal_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
                     meal = {
-                        id: 'meal-' + now + '-' + Math.random().toString(36).substr(2, 9),
+                        id: newId,
                         name: mealName,
                         price: mealPrice,
                         order: mealOrder,
                         tags: mealTags,
                         description: mealDescription,
                         active: mealActive,
-                        supportDelivery: mealSupportDelivery, // 新增：保存是否支持宅急送
+                        supportDelivery: mealSupportDelivery,
                         optionGroups: optionGroups,
-                        fixedItems: fixedItems
+                        fixedItems: fixedItems,
+                        createdAt: Date.now(),
+                        updatedAt: Date.now()
                     };
+                }
 
-                    const savedMeal = await LeanCloudData.saveMeal(meal);
+                const savedMeal = await LeanCloudData.saveMeal(meal);
+
+                if (mealId) {
+                    // 更新本地数据
+                    const mealIndex = meals.findIndex(m => m.id === mealId);
+                    if (mealIndex !== -1) {
+                        meals[mealIndex] = savedMeal;
+                    }
+                } else {
+                    // 添加新套餐到本地数据
                     meals.push(savedMeal);
                 }
 
-                localStorage.setItem('kfcMealsCache', JSON.stringify(meals));
+                localStorage.setItem('kfcMealsCache', JSON.stringify(meals.map(m => ({
+                    id: m.id,
+                    name: m.name,
+                    price: m.price,
+                    tags: m.tags,
+                    description: m.description,
+                    order: m.order,
+                    active: m.active,
+                    supportDelivery: m.supportDelivery
+                }))));
 
                 updateHomePage();
 
@@ -7297,44 +7533,58 @@
 
                 showMealList();
 
-                showNotification(mealId ? '套餐已更新' : '套餐已添加', 'success');
+                hideLoading();
+                showNotification(`套餐"${mealName}"保存成功`, 'success');
             } catch (error) {
                 console.error('保存套餐失败:', error);
+                hideLoading();
                 showNotification('保存失败，请检查网络连接', 'error');
             }
         }
 
-        // ==================== 添加新套餐管理 ====================
+        // 删除套餐
+        async function deleteMeal(mealId) {
+            const mealIndex = meals.findIndex(m => m.id === mealId);
+            if (mealIndex === -1) return;
+
+            const meal = meals[mealIndex];
+
+            if (confirm(`确定要删除套餐 "${meal.name}" 吗？此操作不可恢复！`)) {
+                try {
+                    showLoading('正在删除套餐...');
+
+                    await LeanCloudData.deleteMeal(mealId);
+
+                    meals.splice(mealIndex, 1);
+
+                    localStorage.setItem('kfcMealsCache', JSON.stringify(meals.map(m => ({
+                        id: m.id,
+                        name: m.name,
+                        price: m.price,
+                        tags: m.tags,
+                        description: m.description,
+                        order: m.order,
+                        active: m.active,
+                        supportDelivery: m.supportDelivery
+                    }))));
+
+                    updateHomePage();
+
+                    const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
+                    updateMealList(activeFilter);
+
+                    hideLoading();
+                    showNotification(`套餐"${meal.name}"已删除`, 'success');
+                } catch (error) {
+                    console.error('删除套餐失败:', error);
+                    hideLoading();
+                    showNotification('删除失败，请检查网络连接', 'error');
+                }
+            }
+        }
+
+        // ==================== 新增套餐管理 ====================
         function initNewMealManagement() {
-            const statusToggle = document.getElementById('newMealActive');
-            const statusText = document.getElementById('newStatusText');
-            const supportDeliveryToggle = document.getElementById('newMealSupportDelivery');
-            const supportDeliveryText = document.getElementById('newSupportDeliveryText');
-
-            if (statusToggle && statusText) {
-                statusToggle.addEventListener('change', function() {
-                    if (this.checked) {
-                        statusText.textContent = '上架';
-                        statusText.className = 'status-active';
-                    } else {
-                        statusText.textContent = '下架';
-                        statusText.className = 'status-inactive';
-                    }
-                });
-            }
-            
-            if (supportDeliveryToggle && supportDeliveryText) {
-                supportDeliveryToggle.addEventListener('change', function() {
-                    if (this.checked) {
-                        supportDeliveryText.textContent = '支持';
-                        supportDeliveryText.className = 'status-active';
-                    } else {
-                        supportDeliveryText.textContent = '不支持';
-                        supportDeliveryText.className = 'status-inactive';
-                    }
-                });
-            }
-
             document.getElementById('newAddOptionGroupBtn').addEventListener('click', function() {
                 addNewOptionGroup();
             });
@@ -7347,21 +7597,49 @@
                 await saveNewMeal();
             });
 
-            if (document.querySelectorAll('#newOptionGroupsManagement .option-group-item').length === 0) {
-                addNewOptionGroup();
+            const newStatusToggle = document.getElementById('newMealActive');
+            const newStatusText = document.getElementById('newStatusText');
+            const newSupportDeliveryToggle = document.getElementById('newMealSupportDelivery');
+            const newSupportDeliveryText = document.getElementById('newSupportDeliveryText');
+
+            if (newStatusToggle && newStatusText) {
+                newStatusToggle.addEventListener('change', function() {
+                    if (this.checked) {
+                        newStatusText.textContent = '上架';
+                        newStatusText.className = 'status-active';
+                    } else {
+                        newStatusText.textContent = '下架';
+                        newStatusText.className = 'status-inactive';
+                    }
+                });
             }
+            
+            if (newSupportDeliveryToggle && newSupportDeliveryText) {
+                newSupportDeliveryToggle.addEventListener('change', function() {
+                    if (this.checked) {
+                        newSupportDeliveryText.textContent = '支持';
+                        newSupportDeliveryText.className = 'status-active';
+                    } else {
+                        newSupportDeliveryText.textContent = '不支持';
+                        newSupportDeliveryText.className = 'status-inactive';
+                    }
+                });
+            }
+
+            addNewOptionGroup();
+            addNewFixedItem();
         }
 
         // 添加新选项组
         function addNewOptionGroup() {
-            const optionGroupsManagement = document.getElementById('newOptionGroupsManagement');
+            const newOptionGroupsManagement = document.getElementById('newOptionGroupsManagement');
             const groupId = 'new-group-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
 
             const optionGroup = document.createElement('div');
             optionGroup.className = 'option-group-item';
             optionGroup.innerHTML = `
                 <div class="option-group-header">
-                    <div class="option-group-title">选项组 ${optionGroupsManagement.children.length + 1}</div>
+                    <div class="option-group-title">选项组 ${newOptionGroupsManagement.children.length + 1}</div>
                     <div>
                         <button class="action-btn add-btn new-add-option-item-btn" data-group-id="${groupId}">
                             <i class="fas fa-plus"></i> 添加选项
@@ -7374,7 +7652,7 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">组标题 <span class="required">*</span></label>
-                        <input type="text" class="form-input new-option-group-title-input" data-group-id="${groupId}" placeholder="例如：① 任选3份（可以重复选）" value="选项组 ${optionGroupsManagement.children.length + 1}">
+                        <input type="text" class="form-input new-option-group-title-input" data-group-id="${groupId}" placeholder="例如：① 任选3份（可以重复选）" value="选项组 ${newOptionGroupsManagement.children.length + 1}">
                     </div>
                     <div class="form-group">
                         <label class="form-label">规则描述 <span class="required">*</span></label>
@@ -7410,7 +7688,7 @@
                 </div>
             `;
 
-            optionGroupsManagement.appendChild(optionGroup);
+            newOptionGroupsManagement.appendChild(optionGroup);
 
             optionGroup.querySelector('.new-add-option-item-btn').addEventListener('click', function() {
                 addNewOptionItem(groupId);
@@ -7477,8 +7755,8 @@
 
         // 辅助函数：添加带数据的新固定搭配项
         function addNewFixedItemWithData(name, quantity) {
-            const fixedItemsManagement = document.getElementById('newFixedItemsManagement');
-            if (!fixedItemsManagement) return;
+            const newFixedItemsManagement = document.getElementById('newFixedItemsManagement');
+            if (!newFixedItemsManagement) return;
 
             const fixedItem = document.createElement('div');
             fixedItem.className = 'fixed-item-list-item';
@@ -7487,19 +7765,19 @@
                     <input type="text" class="form-input new-fixed-item-name-input" style="flex: 3;" placeholder="固定搭配项名称，例如：可乐" value="${name || '固定搭配项'}">
                     <input type="number" class="form-input new-fixed-item-quantity-input" style="flex: 1;" placeholder="数量" min="1" value="${quantity || 1}">
                 </div>
-                <button class="action-btn delete-btn new-delete-fixed-item-btn">
+                <button class="action-btn delete-btn new-delete-fixed-item-btn" data-item-id="${Date.now()}">
                     <i class="fas fa-trash"></i>
                 </button>
             `;
 
-            fixedItemsManagement.appendChild(fixedItem);
+            newFixedItemsManagement.appendChild(fixedItem);
 
             fixedItem.querySelector('.new-delete-fixed-item-btn').addEventListener('click', function() {
                 fixedItem.remove();
             });
         }
 
-        // ==================== 保存新套餐函数（已修复） ====================
+        // 保存新套餐
         async function saveNewMeal() {
             const mealName = document.getElementById('newMealName').value.trim();
             const mealPrice = parseFloat(document.getElementById('newMealPrice').value);
@@ -7507,142 +7785,111 @@
             const mealTags = document.getElementById('newMealTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
             const mealDescription = document.getElementById('newMealDescription').value.trim();
             const mealActive = document.getElementById('newMealActive').checked;
-            const mealSupportDelivery = document.getElementById('newMealSupportDelivery').checked; // 新增：获取是否支持宅急送
+            const mealSupportDelivery = document.getElementById('newMealSupportDelivery').checked;
 
-            if (!mealName) {
-                showNotification('请填写套餐名称', 'error');
-                document.getElementById('newMealName').focus();
+            if (!mealName || !mealPrice || mealTags.length === 0 || !mealDescription) {
+                showNotification('请填写所有必填字段', 'error');
                 return;
             }
 
             if (isNaN(mealPrice) || mealPrice <= 0) {
-                showNotification('请填写有效的套餐价格', 'error');
-                document.getElementById('newMealPrice').focus();
+                showNotification('套餐价格必须是大于0的数字', 'error');
                 return;
             }
-
-            if (mealTags.length === 0) {
-                showNotification('请至少填写一个套餐标签', 'error');
-                document.getElementById('newMealTags').focus();
-                return;
-            }
-
-            if (!mealDescription) {
-                showNotification('请填写套餐描述', 'error');
-                document.getElementById('newMealDescription').focus();
-                return;
-            }
-
-            const optionGroups = [];
-            document.querySelectorAll('#newOptionGroupsManagement .option-group-item').forEach((groupElement, index) => {
-                const title = groupElement.querySelector('.new-option-group-title-input').value.trim();
-                const rules = groupElement.querySelector('.new-option-group-rules-input').value.trim();
-                const minSelect = parseInt(groupElement.querySelector('.new-option-group-min-input').value) || 1;
-                const maxSelect = parseInt(groupElement.querySelector('.new-option-group-max-input').value) || 1;
-                const repeat = groupElement.querySelector('.new-option-group-repeat-input').checked;
-                const maxPerItem = parseInt(groupElement.querySelector('.new-option-group-max-per-item-input').value) || (repeat ? 999 : 1);
-
-                if (!title) {
-                    showNotification(`选项组 ${index + 1} 的标题不能为空`, 'error');
-                    groupElement.querySelector('.new-option-group-title-input').focus();
-                    throw new Error('选项组标题为空');
-                }
-
-                if (!rules) {
-                    showNotification(`选项组 ${index + 1} 的规则描述不能为空`, 'error');
-                    groupElement.querySelector('.new-option-group-rules-input').focus();
-                    throw new Error('选项组规则为空');
-                }
-
-                if (minSelect < 0) {
-                    showNotification(`选项组 ${index + 1} 的最少选择数量不能小于0`, 'error');
-                    groupElement.querySelector('.new-option-group-min-input').focus();
-                    throw new Error('最小选择数量无效');
-                }
-
-                if (maxSelect < minSelect) {
-                    showNotification(`选项组 ${index + 1} 的最多选择数量不能小于最少选择数量`, 'error');
-                    groupElement.querySelector('.new-option-group-max-input').focus();
-                    throw new Error('最大选择数量无效');
-                }
-
-                const items = [];
-                groupElement.querySelectorAll('.option-item-list-item').forEach(itemElement => {
-                    // 修复：使用正确的选择器获取选项项名称和价格
-                    const nameInput = itemElement.querySelector('.new-option-item-name-input');
-                    const priceInput = itemElement.querySelector('.new-option-item-price-input');
-                    
-                    if (nameInput) {
-                        const name = nameInput.value.trim();
-                        const addPrice = priceInput ? parseFloat(priceInput.value) || 0 : 0;
-
-                        if (name) {
-                            items.push({
-                                name,
-                                addPrice
-                            });
-                        }
-                    }
-                });
-
-                if (items.length === 0) {
-                    showNotification(`选项组 ${index + 1} 至少需要一个选项项`, 'error');
-                    throw new Error('选项组没有选项项');
-                }
-
-                optionGroups.push({
-                    title,
-                    rules,
-                    minSelect,
-                    maxSelect,
-                    repeat,
-                    maxPerItem,
-                    items
-                });
-            });
-
-            const fixedItems = [];
-            document.querySelectorAll('#newFixedItemsManagement .fixed-item-list-item').forEach((itemElement, index) => {
-                const nameInput = itemElement.querySelector('.new-fixed-item-name-input');
-                const quantityInput = itemElement.querySelector('.new-fixed-item-quantity-input');
-                
-                if (nameInput && quantityInput) {
-                    const name = nameInput.value.trim();
-                    const quantity = parseInt(quantityInput.value) || 1;
-
-                    if (name) {
-                        fixedItems.push({
-                            name,
-                            quantity
-                        });
-                    }
-                }
-            });
-
-            const now = Date.now();
-            const meal = {
-                id: 'meal-' + now + '-' + Math.random().toString(36).substr(2, 9),
-                name: mealName,
-                price: mealPrice,
-                order: mealOrder,
-                tags: mealTags,
-                description: mealDescription,
-                active: mealActive,
-                supportDelivery: mealSupportDelivery, // 新增：保存是否支持宅急送
-                optionGroups: optionGroups,
-                fixedItems: fixedItems
-            };
 
             try {
+                showLoading('正在添加套餐...');
+
+                // 收集选项组数据
+                const optionGroups = [];
+                document.querySelectorAll('#newOptionGroupsManagement .option-group-item').forEach(groupElement => {
+                    const titleInput = groupElement.querySelector('.new-option-group-title-input');
+                    const rulesInput = groupElement.querySelector('.new-option-group-rules-input');
+                    const minInput = groupElement.querySelector('.new-option-group-min-input');
+                    const maxInput = groupElement.querySelector('.new-option-group-max-input');
+                    const repeatInput = groupElement.querySelector('.new-option-group-repeat-input');
+                    const maxPerItemInput = groupElement.querySelector('.new-option-group-max-per-item-input');
+
+                    const title = titleInput ? titleInput.value.trim() : '选项组';
+                    const rules = rulesInput ? rulesInput.value.trim() : '请选择选项';
+                    const minSelect = minInput ? parseInt(minInput.value) || 1 : 1;
+                    const maxSelect = maxInput ? parseInt(maxInput.value) || 1 : 1;
+                    const repeat = repeatInput ? repeatInput.checked : false;
+                    const maxPerItem = maxPerItemInput ? parseInt(maxPerItemInput.value) || (repeat ? 999 : 1) : (repeat ? 999 : 1);
+
+                    const items = [];
+                    const itemElements = groupElement.querySelectorAll('.option-item-list-item');
+                    itemElements.forEach(itemElement => {
+                        const nameInput = itemElement.querySelector('.new-option-item-name-input');
+                        const priceInput = itemElement.querySelector('.new-option-item-price-input');
+
+                        if (nameInput && nameInput.value.trim()) {
+                            items.push({
+                                name: nameInput.value.trim(),
+                                addPrice: priceInput ? parseFloat(priceInput.value) || 0 : 0
+                            });
+                        }
+                    });
+
+                    if (items.length > 0) {
+                        optionGroups.push({
+                            title: title,
+                            rules: rules,
+                            minSelect: minSelect,
+                            maxSelect: maxSelect,
+                            repeat: repeat,
+                            maxPerItem: maxPerItem,
+                            items: items
+                        });
+                    }
+                });
+
+                // 收集固定搭配数据
+                const fixedItems = [];
+                document.querySelectorAll('#newFixedItemsManagement .fixed-item-list-item').forEach(itemElement => {
+                    const nameInput = itemElement.querySelector('.new-fixed-item-name-input');
+                    const quantityInput = itemElement.querySelector('.new-fixed-item-quantity-input');
+
+                    if (nameInput && nameInput.value.trim()) {
+                        fixedItems.push({
+                            name: nameInput.value.trim(),
+                            quantity: quantityInput ? parseInt(quantityInput.value) || 1 : 1
+                        });
+                    }
+                });
+
+                // 创建新套餐
+                const newId = 'meal_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                const meal = {
+                    id: newId,
+                    name: mealName,
+                    price: mealPrice,
+                    order: mealOrder,
+                    tags: mealTags,
+                    description: mealDescription,
+                    active: mealActive,
+                    supportDelivery: mealSupportDelivery,
+                    optionGroups: optionGroups,
+                    fixedItems: fixedItems,
+                    createdAt: Date.now(),
+                    updatedAt: Date.now()
+                };
+
                 const savedMeal = await LeanCloudData.saveMeal(meal);
+
+                // 添加新套餐到本地数据
                 meals.push(savedMeal);
 
-                localStorage.setItem('kfcMealsCache', JSON.stringify(meals));
-
-                updateHomePage();
-
-                const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
-                updateMealList(activeFilter);
+                localStorage.setItem('kfcMealsCache', JSON.stringify(meals.map(m => ({
+                    id: m.id,
+                    name: m.name,
+                    price: m.price,
+                    tags: m.tags,
+                    description: m.description,
+                    order: m.order,
+                    active: m.active,
+                    supportDelivery: m.supportDelivery
+                }))));
 
                 // 重置表单
                 document.getElementById('newMealName').value = '';
@@ -7653,23 +7900,35 @@
                 document.getElementById('newMealActive').checked = true;
                 document.getElementById('newMealSupportDelivery').checked = true;
                 
-                const statusText = document.getElementById('newStatusText');
-                statusText.textContent = '上架';
-                statusText.className = 'status-active';
+                const newStatusText = document.getElementById('newStatusText');
+                newStatusText.textContent = '上架';
+                newStatusText.className = 'status-active';
                 
-                const supportDeliveryText = document.getElementById('newSupportDeliveryText');
-                supportDeliveryText.textContent = '支持';
-                supportDeliveryText.className = 'status-active';
+                const newSupportDeliveryText = document.getElementById('newSupportDeliveryText');
+                newSupportDeliveryText.textContent = '支持';
+                newSupportDeliveryText.className = 'status-active';
 
+                // 清空选项组和固定搭配
                 document.getElementById('newOptionGroupsManagement').innerHTML = '';
                 document.getElementById('newFixedItemsManagement').innerHTML = '';
 
-                // 切换到套餐管理标签页
+                // 重新添加默认的选项组和固定搭配项
+                addNewOptionGroup();
+                addNewFixedItem();
+
+                updateHomePage();
+
+                const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
+                updateMealList(activeFilter);
+
+                // 切换到套餐管理标签
                 document.querySelector('.admin-tab[data-tab="meals"]').click();
 
-                showNotification('套餐已添加', 'success');
+                hideLoading();
+                showNotification(`套餐"${mealName}"添加成功`, 'success');
             } catch (error) {
                 console.error('添加套餐失败:', error);
+                hideLoading();
                 showNotification('添加失败，请检查网络连接', 'error');
             }
         }
@@ -7677,41 +7936,160 @@
         // ==================== 图片预览功能 ====================
         function initImagePreview() {
             const imageModal = document.getElementById('imageModal');
-            const modalImage = document.getElementById('modalImage');
             const closeModal = document.getElementById('closeModal');
+            const modalImage = document.getElementById('modalImage');
 
             closeModal.addEventListener('click', function() {
                 imageModal.classList.remove('active');
+                document.body.style.overflow = 'auto';
             });
 
             imageModal.addEventListener('click', function(e) {
                 if (e.target === imageModal) {
                     imageModal.classList.remove('active');
+                    document.body.style.overflow = 'auto';
                 }
             });
         }
 
-        function showFullImage(imageSrc) {
-            const modalImage = document.getElementById('modalImage');
+        function showFullImage(src) {
             const imageModal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
 
-            modalImage.src = imageSrc;
+            modalImage.src = src;
             imageModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
         }
 
-        // ==================== 新订单徽章 ====================
+        // ==================== 通知功能 ====================
+        function showNotification(message, type = 'info') {
+            // 检查是否已经有一个通知正在显示
+            const existingNotification = document.querySelector('.notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div class="notification-content">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+
+            // 添加样式
+            const style = document.createElement('style');
+            style.textContent = `
+                .notification {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background-color: white;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                    padding: 12px 16px;
+                    z-index: 10000;
+                    animation: slideIn 0.3s ease-out;
+                    border-left: 4px solid #e31837;
+                    max-width: 350px;
+                    min-width: 250px;
+                }
+                
+                .notification.success {
+                    border-left-color: #4CAF50;
+                }
+                
+                .notification.error {
+                    border-left-color: #f44336;
+                }
+                
+                .notification.info {
+                    border-left-color: #2196F3;
+                }
+                
+                .notification-content {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+                
+                .notification-content i {
+                    font-size: 1.2rem;
+                }
+                
+                .notification.success .notification-content i {
+                    color: #4CAF50;
+                }
+                
+                .notification.error .notification-content i {
+                    color: #f44336;
+                }
+                
+                .notification.info .notification-content i {
+                    color: #2196F3;
+                }
+                
+                .notification-content span {
+                    font-size: 0.9rem;
+                    font-weight: 500;
+                }
+                
+                @keyframes slideIn {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                
+                @keyframes slideOut {
+                    from {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                    to {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                }
+            `;
+
+            if (!document.querySelector('style[data-notification]')) {
+                style.setAttribute('data-notification', 'true');
+                document.head.appendChild(style);
+            }
+
+            document.body.appendChild(notification);
+
+            // 3秒后自动移除通知
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // ==================== 更新订单徽章 ====================
         function updateOrderBadge() {
-            const badge = document.getElementById('newOrderBadge');
+            const newOrderBadge = document.getElementById('newOrderBadge');
+            
             if (newOrdersCount > 0) {
-                badge.textContent = newOrdersCount > 9 ? '9+' : newOrdersCount;
-                badge.style.display = 'flex';
+                newOrderBadge.textContent = newOrdersCount > 99 ? '99+' : newOrdersCount.toString();
+                newOrderBadge.style.display = 'flex';
             } else {
-                badge.style.display = 'none';
+                newOrderBadge.style.display = 'none';
             }
         }
 
-        // ==================== 数据同步功能 ====================
-        async function syncDataFromLeanCloud() {
+        // ==================== 强制同步所有数据 ====================
+        async function forceSyncAllData() {
             try {
                 const [newMeals, newOrders, newCount] = await Promise.all([
                     LeanCloudData.loadMeals(),
@@ -7731,7 +8109,7 @@
                     description: m.description,
                     order: m.order,
                     active: m.active,
-                    supportDelivery: m.supportDelivery // 新增：保存是否支持宅急送
+                    supportDelivery: m.supportDelivery
                 }))));
                 
                 localStorage.setItem('kfcOrdersCache', JSON.stringify(orders.map(o => ({
@@ -7744,110 +8122,27 @@
                 
                 localStorage.setItem('newOrdersCountCache', newOrdersCount.toString());
 
+                updateHomePage();
+                updateOrderBadge();
+
+                if (isAdminPanelOpen) {
+                    const activeFilterBtn = document.querySelector('.filter-btn.active');
+                    const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
+                    renderOrders(activeFilter);
+                    
+                    const activeMealFilterBtn = document.querySelector('.meal-filter-btn.active');
+                    const activeMealFilter = activeMealFilterBtn ? activeMealFilterBtn.dataset.mealFilter : 'all';
+                    updateMealList(activeMealFilter);
+                }
+
+                showNotification('数据同步成功', 'success');
                 return true;
             } catch (error) {
-                console.error('数据同步失败:', error);
+                console.error('强制同步数据失败:', error);
+                showNotification('同步失败，请检查网络连接', 'error');
                 return false;
             }
         }
-
-        async function forceSyncAllData() {
-            try {
-                const success = await syncDataFromLeanCloud();
-
-                if (success) {
-                    if (document.getElementById('homePage').classList.contains('active')) {
-                        updateHomePage();
-                    }
-
-                    if (document.getElementById('myOrdersPage').classList.contains('active')) {
-                        renderUserOrders('all');
-                    }
-
-                    if (document.getElementById('adminPanel').classList.contains('active')) {
-                        const activeFilterBtn = document.querySelector('.filter-btn.active');
-                        const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
-                        renderOrders(activeFilter);
-
-                        const activeMealFilterBtn = document.querySelector('.meal-filter-btn.active');
-                        const activeMealFilter = activeMealFilterBtn ? activeMealFilterBtn.dataset.mealFilter : 'all';
-                        updateMealList(activeMealFilter);
-                    }
-
-                    showNotification('数据同步完成', 'success');
-                } else {
-                    showNotification('同步失败，请检查网络连接', 'error');
-                }
-            } catch (error) {
-                console.error('强制同步失败:', error);
-                showNotification('同步失败，请检查网络连接', 'error');
-            }
-        }
-
-        // ==================== 离开页面提示功能 ====================
-        // 修改：无论购物车是否有商品，都显示确认提示
-        window.addEventListener('beforeunload', function (e) {
-            // 始终触发提示，无论购物车是否有商品
-            e.preventDefault();
-            
-            // 根据浏览器支持情况设置returnValue
-            e.returnValue = '确定要离开页面吗？您的操作可能未保存。';
-            
-            // 返回消息（某些浏览器可能不会显示）
-            return '确定要离开页面吗？您的操作可能未保存。';
-        });
-
-        // ==================== 通知功能 ====================
-        function showNotification(message, type = 'info') {
-            const existingNotification = document.querySelector('.custom-notification');
-            if (existingNotification) {
-                existingNotification.remove();
-            }
-
-            const notification = document.createElement('div');
-            notification.textContent = message;
-            notification.className = 'custom-notification';
-            notification.style.cssText = `
-                position: fixed;
-                top: 15px;
-                right: 15px;
-                background-color: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#e31837' : '#e31837'};
-                color: white;
-                padding: 12px 16px;
-                border-radius: 6px;
-                box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-                z-index: 1000;
-                font-weight: bold;
-                animation: slideIn 0.3s ease;
-                max-width: 350px;
-                font-size: 0.85rem;
-            `;
-
-            document.body.appendChild(notification);
-
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.remove();
-                    }
-                }, 300);
-            }, 3000);
-        }
-
-        // 添加动画样式
-        const notificationStyle = document.createElement('style');
-        notificationStyle.textContent = `
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            @keyframes slideOut {
-                from { transform: translateX(0); opacity: 1; }
-                to { transform: translateX(100%); opacity: 0; }
-            }
-        `;
-        document.head.appendChild(notificationStyle);
     </script>
 </body>
 </html>
