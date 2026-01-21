@@ -4105,7 +4105,7 @@
 
             filteredMeals.forEach(meal => {
                 const mealCard = document.createElement('a');
-                mealCard.href = '#';
+                mealCard.href = getMealLink(meal.id);
                 mealCard.className = 'meal-card';
                 if (meal.active === false) {
                     mealCard.classList.add('inactive');
@@ -4113,6 +4113,10 @@
                 mealCard.onclick = function(e) {
                     e.preventDefault();
                     if (meal.active === false) return;
+                    // 更新URL参数
+                    const url = new URL(window.location);
+                    url.searchParams.set('meal', meal.id);
+                    window.history.pushState({}, '', url);
                     showMealDetail(meal.id);
                 };
 
@@ -4281,6 +4285,11 @@
             });
         }
 
+        // ==================== 生成套餐链接 ====================
+        function getMealLink(mealId) {
+            return window.location.origin + window.location.pathname + '?meal=' + mealId;
+        }
+
         // ==================== 数据加载函数 ====================
         async function loadAllDataFromLeanCloud() {
             try {
@@ -4394,7 +4403,7 @@
 
             activeMeals.forEach(meal => {
                 const mealCard = document.createElement('a');
-                mealCard.href = '#';
+                mealCard.href = getMealLink(meal.id);
                 mealCard.className = 'meal-card';
                 if (meal.active === false) {
                     mealCard.classList.add('inactive');
@@ -4402,6 +4411,10 @@
                 mealCard.onclick = function(e) {
                     e.preventDefault();
                     if (meal.active === false) return;
+                    // 更新URL参数
+                    const url = new URL(window.location);
+                    url.searchParams.set('meal', meal.id);
+                    window.history.pushState({}, '', url);
                     showMealDetail(meal.id);
                 };
 
@@ -4424,12 +4437,16 @@
         // ==================== 套餐详情页 ====================
         function showMealDetail(mealId) {
             const meal = meals.find(m => m.id === mealId);
-            if (!meal) return;
+            if (!meal) {
+                showNotification('套餐不存在或已被删除', 'error');
+                showPage('homePage');
+                return;
+            }
 
             const mealDetailPage = document.getElementById('mealDetailPage');
 
             mealDetailPage.innerHTML = `
-                <a href="#" class="back-btn" onclick="showPage('homePage')">
+                <a href="#" class="back-btn" onclick="goHome()">
                     <i class="fas fa-arrow-left"></i>
                     返回套餐列表
                 </a>
@@ -4713,6 +4730,15 @@
                 document.getElementById('viewOrdersBtn').style.display = 'flex';
                 document.getElementById('viewHomeBtn').style.display = 'none';
             }
+        }
+
+        // ==================== 返回首页函数 ====================
+        function goHome() {
+            // 清除URL参数中的meal
+            const url = new URL(window.location);
+            url.searchParams.delete('meal');
+            window.history.pushState({}, '', url);
+            showPage('homePage');
         }
 
         // ==================== 选项选择功能 ====================
@@ -5454,7 +5480,7 @@
                     successModal.querySelector('#backToHome').addEventListener('click', function() {
                         successModal.remove();
                         document.body.style.overflow = 'auto';
-                        showPage('homePage');
+                        goHome();
                     });
 
                 }, 1000);
@@ -5525,7 +5551,7 @@
             });
 
             viewHomeBtn.addEventListener('click', function() {
-                showPage('homePage');
+                goHome();
                 this.style.display = 'none';
                 viewOrdersBtn.style.display = 'flex';
             });
@@ -5534,6 +5560,7 @@
         function checkUrlParams() {
             const urlParams = new URLSearchParams(window.location.search);
             const orderId = urlParams.get('order');
+            const mealId = urlParams.get('meal');
 
             if (orderId) {
                 showMyOrdersPage();
@@ -5542,6 +5569,11 @@
                     document.getElementById('orderSearchInput').value = orderId;
                     searchUserOrder(orderId);
                 }, 100);
+            } else if (mealId) {
+                // 如果有meal参数，直接显示套餐详情页
+                setTimeout(() => {
+                    showMealDetail(mealId);
+                }, 500);
             }
         }
 
