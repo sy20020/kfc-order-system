@@ -2493,6 +2493,28 @@
             gap: 15px;
         }
         
+        /* 新增：移动端管理员订单项按钮布局优化 */
+        .admin-order-item .action-buttons-container {
+            margin-top: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: flex-start;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+        
+        .admin-order-item .action-buttons-container .filter-btn {
+            flex: 1;
+            min-width: calc(50% - 4px);
+            padding: 8px 10px;
+            font-size: 0.8rem;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
         @media (max-width: 768px) {
             .main-content {
                 flex-direction: row;
@@ -2715,258 +2737,227 @@
                 width: 100%;
                 justify-content: center;
             }
-			
-			.admin-order-item {
-			    padding: 12px;
-			    margin-bottom: 12px;
-			  }
-			  
-			  .admin-order-item .order-id {
-			    font-size: 1rem;
-			    word-break: break-all;
-			  }
-			  
-			  .admin-order-item .order-time {
-			    font-size: 0.75rem;
-			    margin-bottom: 8px;
-			  }
-			  
-			  .admin-order-item .order-status {
-			    font-size: 0.75rem;
-			    padding: 2px 8px;
-			    margin-bottom: 10px;
-			  }
-			  
-			  .admin-order-item .order-details {
-			    margin-bottom: 10px;
-			  }
-			  
-			  .admin-order-item .order-item-detail {
-			    font-size: 0.8rem;
-			    padding: 4px 0;
-			  }
-			  
-			  .admin-order-item .order-total {
-			    font-size: 1rem;
-			    margin-top: 6px;
-			    padding-top: 6px;
-			  }
-			  
-			  .admin-order-item .customer-info {
-			    padding: 10px;
-			    font-size: 0.8rem;
-			    margin-top: 10px;
-			  }
-			  
-			  .admin-order-item .customer-info p {
-			    margin-bottom: 3px;
-			  }
-			  
-			  /* 新增：修复管理员订单项按钮布局 */
-			  .admin-order-item > div:last-child {
-			    margin-top: 12px;
-			    display: flex;
-			    flex-wrap: wrap;
-			    gap: 8px;
-			    justify-content: flex-start;
-			    padding-top: 10px;
-			    border-top: 1px solid #eee;
-			  }
-			  
-			  .admin-order-item > div:last-child .filter-btn {
-			    flex: 1;
-			    min-width: calc(50% - 4px);
-			    padding: 8px 10px;
-			    font-size: 0.8rem;
-			    text-align: center;
-			    white-space: nowrap;
-			    overflow: hidden;
-			    text-overflow: ellipsis;
-			  }
-			  
-			  /* 新增：修复反馈截图上传区域在移动端的显示 */
-			  .admin-order-item .feedback-upload-area {
-			    padding: 10px;
-			    font-size: 0.8rem;
-			  }
-			  
-			  .admin-order-item .feedback-upload-area i {
-			    font-size: 18px;
-			    margin-bottom: 5px;
-			  }
-			  
-			  .admin-order-item .upload-hint {
-			    font-size: 0.75rem;
-			  }
-			  
-			  .admin-order-item .feedback-btn {
-			    padding: 6px 12px;
-			    font-size: 0.8rem;
-			    margin-top: 10px;
-			    width: 100%;
-			    justify-content: center;
-			  }
-			  
-			  /* 新增：修复管理员面板内容在移动端的边距 */
-			  .panel-content {
-			    padding: 12px;
-			  }
-			  
-			  .admin-tabs {
-			    flex-direction: column;
-			    align-items: flex-start;
-			  }
-			  
-			  .admin-tab {
-			    width: 100%;
-			    text-align: left;
-			    padding: 10px 12px;
-			    border-bottom: 1px solid #eee;
-			  }
-			  
-			  .order-filters {
-			    justify-content: center;
-			  }
-			  
-			  .order-filters .filter-btn {
-			    flex: 1;
-			    min-width: calc(33.33% - 8px);
-			    text-align: center;
-			    padding: 6px 8px;
-			    font-size: 0.8rem;
-			  }
-			  
-			  /* 新增：特别修复移动端订单项内部的按钮间距 */
-			  .admin-order-item > div:last-child {
-			    gap: 6px;
-			  }
-			  
-			  .admin-order-item > div:last-child .filter-btn {
-			    min-width: calc(50% - 3px);
-			    padding: 6px 8px;
-			    font-size: 0.75rem;
-			  }
-			  
-			  /* 新增：移动端订单项内部截图预览优化 */
-			  .admin-order-item .screenshot-container img {
-			    max-height: 150px;
-			    object-fit: contain;
-			  }
-			  
-			  .admin-order-item .feedback-screenshot-container {
-			    padding: 8px;
-			  }
-			  
-			  .admin-order-item .feedback-screenshot-container h4 {
-			    font-size: 0.85rem;
-			  }
-			  
-			  .admin-order-item .feedback-thumbnail {
-			    max-height: 180px;
-			  }
-			  
-			  /* 新增：移动端订单项内部反馈上传区域优化 */
-			  .admin-order-item .form-group {
-			    margin-bottom: 12px;
-			  }
-			  
-			  .admin-order-item .feedback-preview {
-			    margin-top: 8px;
-			    padding: 5px;
-			  }
-			  
-			  .admin-order-item .feedback-preview img {
-			    max-height: 120px;
-			  }
-			  
-			  /* 新增：移动端管理员搜索容器优化 */
-			  .admin-search-container {
-			    padding: 10px;
-			    gap: 8px;
-			  }
-			  
-			  .admin-search-hint {
-			    font-size: 0.75rem;
-			    padding: 4px 6px;
-			  }
-			  
-			  /* 新增：移动端套餐管理部分优化 */
-			  .meal-list-item {
-			    flex-direction: column;
-			    align-items: flex-start;
-			    gap: 10px;
-			    padding: 12px;
-			  }
-			  
-			  .meal-list-item-actions {
-			    width: 100%;
-			    justify-content: space-between;
-			    flex-wrap: wrap;
-			    gap: 8px;
-			  }
-			  
-			  .meal-list-item-actions > div {
-			    width: 100%;
-			    margin-bottom: 5px;
-			  }
-			  
-			  .status-label {
-			    justify-content: flex-start;
-			  }
-			  
-			  .sort-order-container {
-			    width: 100%;
-			    justify-content: flex-start;
-			    flex-wrap: wrap;
-			  }
-			  
-			  .meal-list-item-actions > div:last-child {
-			    display: flex;
-			    width: 100%;
-			    justify-content: space-between;
-			  }
-			  
-			  .meal-list-item-actions > div:last-child button {
-			    flex: 1;
-			    max-width: calc(50% - 4px);
-			  }
-			}
-			
-			/* 新增：超小屏幕设备进一步优化 */
-			@media (max-width: 480px) {
-			  .admin-order-item > div:last-child .filter-btn {
-			    min-width: 100%;
-			    margin-bottom: 5px;
-			  }
-			  
-			  .admin-order-item > div:last-child {
-			    flex-direction: column;
-			  }
-			  
-			  .order-filters .filter-btn {
-			    min-width: calc(50% - 4px);
-			    font-size: 0.75rem;
-			    padding: 5px 6px;
-			  }
-			  
-			  .admin-order-item .order-status {
-			    font-size: 0.7rem;
-			    padding: 2px 6px;
-			  }
-			  
-			  /* 新增：移动端订单状态按钮特别优化 */
-			  .admin-order-item div[style*="margin-top: 12px"] {
-			    margin-top: 10px !important;
-			    gap: 5px !important;
-			  }
-			  
-			  .admin-order-item div[style*="margin-top: 12px"] .filter-btn {
-			    min-width: 100% !important;
-			    margin-bottom: 5px !important;
-			    padding: 6px 8px !important;
-			    font-size: 0.75rem !important;
-			  }
-			
+            
+            .admin-order-item {
+                padding: 12px;
+                margin-bottom: 12px;
+            }
+            
+            .admin-order-item .order-id {
+                font-size: 1rem;
+                word-break: break-all;
+            }
+            
+            .admin-order-item .order-time {
+                font-size: 0.75rem;
+                margin-bottom: 8px;
+            }
+            
+            .admin-order-item .order-status {
+                font-size: 0.75rem;
+                padding: 2px 8px;
+                margin-bottom: 10px;
+            }
+            
+            .admin-order-item .order-details {
+                margin-bottom: 10px;
+            }
+            
+            .admin-order-item .order-item-detail {
+                font-size: 0.8rem;
+                padding: 4px 0;
+            }
+            
+            .admin-order-item .order-total {
+                font-size: 1rem;
+                margin-top: 6px;
+                padding-top: 6px;
+            }
+            
+            .admin-order-item .customer-info {
+                padding: 10px;
+                font-size: 0.8rem;
+                margin-top: 10px;
+            }
+            
+            .admin-order-item .customer-info p {
+                margin-bottom: 3px;
+            }
+            
+            /* 移动端管理员订单项按钮布局优化 */
+            .admin-order-item .action-buttons-container {
+                margin-top: 10px;
+                gap: 5px;
+                flex-direction: column;
+            }
+            
+            .admin-order-item .action-buttons-container .filter-btn {
+                min-width: 100%;
+                margin-bottom: 5px;
+                padding: 6px 8px;
+                font-size: 0.75rem;
+            }
+            
+            /* 修复反馈截图上传区域在移动端的显示 */
+            .admin-order-item .feedback-upload-area {
+                padding: 10px;
+                font-size: 0.8rem;
+            }
+            
+            .admin-order-item .feedback-upload-area i {
+                font-size: 18px;
+                margin-bottom: 5px;
+            }
+            
+            .admin-order-item .upload-hint {
+                font-size: 0.75rem;
+            }
+            
+            .admin-order-item .feedback-btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+                margin-top: 10px;
+                width: 100%;
+                justify-content: center;
+            }
+            
+            /* 修复管理员面板内容在移动端的边距 */
+            .panel-content {
+                padding: 12px;
+            }
+            
+            .admin-tabs {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .admin-tab {
+                width: 100%;
+                text-align: left;
+                padding: 10px 12px;
+                border-bottom: 1px solid #eee;
+            }
+            
+            .order-filters {
+                justify-content: center;
+            }
+            
+            .order-filters .filter-btn {
+                flex: 1;
+                min-width: calc(33.33% - 8px);
+                text-align: center;
+                padding: 6px 8px;
+                font-size: 0.8rem;
+            }
+            
+            /* 移动端订单项内部截图预览优化 */
+            .admin-order-item .screenshot-container img {
+                max-height: 150px;
+                object-fit: contain;
+            }
+            
+            .admin-order-item .feedback-screenshot-container {
+                padding: 8px;
+            }
+            
+            .admin-order-item .feedback-screenshot-container h4 {
+                font-size: 0.85rem;
+            }
+            
+            .admin-order-item .feedback-thumbnail {
+                max-height: 180px;
+            }
+            
+            /* 移动端订单项内部反馈上传区域优化 */
+            .admin-order-item .form-group {
+                margin-bottom: 12px;
+            }
+            
+            .admin-order-item .feedback-preview {
+                margin-top: 8px;
+                padding: 5px;
+            }
+            
+            .admin-order-item .feedback-preview img {
+                max-height: 120px;
+            }
+            
+            /* 移动端管理员搜索容器优化 */
+            .admin-search-container {
+                padding: 10px;
+                gap: 8px;
+            }
+            
+            .admin-search-hint {
+                font-size: 0.75rem;
+                padding: 4px 6px;
+            }
+            
+            /* 移动端套餐管理部分优化 */
+            .meal-list-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+                padding: 12px;
+            }
+            
+            .meal-list-item-actions {
+                width: 100%;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            .meal-list-item-actions > div {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+            
+            .status-label {
+                justify-content: flex-start;
+            }
+            
+            .sort-order-container {
+                width: 100%;
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+            
+            .meal-list-item-actions > div:last-child {
+                display: flex;
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .meal-list-item-actions > div:last-child button {
+                flex: 1;
+                max-width: calc(50% - 4px);
+            }
+        }
+        
+        /* 新增：超小屏幕设备进一步优化 */
+        @media (max-width: 480px) {
+            .admin-order-item .action-buttons-container {
+                gap: 5px;
+            }
+            
+            .admin-order-item .action-buttons-container .filter-btn {
+                min-width: 100%;
+                margin-bottom: 5px;
+                font-size: 0.75rem;
+                padding: 6px 8px;
+            }
+            
+            .order-filters .filter-btn {
+                min-width: calc(50% - 4px);
+                font-size: 0.75rem;
+                padding: 5px 6px;
+            }
+            
+            .admin-order-item .order-status {
+                font-size: 0.7rem;
+                padding: 2px 6px;
+            }
         }
         
         /* 确保在桌面端保持左右布局 */
@@ -6696,10 +6687,10 @@
                     ${feedbackUploadHTML}
                 </div>
                 
-                <div style="margin-top: 12px; display: flex; gap: 8px;">
-                    ${order.status === 'new' ? `<button class="filter-btn" style="padding: 5px 10px; font-size: 0.8rem;" data-action="process" data-order-id="${order.id}">标记为处理中</button>` : ''}
-                    ${order.status === 'processing' ? `<button class="filter-btn" style="padding: 5px 10px; font-size: 0.8rem;" data-action="complete" data-order-id="${order.id}">标记为已完成</button>` : ''}
-                    <button class="filter-btn" style="padding: 5px 10px; font-size: 0.8rem; background-color: #f44336; color: white;" data-action="delete" data-order-id="${order.id}">删除订单</button>
+                <div class="action-buttons-container">
+                    ${order.status === 'new' ? `<button class="filter-btn" data-action="process" data-order-id="${order.id}">标记为处理中</button>` : ''}
+                    ${order.status === 'processing' ? `<button class="filter-btn" data-action="complete" data-order-id="${order.id}">标记为已完成</button>` : ''}
+                    <button class="filter-btn" style="background-color: #f44336; color: white;" data-action="delete" data-order-id="${order.id}">删除订单</button>
                 </div>
             `;
 
@@ -7979,7 +7970,7 @@
 
                 // 收集选项组数据
                 const optionGroups = [];
-                document.querySelectorAll('#newOptionGroupsManagement .option-group-item').forEach(groupElement => {
+                document.querySelectorAll('.option-group-item').forEach(groupElement => {
                     const titleInput = groupElement.querySelector('.new-option-group-title-input');
                     const rulesInput = groupElement.querySelector('.new-option-group-rules-input');
                     const minInput = groupElement.querySelector('.new-option-group-min-input');
@@ -8023,7 +8014,7 @@
 
                 // 收集固定搭配数据
                 const fixedItems = [];
-                document.querySelectorAll('#newFixedItemsManagement .fixed-item-list-item').forEach(itemElement => {
+                document.querySelectorAll('.fixed-item-list-item').forEach(itemElement => {
                     const nameInput = itemElement.querySelector('.new-fixed-item-name-input');
                     const quantityInput = itemElement.querySelector('.new-fixed-item-quantity-input');
 
@@ -8068,6 +8059,11 @@
                     supportDelivery: m.supportDelivery
                 }))));
 
+                updateHomePage();
+
+                const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
+                updateMealList(activeFilter);
+
                 // 重置表单
                 document.getElementById('newMealName').value = '';
                 document.getElementById('newMealPrice').value = '';
@@ -8076,30 +8072,11 @@
                 document.getElementById('newMealDescription').value = '';
                 document.getElementById('newMealActive').checked = true;
                 document.getElementById('newMealSupportDelivery').checked = true;
-                
-                const newStatusText = document.getElementById('newStatusText');
-                newStatusText.textContent = '上架';
-                newStatusText.className = 'status-active';
-                
-                const newSupportDeliveryText = document.getElementById('newSupportDeliveryText');
-                newSupportDeliveryText.textContent = '支持';
-                newSupportDeliveryText.className = 'status-active';
-
-                // 清空选项组和固定搭配
                 document.getElementById('newOptionGroupsManagement').innerHTML = '';
                 document.getElementById('newFixedItemsManagement').innerHTML = '';
 
-                // 重新添加默认的选项组和固定搭配项
                 addNewOptionGroup();
                 addNewFixedItem();
-
-                updateHomePage();
-
-                const activeFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
-                updateMealList(activeFilter);
-
-                // 切换到套餐管理标签
-                document.querySelector('.admin-tab[data-tab="meals"]').click();
 
                 hideLoading();
                 showNotification(`套餐"${mealName}"添加成功`, 'success');
@@ -8110,7 +8087,47 @@
             }
         }
 
-        // ==================== 图片预览功能 ====================
+        // ==================== 其他辅助函数 ====================
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                padding: 12px 20px;
+                background-color: ${type === 'error' ? '#f44336' : type === 'success' ? '#4CAF50' : '#333'};
+                color: white;
+                border-radius: 8px;
+                box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+                z-index: 9999;
+                font-size: 0.9rem;
+                max-width: 300px;
+                word-break: break-word;
+                animation: fadeInOut 3s ease-in-out;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 3000);
+        }
+
+        function updateOrderBadge() {
+            const newOrderBadge = document.getElementById('newOrderBadge');
+            if (newOrderBadge) {
+                if (newOrdersCount > 0) {
+                    newOrderBadge.textContent = newOrdersCount > 99 ? '99+' : newOrdersCount;
+                    newOrderBadge.style.display = 'flex';
+                } else {
+                    newOrderBadge.style.display = 'none';
+                }
+            }
+        }
+
         function initImagePreview() {
             const imageModal = document.getElementById('imageModal');
             const closeModal = document.getElementById('closeModal');
@@ -8118,13 +8135,11 @@
 
             closeModal.addEventListener('click', function() {
                 imageModal.classList.remove('active');
-                document.body.style.overflow = 'auto';
             });
 
             imageModal.addEventListener('click', function(e) {
                 if (e.target === imageModal) {
                     imageModal.classList.remove('active');
-                    document.body.style.overflow = 'auto';
                 }
             });
         }
@@ -8132,45 +8147,15 @@
         function showFullImage(src) {
             const imageModal = document.getElementById('imageModal');
             const modalImage = document.getElementById('modalImage');
-            
+
             modalImage.src = src;
             imageModal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        // ==================== 辅助函数 ====================
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.innerHTML = `
-                <div style="position: fixed; top: 80px; right: 15px; background-color: ${type === 'error' ? '#f44336' : type === 'success' ? '#4CAF50' : '#2196F3'}; 
-                    color: white; padding: 12px 20px; border-radius: 6px; box-shadow: 0 3px 10px rgba(0,0,0,0.2); z-index: 9999; display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : type === 'success' ? 'check-circle' : 'info-circle'}"></i>
-                    <span>${message}</span>
-                </div>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
-        }
-
-        function updateOrderBadge() {
-            const badge = document.getElementById('newOrderBadge');
-            if (newOrdersCount > 0) {
-                badge.textContent = newOrdersCount > 99 ? '99+' : newOrdersCount;
-                badge.style.display = 'flex';
-            } else {
-                badge.style.display = 'none';
-            }
         }
 
         async function forceSyncAllData() {
             try {
                 showLoading('正在同步数据...');
-                
+
                 const [mealsData, ordersData, countData] = await Promise.all([
                     LeanCloudData.loadMeals(),
                     LeanCloudData.loadOrders(),
@@ -8205,20 +8190,25 @@
                 updateHomePage();
                 updateOrderBadge();
 
+                if (document.getElementById('myOrdersPage').classList.contains('active')) {
+                    const activeFilterTab = document.querySelector('.order-filter-tab.active');
+                    const activeFilter = activeFilterTab ? activeFilterTab.dataset.orderFilter : 'all';
+                    renderUserOrders(activeFilter);
+                }
+
                 if (isAdminPanelOpen) {
                     const activeFilterBtn = document.querySelector('.filter-btn.active');
                     const activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
                     renderOrders(activeFilter);
-                    
-                    const activeMealFilter = document.querySelector('.meal-filter-btn.active');
-                    const mealFilter = activeMealFilter ? activeMealFilter.dataset.mealFilter : 'all';
-                    updateMealList(mealFilter);
+
+                    const activeMealFilter = document.querySelector('.meal-filter-btn.active').dataset.mealFilter;
+                    updateMealList(activeMealFilter);
                 }
 
                 hideLoading();
                 showNotification('数据同步完成', 'success');
             } catch (error) {
-                console.error('同步数据失败:', error);
+                console.error('强制同步数据失败:', error);
                 hideLoading();
                 showNotification('同步失败，请检查网络连接', 'error');
             }
