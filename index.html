@@ -2715,6 +2715,258 @@
                 width: 100%;
                 justify-content: center;
             }
+			
+			.admin-order-item {
+			    padding: 12px;
+			    margin-bottom: 12px;
+			  }
+			  
+			  .admin-order-item .order-id {
+			    font-size: 1rem;
+			    word-break: break-all;
+			  }
+			  
+			  .admin-order-item .order-time {
+			    font-size: 0.75rem;
+			    margin-bottom: 8px;
+			  }
+			  
+			  .admin-order-item .order-status {
+			    font-size: 0.75rem;
+			    padding: 2px 8px;
+			    margin-bottom: 10px;
+			  }
+			  
+			  .admin-order-item .order-details {
+			    margin-bottom: 10px;
+			  }
+			  
+			  .admin-order-item .order-item-detail {
+			    font-size: 0.8rem;
+			    padding: 4px 0;
+			  }
+			  
+			  .admin-order-item .order-total {
+			    font-size: 1rem;
+			    margin-top: 6px;
+			    padding-top: 6px;
+			  }
+			  
+			  .admin-order-item .customer-info {
+			    padding: 10px;
+			    font-size: 0.8rem;
+			    margin-top: 10px;
+			  }
+			  
+			  .admin-order-item .customer-info p {
+			    margin-bottom: 3px;
+			  }
+			  
+			  /* 新增：修复管理员订单项按钮布局 */
+			  .admin-order-item > div:last-child {
+			    margin-top: 12px;
+			    display: flex;
+			    flex-wrap: wrap;
+			    gap: 8px;
+			    justify-content: flex-start;
+			    padding-top: 10px;
+			    border-top: 1px solid #eee;
+			  }
+			  
+			  .admin-order-item > div:last-child .filter-btn {
+			    flex: 1;
+			    min-width: calc(50% - 4px);
+			    padding: 8px 10px;
+			    font-size: 0.8rem;
+			    text-align: center;
+			    white-space: nowrap;
+			    overflow: hidden;
+			    text-overflow: ellipsis;
+			  }
+			  
+			  /* 新增：修复反馈截图上传区域在移动端的显示 */
+			  .admin-order-item .feedback-upload-area {
+			    padding: 10px;
+			    font-size: 0.8rem;
+			  }
+			  
+			  .admin-order-item .feedback-upload-area i {
+			    font-size: 18px;
+			    margin-bottom: 5px;
+			  }
+			  
+			  .admin-order-item .upload-hint {
+			    font-size: 0.75rem;
+			  }
+			  
+			  .admin-order-item .feedback-btn {
+			    padding: 6px 12px;
+			    font-size: 0.8rem;
+			    margin-top: 10px;
+			    width: 100%;
+			    justify-content: center;
+			  }
+			  
+			  /* 新增：修复管理员面板内容在移动端的边距 */
+			  .panel-content {
+			    padding: 12px;
+			  }
+			  
+			  .admin-tabs {
+			    flex-direction: column;
+			    align-items: flex-start;
+			  }
+			  
+			  .admin-tab {
+			    width: 100%;
+			    text-align: left;
+			    padding: 10px 12px;
+			    border-bottom: 1px solid #eee;
+			  }
+			  
+			  .order-filters {
+			    justify-content: center;
+			  }
+			  
+			  .order-filters .filter-btn {
+			    flex: 1;
+			    min-width: calc(33.33% - 8px);
+			    text-align: center;
+			    padding: 6px 8px;
+			    font-size: 0.8rem;
+			  }
+			  
+			  /* 新增：特别修复移动端订单项内部的按钮间距 */
+			  .admin-order-item > div:last-child {
+			    gap: 6px;
+			  }
+			  
+			  .admin-order-item > div:last-child .filter-btn {
+			    min-width: calc(50% - 3px);
+			    padding: 6px 8px;
+			    font-size: 0.75rem;
+			  }
+			  
+			  /* 新增：移动端订单项内部截图预览优化 */
+			  .admin-order-item .screenshot-container img {
+			    max-height: 150px;
+			    object-fit: contain;
+			  }
+			  
+			  .admin-order-item .feedback-screenshot-container {
+			    padding: 8px;
+			  }
+			  
+			  .admin-order-item .feedback-screenshot-container h4 {
+			    font-size: 0.85rem;
+			  }
+			  
+			  .admin-order-item .feedback-thumbnail {
+			    max-height: 180px;
+			  }
+			  
+			  /* 新增：移动端订单项内部反馈上传区域优化 */
+			  .admin-order-item .form-group {
+			    margin-bottom: 12px;
+			  }
+			  
+			  .admin-order-item .feedback-preview {
+			    margin-top: 8px;
+			    padding: 5px;
+			  }
+			  
+			  .admin-order-item .feedback-preview img {
+			    max-height: 120px;
+			  }
+			  
+			  /* 新增：移动端管理员搜索容器优化 */
+			  .admin-search-container {
+			    padding: 10px;
+			    gap: 8px;
+			  }
+			  
+			  .admin-search-hint {
+			    font-size: 0.75rem;
+			    padding: 4px 6px;
+			  }
+			  
+			  /* 新增：移动端套餐管理部分优化 */
+			  .meal-list-item {
+			    flex-direction: column;
+			    align-items: flex-start;
+			    gap: 10px;
+			    padding: 12px;
+			  }
+			  
+			  .meal-list-item-actions {
+			    width: 100%;
+			    justify-content: space-between;
+			    flex-wrap: wrap;
+			    gap: 8px;
+			  }
+			  
+			  .meal-list-item-actions > div {
+			    width: 100%;
+			    margin-bottom: 5px;
+			  }
+			  
+			  .status-label {
+			    justify-content: flex-start;
+			  }
+			  
+			  .sort-order-container {
+			    width: 100%;
+			    justify-content: flex-start;
+			    flex-wrap: wrap;
+			  }
+			  
+			  .meal-list-item-actions > div:last-child {
+			    display: flex;
+			    width: 100%;
+			    justify-content: space-between;
+			  }
+			  
+			  .meal-list-item-actions > div:last-child button {
+			    flex: 1;
+			    max-width: calc(50% - 4px);
+			  }
+			}
+			
+			/* 新增：超小屏幕设备进一步优化 */
+			@media (max-width: 480px) {
+			  .admin-order-item > div:last-child .filter-btn {
+			    min-width: 100%;
+			    margin-bottom: 5px;
+			  }
+			  
+			  .admin-order-item > div:last-child {
+			    flex-direction: column;
+			  }
+			  
+			  .order-filters .filter-btn {
+			    min-width: calc(50% - 4px);
+			    font-size: 0.75rem;
+			    padding: 5px 6px;
+			  }
+			  
+			  .admin-order-item .order-status {
+			    font-size: 0.7rem;
+			    padding: 2px 6px;
+			  }
+			  
+			  /* 新增：移动端订单状态按钮特别优化 */
+			  .admin-order-item div[style*="margin-top: 12px"] {
+			    margin-top: 10px !important;
+			    gap: 5px !important;
+			  }
+			  
+			  .admin-order-item div[style*="margin-top: 12px"] .filter-btn {
+			    min-width: 100% !important;
+			    margin-bottom: 5px !important;
+			    padding: 6px 8px !important;
+			    font-size: 0.75rem !important;
+			  }
+			
         }
         
         /* 确保在桌面端保持左右布局 */
