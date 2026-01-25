@@ -3407,7 +3407,10 @@
             display: block;
             animation: fadeIn 0.3s ease-in-out;
         }
-        
+        /* 在现有CSS中添加 */
+        .hidden-admin .admin-btn {
+            display: none !important;
+        }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-5px); }
             to { opacity: 1; transform: translateY(0); }
@@ -4669,41 +4672,116 @@
 			}
 
 			// ==================== 修改：检查URL参数 ====================
+			// ==================== 修改：检查URL参数 ====================
 			function checkUrlParams() {
-				const urlParams = new URLSearchParams(window.location.search);
-				const orderId = urlParams.get('order');
-				const mealId = urlParams.get('meal');
-
-				// 检查订单参数
-				if (orderId) {
-					showMyOrdersPage();
-
-					setTimeout(() => {
-						document.getElementById('orderSearchInput').value = orderId;
-						searchUserOrder(orderId);
-					}, 100);
-				}
-
-				// 检查套餐参数
-				if (mealId) {
-					const meal = meals.find(m => m.id === mealId);
-					if (meal && meal.active !== false) {
-						// 标记为分享链接进入
-						isSharedLink = true;
-						sharedMealId = mealId;
-
-						// 直接显示套餐详情页
-						setTimeout(() => {
-							showMealDetail(mealId);
-						}, 300);
-					} else if (meal && meal.active === false) {
-						showNotification('该套餐已下架，无法查看', 'error');
-					} else {
-						showNotification('套餐不存在或已被删除', 'error');
-					}
-				}
+			    const urlParams = new URLSearchParams(window.location.search);
+			    const orderId = urlParams.get('order');
+			    const mealId = urlParams.get('meal');
+			   // 在checkUrlParams函数中添加
+			   if (isSharedLink) {
+			       document.body.classList.add('hidden-admin');
+			   }
+			    // 检查订单参数
+			    if (orderId) {
+			        showMyOrdersPage();
+			
+			        setTimeout(() => {
+			            document.getElementById('orderSearchInput').value = orderId;
+			            searchUserOrder(orderId);
+			        }, 100);
+			    }
+			
+			    // 检查套餐参数
+			    if (mealId) {
+			        const meal = meals.find(m => m.id === mealId);
+			        if (meal && meal.active !== false) {
+			            // 标记为分享链接进入
+			            isSharedLink = true;
+			            sharedMealId = mealId;
+			            
+			            // 隐藏管理员按钮
+			            document.getElementById('adminBtn').style.display = 'none';
+			
+			            // 直接显示套餐详情页
+			            setTimeout(() => {
+			                showMealDetail(mealId);
+			            }, 300);
+			        } else if (meal && meal.active === false) {
+			            showNotification('该套餐已下架，无法查看', 'error');
+			        } else {
+			            showNotification('套餐不存在或已被删除', 'error');
+			        }
+			    }
 			}
-
+			
+			// ==================== 修改：页面初始化部分 ====================
+			document.addEventListener('DOMContentLoaded', async function() {
+			    try {
+			        showLoading('正在加载数据...');
+			
+			        await Promise.all([
+			            LeanCloudData.initializeTables().catch(e => console.log('表初始化失败:', e)),
+			            loadAllDataFromLeanCloud().catch(e => {
+			                console.error('数据加载失败:', e);
+			                showNotification('数据加载失败，使用本地缓存数据', 'error');
+			                loadFromLocalCache();
+			            })
+			        ]);
+			
+			        initHomePage();
+			        initAdminPanel();
+			        initMealManagement();
+			        initNewMealManagement();
+			        updateCartDisplay();
+			        updateOrderBadge();
+			        initImagePreview();
+			        initPasswordVerification();
+			        initStatusToggle();
+			        initMyOrdersPage();
+			        initHeaderButtons();
+			        initSearchFunction();
+			        initOrderConfirmModal();
+			        initShareModal();
+			
+			        document.getElementById('currentUserIdDisplay').textContent = currentUserId.substring(0, 12) + '...';
+			
+			        // 检查URL参数
+			        checkUrlParams();
+			
+			        showNotification('页面加载完成', 'success');
+			        hideLoading();
+			
+			        console.log('页面初始化完成，数据已从LeanCloud加载');
+			
+			        startGlobalPolling();
+			    } catch (error) {
+			        console.error('页面初始化失败:', error);
+			        showNotification('页面初始化失败，使用本地缓存数据', 'error');
+			        hideLoading();
+			
+			        loadFromLocalCache();
+			
+			        initHomePage();
+			        initAdminPanel();
+			        initMealManagement();
+			        initNewMealManagement();
+			        updateCartDisplay();
+			        updateOrderBadge();
+			        initImagePreview();
+			        initPasswordVerification();
+			        initStatusToggle();
+			        initMyOrdersPage();
+			        initHeaderButtons();
+			        initSearchFunction();
+			        initOrderConfirmModal();
+			        initShareModal();
+			
+			        // 检查URL参数（错误恢复情况）
+			        checkUrlParams();
+			
+			        startGlobalPolling();
+			    }
+			});
 			// ==================== 订单确认模态框初始化 ====================
 			function initOrderConfirmModal() {
 				const orderConfirmModal = document.getElementById('orderConfirmModal');
@@ -9755,4 +9833,5 @@
 		</script>
 	</body>
 </html>
+
 
